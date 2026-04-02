@@ -41,6 +41,13 @@ const variantDefaults = {
   overline:{ tag: 'span',  size: 'xs',   weight: 'semibold' },
 }
 
+function normalizeCssSize(value) {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === 'number') return `${value}px`
+  if (typeof value === 'string' && /^\d+(\.\d+)?$/.test(value.trim())) return `${value}px`
+  return value
+}
+
 export function buildText(content, options = {}) {
   // Allow buildText({ content, ...options }) as single-arg call
   if (typeof content === 'object' && content !== null && !Array.isArray(content)) {
@@ -79,8 +86,10 @@ export function buildText(content, options = {}) {
     strike    && 'line-through',
   ].filter(Boolean).join(' ') || undefined
 
+  const resolvedFontSize = normalizeCssSize(token(fontSize, size))
+
   const computedStyle = {
-    fontSize:       token(fontSize, size),
+    fontSize:       resolvedFontSize,
     fontWeight:     token(fontWeight, weight),
     color:          token(colors, color),
     textAlign:      align,

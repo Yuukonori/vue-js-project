@@ -48,8 +48,18 @@ const _TableComponent = defineComponent({
       return props.data.slice(start, start + props.pageSize)
     })
 
+    function colKey(col) {
+      return col.key ?? col.accessor
+    }
+
+    function colLabel(col) {
+      return col.label ?? col.header ?? ''
+    }
+
     function cellValue(row, col) {
-      return row[col.key] ?? '-'
+      const key = colKey(col)
+      if (!key) return '-'
+      return row[key] ?? '-'
     }
 
     function renderCell(row, col, idx) {
@@ -102,7 +112,7 @@ const _TableComponent = defineComponent({
                     whiteSpace:    'nowrap',
                     borderBottom:  '1px solid #e5e7ee',
                   },
-                }, props.headerUppercase ? String(col.label).toUpperCase() : col.label)
+                }, props.headerUppercase ? String(colLabel(col)).toUpperCase() : colLabel(col))
               )),
             ]),
 
