@@ -17,7 +17,7 @@ export function DashboardPage(user) {
     display: 'grid',
     child: {
       1: buildGrid({
-        columns: 1, rows: 1,
+        columns: 10, rows: 2,
         padding: '20px',
         child: {
           1: buildText('Dashboard', { variant: 'h2', weight: 'bold', color: 'gray800' }),
