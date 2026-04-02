@@ -20,6 +20,8 @@ import { buildIcon } from './icon.js'
  *   iconRight  {string}        Icon name (right)
  *   size       {'sm'|'md'|'lg'}  Default: 'md'
  *   radius     {string}
+ *   width      {string}        Explicit width (overrides full)
+ *   height     {string}        Explicit height of the input field (overrides size preset)
  *   full       {boolean}       width: 100%
  *   disabled   {boolean}
  *   readonly   {boolean}
@@ -50,6 +52,8 @@ export function buildInput(options = {}) {
     iconRight,
     size        = 'md',
     radius: r   = 'md',
+    width,
+    height,
     full,
     disabled,
     readonly,

@@ -110,7 +110,7 @@ const _GridComponent = defineComponent({
     colGap:           { default: 8 },
     rowGap:           { default: 6 },
     emptyRowHeight:   { default: 48 },
-    padding:          { default: '12px' },
+    padding:          { default: undefined },
     cellPadding:      { default: 0 },
     backgroundColor:  { default: '#ffffff' },
     borderRadius:     { default: '16px' },
@@ -152,7 +152,8 @@ const _GridComponent = defineComponent({
         ? _blendDark(props.backgroundColor, 0.04)
         : props.backgroundColor
 
-      const resolvedPad     = _resolvePx(props.padding)
+      // Default padding to '12px' only when chrome is visible; explicit prop always wins
+      const resolvedPad     = _resolvePx(props.padding ?? (showChrome ? '12px' : undefined))
       const resolvedCellPad = _resolvePx(props.cellPadding)
       const resolvedRadius  = _resolvePx(props.borderRadius)
 

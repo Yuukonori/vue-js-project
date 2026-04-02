@@ -17,6 +17,8 @@ import { token, colors, fontSize, fontWeight, spacing } from '../tokens.js'
  *   truncate   {boolean}   Single-line overflow ellipsis
  *   lines      {number}    Multi-line clamp (requires truncate: true)
  *   opacity    {number}
+ *   width      {string}
+ *   height     {string}
  *   pad        {string}    Padding
  *   margin     {string}    Margin
  *   lineHeight {string}
@@ -61,6 +63,8 @@ export function buildText(content, options = {}) {
     truncate,
     lines,
     opacity,
+    width,
+    height,
     pad,
     margin,
     lineHeight,
@@ -82,6 +86,8 @@ export function buildText(content, options = {}) {
     textAlign:      align,
     fontStyle:      italic ? 'italic' : undefined,
     textDecoration: decorations,
+    width,
+    height,
     opacity:        opacity,
     padding:        token(spacing, pad),
     margin:         token(spacing, margin),

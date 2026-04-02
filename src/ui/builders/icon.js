@@ -12,7 +12,9 @@ import { token, colors } from '../tokens.js'
  *   | 'arrow-left' | 'arrow-right' | 'arrow-up' | 'arrow-down'
  *
  * Options:
- *   size     {number|string}  px size. Default: 20
+ *   size     {number|string}  px size (sets both width and height). Default: 20
+ *   width    {number|string}  Override width independently
+ *   height   {number|string}  Override height independently
  *   color    {string}         Color token or raw CSS value
  *   stroke   {number}         Stroke width. Default: 2
  *   onClick  {function}
@@ -73,6 +75,8 @@ export function buildIcon(name, options = {}) {
 
   const {
     size   = 20,
+    width,
+    height,
     color,
     stroke = 2,
     onClick,
@@ -93,8 +97,8 @@ export function buildIcon(name, options = {}) {
 
   return h('svg', {
     xmlns: 'http://www.w3.org/2000/svg',
-    width:  size,
-    height: size,
+    width:  width ?? size,
+    height: height ?? size,
     viewBox: '0 0 24 24',
     stroke: token(colors, color) ?? 'currentColor',
     strokeWidth: stroke,

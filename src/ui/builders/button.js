@@ -10,6 +10,8 @@ import { token, colors, spacing, radius, fontSize, fontWeight, shadow } from '..
  *   color      {string}         Color scheme token key. Default: 'primary'
  *   size       {'xs'|'sm'|'md'|'lg'|'xl'}           Default: 'md'
  *   radius     {string}         Border radius token. Default: 'md'
+ *   width      {string}         Explicit width (overrides full)
+ *   height     {string}         Explicit height (overrides size preset)
  *   full       {boolean}        width: 100%
  *   disabled   {boolean}
  *   loading    {boolean}        Shows spinner, disables interaction
@@ -50,6 +52,8 @@ export function buildButton(label, options = {}) {
     color    = 'primary',
     size     = 'md',
     radius: radiusProp = 'md',
+    width,
+    height,
     full,
     disabled,
     loading,
@@ -100,7 +104,8 @@ export function buildButton(label, options = {}) {
     fontWeight:     token(fontWeight, 'medium'),
     borderRadius:   token(radius, radiusProp),
     cursor:         disabled || loading ? 'not-allowed' : 'pointer',
-    width:          full ? '100%' : undefined,
+    width:          width ?? (full ? '100%' : undefined),
+    height:         height ?? sz.height,
     transition:     'all 0.15s ease',
     outline:        'none',
     userSelect:     'none',
