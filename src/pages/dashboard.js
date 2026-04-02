@@ -25,8 +25,5 @@ export function DashboardPage(user) {
         },
       }),
     },
-    span: {
-      1: { colSpan: 4, rowSpan: 1 },
-    },
   })
 }
