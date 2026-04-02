@@ -136,6 +136,16 @@ export function buildButton(label, options = {}) {
     iconRight && !loading ? iconRight : null,
   ].filter(Boolean)
 
+  const canHover = !(disabled || loading)
+  const handleMouseenter = (e) => {
+    if (canHover && variant !== 'link') e.currentTarget.style.filter = 'brightness(0.94)'
+    if (typeof attrs.onMouseenter === 'function') attrs.onMouseenter(e)
+  }
+  const handleMouseleave = (e) => {
+    if (canHover && variant !== 'link') e.currentTarget.style.filter = ''
+    if (typeof attrs.onMouseleave === 'function') attrs.onMouseleave(e)
+  }
+
   return h(
     'button',
     {
@@ -143,6 +153,8 @@ export function buildButton(label, options = {}) {
       class: className,
       disabled: disabled || loading,
       onClick: disabled || loading ? undefined : onClick,
+      onMouseenter: handleMouseenter,
+      onMouseleave: handleMouseleave,
       ...attrs,
     },
     children,

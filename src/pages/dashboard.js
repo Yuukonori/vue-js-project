@@ -66,7 +66,7 @@ export function DashboardPage(user) {
             4: buildGrid({
                 columns: 3, rows: 3,
                 background: colors.gray100,
-                hover: true,
+                hovered: true,
                 rowGap: 4,
                 display: true,
                 onPressed: () => alert('View Network Map clicked'),
@@ -94,7 +94,7 @@ export function DashboardPage(user) {
                     }),
                     7: buildText('42 Nodes', {
                         tag: 'div',
-                        size: '24px',
+                        size: '20px',
                         weight: 'bold',
                         color: 'gray600',
                         style: { marginTop: '6px' },
@@ -104,7 +104,7 @@ export function DashboardPage(user) {
             5: buildGrid({
                 columns: 3, rows: 3,
                 background: colors.gray100,
-                hover: true,
+                hovered: true,
                 rowGap: 4,
                 display: true,
                 onPressed: () => alert('View Network Map clicked'),
@@ -143,7 +143,7 @@ export function DashboardPage(user) {
             6: buildGrid({
                 columns: 3, rows: 3,
                 background: colors.gray100,
-                hover: true,
+                hovered: true,
                 rowGap: 4,
                 display: true,
                 onPressed: () => alert('View Network Map clicked'),
@@ -257,7 +257,7 @@ export function DashboardPage(user) {
             2: buildText('Expiring Assets', { variant: 'h3', weight: 'bold', color: 'black' }),
             7: buildGrid({
                 columns: 12, rows: 2,
-                hover: true,
+                hovered: true,
                 padding: '12px',
                 display: true,
                 align: {
@@ -300,7 +300,7 @@ export function DashboardPage(user) {
             }),
             19: buildGrid({
                 columns: 12, rows: 2,
-                hover: true,
+                hovered: true,
                 padding: '12px',
                 display: true,
                 align: {
@@ -343,7 +343,7 @@ export function DashboardPage(user) {
             }),
             31: buildGrid({
                 columns: 12, rows: 2,
-                hover: true,
+                hovered: true,
                 padding: '12px',
                 display: true,
                 align: {
@@ -386,7 +386,7 @@ export function DashboardPage(user) {
             }),
             43: buildGrid({
                 columns: 12, rows: 2,
-                hover: true,
+                hovered: true,
                 padding: '12px',
                 display: true,
                 align: {
@@ -429,7 +429,7 @@ export function DashboardPage(user) {
             }),
             55: buildGrid({
                 columns: 12, rows: 2,
-                hover: true,
+                hovered: true,
                 padding: '12px',
                 display: true,
                 align: {
@@ -470,10 +470,16 @@ export function DashboardPage(user) {
                     }),
                 },
             }),
-            67: buildText('FULL EXPIRATION LOG', {
-                variant: '20',
-                weight: 'bold',
-                color: 'blue'
+            67: buildButton('FULL EXPIRATION LOG', {
+                variant: 'link',
+                color: 'primary',
+                size: 'md',
+                onClick: () => alert('Opening full expiration log...'),
+                style: {
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    letterSpacing: '0.2px',
+                },
             }),
         }
       }),
@@ -481,3 +487,4 @@ export function DashboardPage(user) {
     }
   })
 }
+
