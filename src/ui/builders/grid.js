@@ -192,8 +192,9 @@ const _GridComponent = defineComponent({
           const rowSpan  = Math.max(1, spanCfg?.rowSpan ?? 1)
           const childNode = props.child[index]
 
-          // Drop empty cells when not keeping structure
-          if (!childNode && !keepStructure) continue
+          // Always render all cells to preserve explicit grid positions.
+          // Dropping empty cells causes auto-placement to reflow non-empty cells
+          // into wrong positions when display: false.
 
           const cellAlign = props.align[index]
           const cellStyle = {
