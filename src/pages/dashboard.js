@@ -7,7 +7,7 @@ import { buildBadge, buildButton, buildContentGrid, buildDivider, buildGrid, bui
 export function DashboardPage(user) {
   return buildContentGrid({
     columns: 4,
-    rows:    5,
+    rows:    4,
     colGap:  12,
     rowGap:  12,
     display: false,
@@ -62,7 +62,17 @@ export function DashboardPage(user) {
         },
         child: {
             1: buildText('System Health', { variant: 'h3', weight: 'bold', color: 'gray800' }),
-            3: buildText('VIEW NETWORK MAP', { size: 'base', color: 'primary' }),
+            3: buildButton('VIEW NETWORK MAP', { 
+                variant: 'link',
+                color: 'primary',
+                size: 'md',
+                onClick: () => alert('Opening full expiration log...'),
+                style: {
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    letterSpacing: '0.2px',
+                }, 
+            }),
             4: buildGrid({
                 columns: 3, rows: 3,
                 background: colors.gray100,
@@ -234,7 +244,7 @@ export function DashboardPage(user) {
             },
       }),
       12: buildGrid({
-        columns: 6, rows: 13,
+        columns: 6, rows: 12,
         rowGap: '20',
         padding: '20px',
         display: true,
@@ -482,8 +492,7 @@ export function DashboardPage(user) {
                 },
             }),
         }
-      }),
-      17: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '4' }),
+      })
     }
   })
 }
