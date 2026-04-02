@@ -1,4 +1,4 @@
-import { h, ref } from 'vue'
+import { h, ref, isRef } from 'vue'
 import { token, colors, spacing, radius, shadow, fontSize } from '../tokens.js'
 import { buildIcon } from './icon.js'
 import { buildText } from './text.js'
@@ -165,43 +165,254 @@ export function buildNavbar(options = {}) {
 }
 
 /**
- * buildSidebar(options) — Sidebar navigation
+ * buildSidebar(options) — Collapsible sidebar navigation with toggle animation.
+ *
+ * Matches the collapse/expand flow of sidebar_menu_page.dart:
+ *   - 600ms easeInOutCubic width transition (300px → 72px)
+ *   - Icons center-align when collapsed (translateX)
+ *   - Labels slide right + fade out (400ms opacity, 600ms transform)
+ *   - Circular toggle button at sidebar edge; chevron rotates 180° (easeInOutBack)
+ *   - Collapsed button icon appears after 70% of the collapse animation
+ *   - Header + footer fade out when collapsed
  *
  * Options:
- *   items      {array}
+ *   items      {Array|Ref<Array>}  Item objects or a computed ref of them.
+ *                                  Each item: { label, icon, active, onClick, divider }
  *   header     {VNode}
  *   footer     {VNode}
- *   width      {string}   Default: '240px'
- *   bg         {string}   Default: 'white'
+ *   width      {string}   Expanded width. Default: '260px'
+ *   bg         {string}   Default: '#ffffff'
  *   border     {boolean}  Default: true
+ *   pad        {string}   Horizontal/vertical padding when expanded. Default: '16px'
+ *   activeColor {string}  Default: '#6366f1'
  */
 export function buildSidebar(options = {}) {
   const {
-    items   = [],
     header,
     footer,
-    width   = '240px',
-    bg      = '#ffffff',
-    border  = true,
-    pad     = '12px',
+    width       = '260px',
+    bg          = '#ffffff',
+    border      = true,
+    pad         = '16px',
+    activeColor = '#6366f1',
   } = options
 
-  const sideStyle = {
-    display:      'flex',
-    flexDirection:'column',
-    width,
-    minHeight:    '100vh',
-    background:   token(colors, bg),
-    borderRight:  border ? '1px solid #e2e8f0' : undefined,
-    padding:      pad,
-    flexShrink:   0,
-  }
+  const EXPANDED_W  = parseInt(width)  || 260
+  const COLLAPSED_W = 72
+  const ANIM_MS     = 600
+  const TEXT_MS     = 400
+  const EASE        = 'cubic-bezier(0.65, 0, 0.35, 1)'       // easeInOutCubic
+  const EASE_BACK   = 'cubic-bezier(0.34, 1.56, 0.64, 1)'    // easeInOutBack (chevron)
+  const hPadExp     = parseInt(pad) || 16
+  const hPadCol     = 10
 
-  return h('aside', { style: sideStyle }, [
-    header ? h('div', { style: { marginBottom: '16px' } }, [header]) : null,
-    h('div', { style: { flex: 1 } }, [
-      buildMenu(items, { variant: 'sidebar', direction: 'col' }),
-    ]),
-    footer ? h('div', { style: { marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '12px' } }, [footer]) : null,
-  ].filter(Boolean))
+  return {
+    setup() {
+      const isCollapsed         = ref(false)
+      const showCollapsedButton = ref(false)
+
+      function toggle() {
+        isCollapsed.value = !isCollapsed.value
+        if (isCollapsed.value) {
+          // Show compact collapsed icon after 70% of animation (matches dart logic)
+          setTimeout(() => {
+            if (!isCollapsed.value) return
+            showCollapsedButton.value = true
+          }, Math.round(ANIM_MS * 0.7))
+        } else {
+          showCollapsedButton.value = false
+        }
+      }
+
+      return () => {
+        const collapsed = isCollapsed.value
+        const sideW     = collapsed ? COLLAPSED_W : EXPANDED_W
+        const hPad      = collapsed ? hPadCol : hPadExp
+        // Inner width used to compute icon centering translateX
+        const innerW    = sideW - hPad * 2
+        const ICON_SIZE = 18
+        // How far to push icon so it sits centered in the inner width
+        const iconShift = (innerW - ICON_SIZE) / 2
+
+        // Resolve items — support plain array or computed/ref
+        const rawItems = isRef(options.items) ? options.items.value : (options.items ?? [])
+
+        // ── Items ────────────────────────────────────────────────────────────
+        const itemNodes = rawItems.map((item, idx) => {
+          if (item.divider) {
+            return h('div', {
+              key: `d${idx}`,
+              style: { height: '1px', background: '#e2e8f0', margin: '6px 0', flexShrink: 0 },
+            })
+          }
+
+          const isActive = item.active
+          const accent   = activeColor
+
+          return h('div', {
+            key:     item.label ?? idx,
+            style:   {
+              borderRadius: '8px',
+              background:   isActive ? `${accent}15` : 'transparent',
+              cursor:       'pointer',
+              marginBottom: '4px',
+              flexShrink:   0,
+            },
+            onClick: item.onClick,
+          }, [
+            h('div', {
+              style: {
+                display:    'flex',
+                alignItems: 'center',
+                padding:    `10px ${hPad}px`,
+                transition: `padding ${ANIM_MS}ms ${EASE}`,
+                minHeight:  '44px',
+                overflow:   'hidden',
+                position:   'relative',
+              },
+            }, [
+              // Icon — animates to center when collapsed (mirrors AnimatedAlign in dart)
+              h('div', {
+                style: {
+                  flexShrink: 0,
+                  display:    'flex',
+                  alignItems: 'center',
+                  width:      `${ICON_SIZE}px`,
+                  transform:  collapsed ? `translateX(${iconShift}px)` : 'translateX(0)',
+                  transition: `transform ${ANIM_MS}ms ${EASE}`,
+                  zIndex:     1,
+                },
+              }, [
+                buildIcon(item.icon, { size: ICON_SIZE, color: isActive ? accent : '#64748b' }),
+              ]),
+
+              // Label — slides right + fades out (mirrors AnimatedSlide + AnimatedOpacity in dart)
+              h('div', {
+                style: {
+                  flex:         1,
+                  overflow:     'hidden',
+                  paddingLeft:  '10px',
+                  whiteSpace:   'nowrap',
+                  transform:    collapsed ? 'translateX(20px)' : 'translateX(0)',
+                  opacity:      collapsed ? 0 : 1,
+                  transition:   `opacity ${TEXT_MS}ms ${EASE}, transform ${ANIM_MS}ms ${EASE}`,
+                  pointerEvents:'none',
+                },
+              }, [
+                buildText(item.label, {
+                  size:   'sm',
+                  weight: isActive ? 'semibold' : 'normal',
+                  color:  isActive ? accent : 'gray700',
+                }),
+              ]),
+            ]),
+          ])
+        })
+
+        // ── Header — fade + slide out when collapsed ─────────────────────────
+        const headerNode = header
+          ? h('div', {
+              style: {
+                overflow:   'hidden',
+                opacity:    collapsed ? 0 : 1,
+                transform:  collapsed ? 'translateX(8px)' : 'translateX(0)',
+                maxHeight:  collapsed ? '0' : '200px',
+                marginBottom: collapsed ? '0' : '8px',
+                transition: [
+                  `opacity ${ANIM_MS}ms ${EASE}`,
+                  `transform ${ANIM_MS}ms ${EASE}`,
+                  `max-height ${ANIM_MS}ms ${EASE}`,
+                  `margin-bottom ${ANIM_MS}ms ${EASE}`,
+                ].join(', '),
+              },
+            }, [header])
+          : null
+
+        // ── Footer — fade out when collapsed ────────────────────────────────
+        const footerNode = footer
+          ? h('div', {
+              style: {
+                borderTop:  '1px solid #e2e8f0',
+                paddingTop: '12px',
+                marginTop:  '16px',
+                overflow:   'hidden',
+                opacity:    collapsed ? 0 : 1,
+                maxHeight:  collapsed ? '0' : '200px',
+                paddingBottom: collapsed ? '0' : undefined,
+                transition: [
+                  `opacity ${ANIM_MS}ms ${EASE}`,
+                  `max-height ${ANIM_MS}ms ${EASE}`,
+                ].join(', '),
+              },
+            }, [footer])
+          : null
+
+        // ── Toggle button — circular, sits on sidebar edge ───────────────────
+        // Mirrors AnimatedPositioned + AnimatedRotation from dart
+        const toggleBtn = h('button', {
+          onClick: toggle,
+          style:   {
+            position:    'absolute',
+            top:         `${hPadExp + 16}px`,    // vertically aligns with header center
+            left:        `${sideW - 12}px`,       // half inside / half outside the sidebar
+            transform:   'translateX(-50%)',
+            width:       '24px',
+            height:      '24px',
+            borderRadius:'50%',
+            border:      '1px solid #E5E7EE',
+            background:  '#ffffff',
+            boxShadow:   '0 1px 4px rgba(0,0,0,0.12)',
+            cursor:      'pointer',
+            display:     'flex',
+            alignItems:  'center',
+            justifyContent: 'center',
+            padding:     0,
+            zIndex:      10,
+            transition:  `left ${ANIM_MS}ms ${EASE}`,
+          },
+        }, [
+          h('span', {
+            style: {
+              display:    'inline-flex',
+              alignItems: 'center',
+              // Chevron points right when collapsed, left (180°) when expanded
+              transform:  collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: `transform 400ms ${EASE_BACK}`,
+            },
+          }, [
+            buildIcon('chevron-right', { size: 13, color: '#6C63FF' }),
+          ]),
+        ])
+
+        // ── Sidebar ──────────────────────────────────────────────────────────
+        const aside = h('aside', {
+          style: {
+            display:       'flex',
+            flexDirection: 'column',
+            width:         '100%',
+            minHeight:     '100vh',
+            background:    token(colors, bg) ?? bg,
+            borderRight:   border ? '1px solid #e2e8f0' : undefined,
+            padding:       `${pad} ${hPad}px`,
+            overflow:      'hidden',
+            transition:    `padding ${ANIM_MS}ms ${EASE}`,
+          },
+        }, [
+          headerNode,
+          h('div', { style: { flex: 1, overflowY: 'auto', overflowX: 'hidden' } }, itemNodes),
+          footerNode,
+        ].filter(Boolean))
+
+        // ── Wrapper — animates overall width, hosts the toggle button ────────
+        return h('div', {
+          style: {
+            position:   'relative',
+            flexShrink: 0,
+            width:      `${sideW}px`,
+            transition: `width ${ANIM_MS}ms ${EASE}`,
+          },
+        }, [aside, toggleBtn])
+      }
+    },
+  }
 }

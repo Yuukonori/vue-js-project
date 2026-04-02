@@ -31,6 +31,8 @@ export function GridSpan({ colSpan = 1, rowSpan = 1 } = {}) {
  *   boxShadow        {string}           Default: none
  *   hovered          {boolean}          Hover-darkening effect. Default: false
  *   onPressed        {function}         Click handler
+ *   align            {string}           CSS align-items (vertical alignment within cells). Default: undefined
+ *   justify          {string}           CSS justify-items (horizontal alignment within cells). Default: undefined
  *   mobileMaxColumns {number}           Cap columns on mobile (<640 px)
  *   width            {string}           CSS width. Default: '100%'
  *   height           {string}           CSS height
@@ -50,6 +52,8 @@ export function buildGrid(options = {}) {
  *   cellPadding      {string}   Default: '8px'
  *   backgroundColor  {string}   Default: 'transparent'
  *   borderRadius     {string}   Default: '0px'
+ *   align            {string}   CSS align-items (vertical alignment within cells). Default: undefined
+ *   justify          {string}   CSS justify-items (horizontal alignment within cells). Default: undefined
  *   fillViewport     {boolean}  Stretch to fill viewport height. Default: false
  *   mobileConfig     {object}   { columns, rows, span?, child? } — overrides at < 640 px
  *   tabletConfig     {object}   { columns, rows, span?, child? } — overrides at 640–1024 px
@@ -113,6 +117,8 @@ const _GridComponent = defineComponent({
     borderRadius:     { default: '16px' },
     border:           { default: undefined },
     boxShadow:        { default: undefined },
+    align:            { default: undefined },
+    justify:          { default: undefined },
     hovered:          { default: false },
     onPressed:        { default: undefined },
     mobileMaxColumns: { default: undefined },
@@ -158,6 +164,8 @@ const _GridComponent = defineComponent({
         columnGap:            `${props.colGap}px`,
         rowGap:               `${props.rowGap}px`,
         padding:              resolvedPad,
+        alignItems:           props.align,
+        justifyItems:         props.justify,
         width:                props.width,
         height:               props.height,
         background:           showChrome ? bg : 'transparent',
@@ -259,6 +267,8 @@ const _ContentGridComponent = defineComponent({
     borderRadius:    { default: '0px' },
     border:          { default: undefined },
     boxShadow:       { default: undefined },
+    align:           { default: undefined },
+    justify:         { default: undefined },
     fillViewport:    { default: false },
     mobileConfig:    { default: undefined },
     tabletConfig:    { default: undefined },
@@ -306,6 +316,8 @@ const _ContentGridComponent = defineComponent({
         borderRadius:    props.borderRadius,
         border:          props.border,
         boxShadow:       props.boxShadow,
+        align:           props.align,
+        justify:         props.justify,
         width:           '100%',
         style:           props.style,
       })
