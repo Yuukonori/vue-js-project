@@ -14,6 +14,7 @@ import { buildIcon } from './icon.js'
  *   containerStyle {'square'|'circle'}  Default: 'square'
  *   radius         {string}   Border radius (overrides containerStyle). e.g. '8px'
  *   margin         {string}   CSS margin
+ *   hover          {boolean}  Enable hover effects. Default: false
  *   onClick        {function}
  *   style          {object}
  */
@@ -28,6 +29,7 @@ export function buildIconContainer(options = {}) {
     containerStyle = 'square',
     radius,
     margin,
+    hover          = false,
     onClick,
     style          = {},
   } = options
@@ -37,6 +39,11 @@ export function buildIconContainer(options = {}) {
   const resolvedRadius = isCircle
     ? '9999px'
     : (radius ?? `${Math.round((12 / 44) * size)}px`)
+  const hoverStyle = {
+    transform: 'translateY(-1px)',
+    filter: 'brightness(0.98)',
+    boxShadow: '0 8px 20px rgba(15, 23, 42, 0.10)',
+  }
 
   return h('div', {
     style: {
@@ -50,9 +57,18 @@ export function buildIconContainer(options = {}) {
       flexShrink:     0,
       margin,
       cursor:         onClick ? 'pointer' : undefined,
+      transition:     hover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease' : undefined,
       ...style,
     },
     onClick,
+    onMouseenter: hover ? (e) => {
+      Object.assign(e.currentTarget.style, hoverStyle)
+    } : undefined,
+    onMouseleave: hover ? (e) => {
+      e.currentTarget.style.transform = ''
+      e.currentTarget.style.filter = ''
+      e.currentTarget.style.boxShadow = ''
+    } : undefined,
   }, [
     buildIcon(icon, { size: resolvedIcon, color: colorIcon }),
   ])

@@ -1,4 +1,6 @@
 import { DashboardPage } from './pages/dashboard.js'
+import { SupportPage } from './pages/support.js'
+import { UserListPage } from './pages/userlist.js'
 
 export const MENU_CONFIG = {
   header: {
@@ -29,6 +31,15 @@ export const MENU_CONFIG = {
       content:   (user) => SupportPage(user),
     },
     {
+      label:     'User List',
+      icon:      'user',
+      path:      '/userlist',
+      isDefault: false,
+      line:      false,
+      hidden:    true,
+      content:   (user) => UserListPage(user),
+    },
+    {
       label:     'Repair History',
       icon:      'repair-history',
       path:      '/repair-history',
@@ -54,3 +65,4 @@ export const MENU_CONFIG = {
     },
   ],
 }
+

@@ -12,10 +12,10 @@ export function DashboardPage(user) {
     rowGap:  12,
     display: false,
         span: {
-        5: { colSpan: 4, rowSpam: 1 },
-        9: { colSpan: 3, rowSpam: 1 },
+        5: { colSpan: 4, rowSpan: 1 },
+        9: { colSpan: 3, rowSpan: 1 },
         12: { rowSpan: 2 },
-        13: { colSpan: 3, rowSpam: 1 },
+        13: { colSpan: 3, rowSpan: 1 },
         17: { colSpan: 4 },
     },
     padding: '24px',
@@ -24,6 +24,7 @@ export function DashboardPage(user) {
     tabletConfig: { columns: 2, rows: 3 },
     align: {
         5: 'center',
+        4: 'center',
         12: 'center',
     },
     child: {
@@ -245,6 +246,7 @@ export function DashboardPage(user) {
       }),
       12: buildGrid({
         columns: 6, rows: 12,
+        height: '100%',
         rowGap: '20',
         padding: '20px',
         display: true,

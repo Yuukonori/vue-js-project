@@ -16,6 +16,8 @@ function navigate(path) {
   currentPath.value = path
 }
 
+globalThis.__appNavigate = navigate
+
 const activeItem = computed(() =>
   MENU_CONFIG.items.find(i => !i.line && i.path === currentPath.value)
   ?? defaultItem
@@ -26,7 +28,7 @@ const activeItem = computed(() =>
 // buildSidebar returns a Vue component, so we create it once to preserve collapse state.
 
 const sidebarItems = computed(() =>
-  MENU_CONFIG.items.map(i =>
+  MENU_CONFIG.items.filter(i => !i.hidden).map(i =>
     i.line
       ? { divider: true }
       : {
@@ -97,3 +99,4 @@ const content = computed(() => activeItem.value.content(MENU_CONFIG.user))
     <component :is="() => content" />
   </div>
 </template>
+

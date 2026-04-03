@@ -23,6 +23,7 @@ export function GridSpan({ colSpan = 1, rowSpan = 1 } = {}) {
  *   colGap           {number}           Column gap in px. Default: 8
  *   rowGap           {number}           Row gap in px. Default: 6
  *   emptyRowHeight   {number}           Min-height of empty rows when keepStructure. Default: 48
+ *   keepStructure    {boolean}          Preserve empty slot height even when display is false. Default: false
  *   padding          {string|number}    Container padding. Default: '12px'
  *   cellPadding      {string|number}    Per-cell padding. Default: 0
  *   backgroundColor  {string}           Default: '#ffffff'
@@ -110,6 +111,7 @@ const _GridComponent = defineComponent({
     colGap:           { default: 8 },
     rowGap:           { default: 6 },
     emptyRowHeight:   { default: 48 },
+    keepStructure:    { default: false },
     padding:          { default: undefined },
     cellPadding:      { default: 0 },
     backgroundColor:  { default: '#ffffff' },
@@ -142,7 +144,7 @@ const _GridComponent = defineComponent({
     return () => {
       const showChrome    = props.display !== false
       const showGridLines = props.display === 'grid'
-      const keepStructure = props.display === true || showGridLines
+      const keepStructure = props.keepStructure || props.display === true || showGridLines
 
       const effectiveCols = (props.mobileMaxColumns != null && isMobile.value && props.mobileMaxColumns < props.columns)
         ? props.mobileMaxColumns
@@ -332,3 +334,4 @@ const _ContentGridComponent = defineComponent({
     }
   },
 })
+
