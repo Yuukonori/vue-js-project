@@ -1,5 +1,7 @@
 import { DashboardPage } from './pages/dashboard.js'
+import { AssetsPage } from './pages/assets.js'
 import { SupportPage } from './pages/support.js'
+import { RepairHistoryPage } from './pages/repairhistory.js'
 import { UserListPage } from './pages/userlist.js'
 
 export const MENU_CONFIG = {
@@ -21,6 +23,14 @@ export const MENU_CONFIG = {
       isDefault: true,
       line:      false,
       content:   (user) => DashboardPage(user),
+    },
+    {
+      label:     'Assets',
+      icon:      'assets',
+      path:      '/assets',
+      isDefault: true,
+      line:      false,
+      content:   (user) => AssetsPage(user),
     },
     {
       label:     'Support',

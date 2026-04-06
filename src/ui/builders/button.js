@@ -106,7 +106,7 @@ export function buildButton(label, options = {}) {
     cursor:         disabled || loading ? 'not-allowed' : 'pointer',
     width:          width ?? (full ? '100%' : undefined),
     height:         height ?? sz.height,
-    transition:     'all 0.15s ease',
+    transition:     'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease',
     outline:        'none',
     userSelect:     'none',
     fontFamily:     'inherit',
@@ -138,11 +138,19 @@ export function buildButton(label, options = {}) {
 
   const canHover = !(disabled || loading)
   const handleMouseenter = (e) => {
-    if (canHover && variant !== 'link') e.currentTarget.style.filter = 'brightness(0.94)'
+    if (canHover && variant !== 'link') {
+      e.currentTarget.style.transform = 'translateY(-1px)'
+      e.currentTarget.style.filter = 'brightness(0.99)'
+      e.currentTarget.style.boxShadow = '0 8px 20px rgba(15, 23, 42, 0.10)'
+    }
     if (typeof attrs.onMouseenter === 'function') attrs.onMouseenter(e)
   }
   const handleMouseleave = (e) => {
-    if (canHover && variant !== 'link') e.currentTarget.style.filter = ''
+    if (canHover && variant !== 'link') {
+      e.currentTarget.style.transform = ''
+      e.currentTarget.style.filter = ''
+      e.currentTarget.style.boxShadow = ''
+    }
     if (typeof attrs.onMouseleave === 'function') attrs.onMouseleave(e)
   }
 

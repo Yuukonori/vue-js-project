@@ -62,6 +62,9 @@ const icons = {
   'upload':        'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4 M17 8l-5-5-5 5 M12 3v12',
   'download':      'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4 M7 10l5 5 5-5 M12 15V3',
   'refresh':       'M1 4v6h6 M23 20v-6h-6 M20.49 9A9 9 0 005.64 5.64L1 10 M23 14l-4.64 4.36A9 9 0 013.51 15',
+  'clipboard':     'M9 4h6 M10 3h4a1 1 0 011 1v1H9V4a1 1 0 011-1z M6 5h12a1 1 0 011 1v12 M6 18H5a1 1 0 01-1-1V6a1 1 0 011-1h1 M16.5 16.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z M16.5 18.5v2l1.5 1',
+  'update':        'M21 3v6h-6 M21 9a9 9 0 11-3-6',
+  'reset':         'M3 12a9 9 0 119-9 M3 4v8h8',
   'logout':        'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9',
   'lock':          'M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z M7 11V7a5 5 0 0110 0v4',
   'unlock':        'M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z M7 11V7a5 5 0 019.9-1',
@@ -103,9 +106,13 @@ export function buildIcon(name, options = {}) {
   const isFilledIcon = name === 'server'
   const isGaugeIcon = name === 'gauge'
   const isShieldIcon = name === 'shield'
+  const isInfoIcon = name === 'info'
+  const isWarningIcon = name === 'warning'
+  const isCircleCheckIcon = name === 'circle-check'
   const isCalendarXIcon = name === 'calendar-x'
   const isRouterIcon = name === 'router'
   const isPrinterIcon = name === 'printer'
+  const isClipboardIcon = name === 'clipboard'
   const iconColor = token(colors, color) ?? 'currentColor'
   if (!paths) console.warn(`[buildIcon] Unknown icon: "${name}"`)
 
@@ -125,6 +132,53 @@ export function buildIcon(name, options = {}) {
         h('circle', { key: 'dot-3', cx: 15.5, cy: 16.8, r: 0.85, fill: '#ffffff' }),
         h('path', { key: 'wifi-1', d: 'M9.1 10.3a4.1 4.1 0 015.8 0', fill: 'none', stroke: iconColor, strokeWidth: 2.1, strokeLinecap: 'round' }),
         h('path', { key: 'wifi-2', d: 'M10.9 12.1a1.6 1.6 0 012.2 0', fill: 'none', stroke: iconColor, strokeWidth: 2.1, strokeLinecap: 'round' }),
+      ]
+    : isClipboardIcon
+    ? [
+        // clipboard outer body
+        h('rect', {
+          key: 'cb-body',
+          x: 3.5,
+          y: 4.8,
+          width: 14.8,
+          height: 15.6,
+          rx: 2.6,
+          fill: '#ffffff',
+          stroke: iconColor,
+          strokeWidth: 2.3,
+        }),
+        // top clip
+        h('rect', {
+          key: 'cb-clip',
+          x: 8,
+          y: 2.6,
+          width: 5.8,
+          height: 4.6,
+          rx: 1.8,
+          fill: '#ffffff',
+          stroke: iconColor,
+          strokeWidth: 2.3,
+        }),
+        // top clip dot
+        h('circle', { key: 'cb-dot', cx: 10.9, cy: 4.9, r: 0.95, fill: iconColor }),
+        // bottom-right clock
+        h('circle', { key: 'cb-clock-bg', cx: 18, cy: 18, r: 4.7, fill: iconColor }),
+        h('path', {
+          key: 'cb-clock-hand-1',
+          d: 'M18 15.9v2.5',
+          fill: 'none',
+          stroke: '#ffffff',
+          strokeWidth: 1.8,
+          strokeLinecap: 'round',
+        }),
+        h('path', {
+          key: 'cb-clock-hand-2',
+          d: 'M18 18l1.9 1.2',
+          fill: 'none',
+          stroke: '#ffffff',
+          strokeWidth: 1.8,
+          strokeLinecap: 'round',
+        }),
       ]
     : isCalendarXIcon
     ? [
@@ -157,6 +211,75 @@ export function buildIcon(name, options = {}) {
         h('path', {
           key: 'shield-q4',
           d: 'M12.7 11.9H17.9c-.3 3.6-2.9 6.4-5.2 8.1z',
+          fill: '#ffffff',
+        }),
+      ]
+    : isInfoIcon
+    ? [
+        h('circle', {
+          key: 'info-bg',
+          cx: 12,
+          cy: 12,
+          r: 10,
+          fill: iconColor,
+        }),
+        h('rect', {
+          key: 'info-line',
+          x: 11.2,
+          y: 7.2,
+          width: 1.6,
+          height: 8.2,
+          rx: 0.8,
+          fill: '#ffffff',
+        }),
+        h('circle', {
+          key: 'info-dot',
+          cx: 12,
+          cy: 17.6,
+          r: 1.05,
+          fill: '#ffffff',
+        }),
+      ]
+    : isCircleCheckIcon
+    ? [
+        h('circle', {
+          key: 'cc-bg',
+          cx: 12,
+          cy: 12,
+          r: 10,
+          fill: iconColor,
+        }),
+        h('path', {
+          key: 'cc-check',
+          d: 'M8.2 12.4l2.6 2.6 5-5',
+          fill: 'none',
+          stroke: '#ffffff',
+          strokeWidth: 2.2,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }),
+      ]
+    : isWarningIcon
+    ? [
+        h('path', {
+          key: 'warn-tri',
+          d: 'M12 3.2L22 20.8H2L12 3.2z',
+          fill: iconColor,
+        }),
+        h('rect', {
+          key: 'warn-line',
+          x: 11.2,
+          y: 9,
+          width: 1.6,
+          height: 6,
+          rx: 0.8,
+          fill: '#ffffff',
+        }),
+        h('circle', {
+          key: 'warn-dot',
+          cx: 12,
+          cy: 17.2,
+          r: 1,
           fill: '#ffffff',
         }),
       ]
@@ -199,7 +322,7 @@ export function buildIcon(name, options = {}) {
     width:  width ?? size,
     height: height ?? size,
     viewBox: '0 0 24 24',
-    stroke: (isFilledIcon || isGaugeIcon || isShieldIcon || isCalendarXIcon || isRouterIcon || isPrinterIcon) ? 'none' : iconColor,
+    stroke: (isFilledIcon || isGaugeIcon || isShieldIcon || isInfoIcon || isWarningIcon || isCircleCheckIcon || isCalendarXIcon || isRouterIcon || isPrinterIcon || isClipboardIcon) ? 'none' : iconColor,
     strokeWidth: isCalendarXIcon ? 2.8 : stroke,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',

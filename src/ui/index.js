@@ -22,6 +22,8 @@ export { buildButton }                                from './builders/button.js
 // ── Icons ────────────────────────────────────────────────────────────────────
 export { buildIcon }                                  from './builders/icon.js'
 export { buildIconContainer }                         from './builders/iconContainer.js'
+export { buildIconTextContainer }                     from './builders/iconTextContainer.js'
+export { buildIconText }                              from './builders/IconText.js'
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 export { buildMenu, buildNavbar, buildSidebar }       from './builders/menu.js'
@@ -31,6 +33,7 @@ export { buildTabs }                                  from './builders/tabs.js'
 export { buildInput }                                 from './builders/input.js'
 export { buildTextbox }                               from './builders/textbox.js'
 export { buildDropdown }                              from './builders/dropdown.js'
+export { buildPopup }                                 from './builders/popup.js'
 export { buildSearch }                                from './builders/search.js'
 export { buildCheckbox }                              from './builders/checkbox.js'
 
@@ -45,6 +48,7 @@ export { buildProgressBar }                           from './builders/progressB
 
 // ── Media ────────────────────────────────────────────────────────────────────
 export { buildImage }                                 from './builders/image.js'
+export { buildImageProfile }                          from './builders/imageProfile.js'
 
 // ── Decorators ───────────────────────────────────────────────────────────────
 export { buildDivider }                               from './builders/divider.js'

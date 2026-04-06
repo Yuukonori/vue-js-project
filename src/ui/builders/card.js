@@ -52,7 +52,7 @@ export function buildCard(options = {}) {
     width:        full ? '100%' : undefined,
     overflow:     'hidden',
     cursor:       onClick ? 'pointer' : undefined,
-    transition:   hover ? 'box-shadow 0.2s, transform 0.2s' : undefined,
+    transition:   hover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease' : undefined,
     ...style,
   }
 
@@ -94,7 +94,15 @@ export function buildCard(options = {}) {
     style: cardStyle,
     class: className,
     onClick,
-    onMouseenter: hover ? (e) => { e.currentTarget.style.boxShadow = token(shadow, 'xl'); e.currentTarget.style.transform = 'translateY(-2px)' } : undefined,
-    onMouseleave: hover ? (e) => { e.currentTarget.style.boxShadow = token(shadow, s); e.currentTarget.style.transform = '' } : undefined,
+    onMouseenter: hover ? (e) => {
+      e.currentTarget.style.transform = 'translateY(-1px)'
+      e.currentTarget.style.filter = 'brightness(0.99)'
+      e.currentTarget.style.boxShadow = '0 8px 20px rgba(15, 23, 42, 0.10)'
+    } : undefined,
+    onMouseleave: hover ? (e) => {
+      e.currentTarget.style.boxShadow = token(shadow, s)
+      e.currentTarget.style.transform = ''
+      e.currentTarget.style.filter = ''
+    } : undefined,
   }, [headerNode, bodyNode, footerNode].filter(Boolean))
 }

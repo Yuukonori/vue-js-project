@@ -41,7 +41,7 @@ export function buildIconContainer(options = {}) {
     : (radius ?? `${Math.round((12 / 44) * size)}px`)
   const hoverStyle = {
     transform: 'translateY(-1px)',
-    filter: 'brightness(0.98)',
+    filter: 'brightness(0.99)',
     boxShadow: '0 8px 20px rgba(15, 23, 42, 0.10)',
   }
 

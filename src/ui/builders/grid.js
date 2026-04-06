@@ -173,6 +173,10 @@ const _GridComponent = defineComponent({
         boxShadow:            showChrome ? props.boxShadow : undefined,
         boxSizing:            'border-box',
         cursor:               props.onPressed ? 'pointer' : undefined,
+        transition:           props.hovered ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease' : undefined,
+        transform:            (props.hovered && isHovered.value) ? 'translateY(-1px)' : undefined,
+        filter:               (props.hovered && isHovered.value) ? 'brightness(0.99)' : undefined,
+        boxShadow:            (props.hovered && isHovered.value) ? '0 8px 20px rgba(15, 23, 42, 0.10)' : (showChrome ? props.boxShadow : undefined),
         ...props.style,
       }
       Object.keys(containerStyle).forEach(k => containerStyle[k] === undefined && delete containerStyle[k])

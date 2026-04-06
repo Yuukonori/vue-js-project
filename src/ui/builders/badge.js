@@ -6,6 +6,7 @@ import { token, colors, radius, fontSize, fontWeight } from '../tokens.js'
  *
  * Options:
  *   color    {string}   Color scheme key or raw CSS. Default: 'primary'
+ *   colorText {string}  Override text color
  *   variant  {'solid'|'soft'|'outline'}  Default: 'soft'
  *   size     {'sm'|'md'|'lg'}  Default: 'md'
  *   radius   {string}   Default: 'full'
@@ -40,6 +41,7 @@ export function buildBadge(label, options = {}) {
 
   const {
     color   = 'neutral',
+    colorText,
     variant = 'soft',
     size    = 'md',
     radius: r = 'full',
@@ -69,6 +71,7 @@ export function buildBadge(label, options = {}) {
     borderRadius: token(radius, r),
     lineHeight:   '1.4',
     ...variantStyle[variant],
+    color:        colorText ?? variantStyle[variant]?.color,
     ...style,
   }
 

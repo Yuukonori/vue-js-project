@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, ref } from 'vue'
-import { buildBadge, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildImage, buildTable, buildText, GridSpan, spacing, colors } from '../ui/index.js'
+import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildImage, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer } from '../ui/index.js'
 import { USERS } from '../data/users.js'
 
 /**
@@ -24,7 +24,7 @@ export function SupportPage(user) {
       const maxSupportUsers = 10
       const showMoreClicks = ref(0)
       const detailVisibleRows = 2
-      const assignedAssets = ['MacBook Pro M2 (42)', 'Cisco Edge Switch']
+      const assignedAssets = ['MacBook Pro M2', 'Cisco Edge Switch']
       const repairHistory = ['Ticket #12345 - Display Flicker']
 
       const supportVisibleCount = computed(() => (showMoreClicks.value === 0 ? defaultVisibleCount : maxSupportUsers))
@@ -134,7 +134,7 @@ export function SupportPage(user) {
           columns: 4,
           rows: 5,
           backgroundColor: '#F5F7FB',
-          display: 'grid',
+          display: true,
           span: {
             1: { colSpan: 2 },
             3: { colSpan: 2 },
@@ -177,17 +177,30 @@ export function SupportPage(user) {
           1: buildGrid({
             columns: 1,
             rows: 2,
-            padding: '20px',
+            padding: '0',
             display: false,
             child: {
-              1: buildText('User Directory', { variant: 'h1', weight: 'bold', color: 'gray800' }),
+              1: buildText('User Directory', {
+                tag: 'div',
+                size: '4xl',
+                weight: 'bold',
+                color: 'gray800',
+                lineHeight: '1.1',
+                margin: '0',
+              }),
               2: buildText(
                 'System-wide management of people, their assigned hardware, and historical system interactions',
-                { size: 'base', color: 'gray400' },
+                {
+                  tag: 'div',
+                  size: 'sm',
+                  color: 'gray500',
+                  lineHeight: '1.3',
+                  margin: '0',
+                },
               ),
             },
           }),
-          5: buildDivider({direction: 'h', color: 'gray200', thickness: '1px', margin: '4' }),
+          5: buildDivider({direction: 'h', color: 'gray200', thickness: '1px', margin: '8px' }),
           9: buildGrid({
             columns: 2,
             rows: 4,
@@ -228,23 +241,27 @@ export function SupportPage(user) {
             height: '100%',
             align: {
                 5: 'center',
+                3: 'center Right',
+                4: 'center Left',
                 7: 'center',
                 9: 'center left',
-                11: 'center right'
+                11: 'center right',
+                13: 'center'
             },
             span: {
-                1: { colSpan: 4 },
+                1: { colSpan: 2 },
                 5: { colSpan: 2 },
                 7: { colSpan: 2 },
                 9: { colSpan: 2 },
                 11: { colSpan: 2 },
                 13: { colSpan: 4 }
             },
-            display: 'grid',
+            display: true,
             child: {
                 1: buildGrid({
                     columns: 6,
                     rows: 2,
+                    style: { marginLeft: '20px'},
                     display: false,
                     span: {
                         1: { rowSpan: 2 },
@@ -257,14 +274,46 @@ export function SupportPage(user) {
                         8: 'startr left'
                     },
                     child: {
-                        1: buildIcon('profile', { size: 100, color: 'primary' }),
+                        1: buildImageProfile('https://i.pravatar.cc/96?img=3', {
+                            name: 'Admin User',
+                            size: 72,
+                            status: 'online',
+                            showStatus: true,
+                            hover: true,
+                            onClick: () => {}
+                        }),
                         2: buildText('Username', { variant: 'h2', weight: 'bold', color: 'gray800' }),
                         8: buildText('role: Admin IT', { variant: 'p', color: 'gray800' })
                     }
                 }),
+                3: buildIconTextContainer('Reset Password',{
+                    style: { justifyContent: 'center',},
+                    colorCon: '#e5e7eb',
+                    icon: 'refresh',
+                    iconColor: '#475569',
+                    iconSize: '12',
+                    textSize: '10px',
+                    width: '200px',
+                    height: '50px',
+                    hover: true,
+                    onClick: () => {}
+                }),
+                4: buildIconTextContainer('Update Assets Status',{
+                    style: { justifyContent: 'center', marginLeft: '30px'},
+                    colorCon: '#6366f1',
+                    icon: 'update',
+                    iconColor: 'white',
+                    iconSize: '12',
+                    textSize: '10px',
+                    textColor: 'white',
+                    width: '200px',
+                    height: '50px',
+                    hover: true,
+                    onClick: () => {}
+                }),
                 5: buildGrid({
                     height: '100%',
-                    width: '95%',
+                    width: '90%',
                     columns: 4,
                     rows: 5,
                     backgroundColor: '#F5F7FB',
@@ -382,7 +431,7 @@ export function SupportPage(user) {
                 }),
                 7:  buildGrid({
                     height: '100%',
-                    width: '95%',
+                    width: '90%',
                     columns: 4,
                     rows: 5,
                     backgroundColor: '#F5F7FB',
@@ -469,12 +518,17 @@ export function SupportPage(user) {
                     display: false,
                     height: '52px',
                     align: {
-                        1: 'end left',
+                        1: 'center left',
                     },
                     child: {
                         1: buildText('Security & Activity Log', {
                             size: 14,
                             color: 'gray800',
+                            weight: 'bold',
+                            style: {
+                                marginLeft: '35px',
+                                marginTop: '25px'
+                            }
                         }),
                     },
                 }),
@@ -484,30 +538,43 @@ export function SupportPage(user) {
                     display: false,
                     height: '52px',
                     align: {
-                        1: 'end right',
+                        1: 'center right',
                     },
                     child: {
                         1: buildText('LAST SEEN: 4MIN AGO', {
                             size: 14,
                             color: 'gray800',
+                            weight: 'bold',
+                            style: {
+                                marginRight: '35px',
+                                marginTop: '25px'
+                            }
                         }),
                     },
                 }),
-                13: buildTable({
-                    columns: [
-                        { header: 'EVENT DESCRIPTION', accessor: 'event' },
-                        { header: 'ID ADDRESS', accessor: 'address' },
-                        { header: 'LOCATION', accessor: 'location', align: 'center'},
-                        { header: 'TIMESTAMP', accessor: 'time', align: 'center' }
-                    ],
-                    data: [
-                        { event: 'Succesful System Login', address: '192.168.1.104', location: 'Phnom Penh', time: 'Today, 09:00am' },
-                        { event: 'Password Update Request', address: '192.168.1.104', location: 'Phnom Penh', time: 'Today, 08:00am' },
-                        { event: 'Assets Status: (In Repair)', address: '192.168.1.104', location: 'Phnom Penh', time: 'Yesterday, 16:00pm' },
-                    ],
-                    rowHover: true,
-                    onRowClick: (row) => alert(`Clicked ticket ${row.event}: ${row.address} (${row.location})`),
+                13: buildGrid({
+                    width: '95%',
+                    columns: 1,
+                    rows: 1,
+                    display: false,
+                    child: {
+                        1: buildTable({
+                            columns: [
+                                { header: 'EVENT DESCRIPTION', accessor: 'event' },
+                                { header: 'ID ADDRESS', accessor: 'address' },
+                                { header: 'LOCATION', accessor: 'location', align: 'center'},
+                                { header: 'TIMESTAMP', accessor: 'time', align: 'center' }
+                            ],
+                            data: [
+                                { event: 'Succesful System Login', address: '192.168.1.104', location: 'Phnom Penh', time: 'Today, 09:00am' },
+                                { event: 'Password Update Request', address: '192.168.1.104', location: 'Phnom Penh', time: 'Today, 08:00am' },
+                                { event: 'Assets Status: (In Repair)', address: '192.168.1.104', location: 'Phnom Penh', time: 'Yesterday, 16:00pm' },
+                            ],
+                            rowHover: true,
+                            onRowClick: (row) => alert(`Clicked ticket ${row.event}: ${row.address} (${row.location})`),
                         })
+                    }
+                })
                     },
                 })
             }

@@ -1,4 +1,4 @@
-import { buildBadge, buildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildTable, buildText, colors, spacing } from '../ui/index.js'
+import { buildIconTextContainer, buildBadge, buildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildTable, buildText, buildTextBadge, colors, radius, spacing } from '../ui/index.js'
 
 /**
  * DashboardPage(user)
@@ -30,25 +30,44 @@ export function DashboardPage(user) {
     child: {
       1: buildGrid({
         columns: 1, rows: 2,
-        padding: '20px',
+        padding: '0',
         display: false,    
         child: {
-          1: buildText('Dashboard', { variant: 'h1', weight: 'bold', color: 'gray800' }),
-          2: buildText('Welcome back, ' + user.name + '!', { size: 'base', color: 'gray400' }),
+          1: buildText('Dashboard', {
+            tag: 'div',
+            size: '4xl',
+            weight: 'bold',
+            color: 'gray800',
+            lineHeight: '1.1',
+            margin: '0',
+          }),
+          2: buildText('Welcome back, ' + user.name + '!', {
+            tag: 'div',
+            size: 'sm',
+            color: 'gray500',
+            lineHeight: '1.3',
+            margin: '0',
+          }),
         },
       }),
       4: buildGrid({
         columns: 2, rows: 1,
-        padding: '20px',
+        padding: '0',
         display: false,
         align: {
             2: 'center right',
         },
         child: {
-          2: buildButton('Create New', { variant: 'solid', iconRight: '+', color: 'primary', size: 'md', full: false, onClick: () => alert('Create New clicked') }),
+          2: buildIconTextContainer('ALL SYSTEM OPERATIONAL', {
+                icon: 'circle',
+                iconColor: '#32CD32',
+                textSize: '10px',
+                // textStyle: { marginTop: '2px'},
+                width: '195px'
+            })
         },
       }),
-      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '4' }),
+      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '8px' }),
       9: buildGrid({
         columns: 3, rows: 2,
         padding: '20px',
@@ -86,29 +105,32 @@ export function DashboardPage(user) {
                 },
                 align: {
                     1: 'center Left',
-                    3: 'center',
-                    4: 'center Left',
+                    3: 'center right',
+                    4: 'end Left',
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('server', { size: 75, color: 'primary' }),
+                    1: buildIcon('server', { size: 75, color: 'primary', style: {marginRight: '5px'},}),
                     3: buildBadge('99.99%',
                         { color: 'green',
                             size: 'lg',
                             variant: 'solid',
+                            style: {
+                                marginRight: '10px'
+                            }
                         }),
                     4: buildText('Server Uptime', {
                         tag: 'div',
                         size: '16px',
                         color: 'gray600',
-                        style: { margin: '0' },
+                        style: { marginTop: '10px', marginLeft: '5px' },
                     }),
                     7: buildText('42 Nodes', {
                         tag: 'div',
                         size: '20px',
                         weight: 'bold',
                         color: 'gray600',
-                        style: { marginTop: '6px' },
+                        style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
             }),
@@ -125,29 +147,32 @@ export function DashboardPage(user) {
                 },
                 align: {
                     1: 'center Left',
-                    3: 'center',
-                    4: 'center Left',
+                    3: 'center Right',
+                    4: 'end Left',
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('gauge', { size: 75, color: '#7a7600' }),
+                    1: buildIcon('gauge', { size: 75, color: '#7a7600', style: {marginRight: '5px'}, }),
                     3: buildBadge('STABLE',
                         { color: 'grey',
                             size: 'lg',
                             variant: 'solid',
+                            style: {
+                                marginRight: '10px'
+                            }
                         }),
                     4: buildText('Network Latency', {
                         tag: 'div',
                         size: '16px',
                         color: 'gray600',
-                        style: { margin: '0' },
+                        style: { marginTop: '10px', marginLeft: '5px' },
                     }),
                     7: buildText('14ms', {
                         tag: 'div',
                         size: '24px',
                         weight: 'bold',
                         color: 'gray600',
-                        style: { marginTop: '6px' },
+                        style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
             }),
@@ -164,29 +189,32 @@ export function DashboardPage(user) {
                 },
                 align: {
                     1: 'center Left',
-                    3: 'center',
-                    4: 'center Left',
+                    3: 'center Right',
+                    4: 'end Left',
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('shield', { size: 75, color: 'red' }),
+                    1: buildIcon('shield', { size: 75, color: 'red', style: {marginRight: '5px'}, }),
                     3: buildBadge('2 ALERTS',
                         { color: 'red',
                             size: 'lg',
                             variant: 'solid',
+                            style: {
+                                marginRight: '10px'
+                            }
                         }),
                     4: buildText('Security Score', {
                         tag: 'div',
                         size: '16px',
                         color: 'gray600',
-                        style: { margin: '0' },
+                        style: { marginTop: '10px',marginLeft: '5px' },
                     }),
                     7: buildText('88 / 100', {
                         tag: 'div',
                         size: '24px',
                         weight: 'bold',
                         color: 'gray600',
-                        style: { marginTop: '6px' },
+                        style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
             }),
@@ -295,7 +323,7 @@ export function DashboardPage(user) {
                             1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
                         },
                     }),
-                    2: buildText('MacBook Pro M2 (42)', {
+                    2: buildText('MacBook Pro M2', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
@@ -424,7 +452,7 @@ export function DashboardPage(user) {
                             1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
                         },
                     }),
-                    2: buildText('MacBook Pro M3 (42)', {
+                    2: buildText('MacBook Pro M3', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
@@ -467,7 +495,7 @@ export function DashboardPage(user) {
                             1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
                         },
                     }),
-                    2: buildText('MacBook Pro M1 (42)', {
+                    2: buildText('MacBook Pro M1', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
