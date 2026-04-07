@@ -78,8 +78,10 @@ export function buildText(content, options = {}) {
     letterSpacing,
     style = {},
     class: className,
+    onPressed,
     onClick,
   } = options
+  const handlePress = onPressed ?? onClick
 
   const decorations = [
     underline && 'underline',
@@ -116,5 +118,5 @@ export function buildText(content, options = {}) {
 
   Object.keys(computedStyle).forEach(k => computedStyle[k] === undefined && delete computedStyle[k])
 
-  return h(resolvedTag, { style: computedStyle, class: className, onClick }, content)
+  return h(resolvedTag, { style: computedStyle, class: className, onClick: handlePress }, content)
 }

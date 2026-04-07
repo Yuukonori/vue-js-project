@@ -4,16 +4,25 @@ import { h, defineComponent, ref, computed, onMounted } from 'vue'
  * buildTable(options) — Data table with optional pagination and row hover
  *
  * Options:
- *   columns      {Array}    [{ key, label, width, align, render }]
+ *   columns      {Array}    [{ key, label, width, flex, align, render }]
  *                            render: (value, row, index) => VNode|string
+ *                            flex: relative width weight (like Flutter flex)
  *                            allowOverflow: true to let popup/menu escape cell bounds
  *   data         {Array}    Array of row objects
  *   pageSize     {number}   Rows per page. 0 = no pagination. Default: 0
  *   pagerMode    {'full'|'arrows'|'summary'} Pagination UI mode. Default: 'full'
  *   pagination   {object}   Flutter-like pagination config:
- *                            { maxRows, max_rows, align, padding }
+ *                            Example:
+ *                            {
+ *                              maxRows: 10,          // or max_rows
+ *                              align: 'center',      // left | center | right
+ *                              padding: '12px 16px',
+ *                              stateKey: 'asset-table-page' // optional
+ *                            }
  *   emptyText    {string}   Text when data is empty. Default: 'No data'
  *   striped      {boolean}  Alternate row shading. Default: false
+ *   showClearButton {boolean} Show clear button in table header. Default: false
+ *   onClear      {function} () => void
  *   onRowClick   {function} (row) => void
  *   headerUppercase {boolean} Default: false
  *   width        {string}   CSS width
@@ -34,6 +43,8 @@ const _TableComponent = defineComponent({
     pagination:      { default: null },
     emptyText:       { default: 'No data' },
     striped:         { default: false },
+    showClearButton: { default: false },
+    onClear:         { default: null },
     onRowClick:      { default: null },
     headerUppercase: { default: false },
     width:           { default: undefined },
@@ -84,8 +95,22 @@ const _TableComponent = defineComponent({
       return String(val)
     }
 
+    function resolveColumnWidth(col, flexTotal) {
+      if (col?.width) return col.width
+      const flex = Number(col?.flex ?? 0)
+      if (flexTotal > 0 && Number.isFinite(flex) && flex > 0) {
+        return `${(flex / flexTotal) * 100}%`
+      }
+      return undefined
+    }
+
     return () => {
       const resolvedPageSize = resolvePageSize()
+      const flexTotal = props.columns.reduce((sum, col) => {
+        if (col?.width) return sum
+        const flex = Number(col?.flex ?? 0)
+        return Number.isFinite(flex) && flex > 0 ? sum + flex : sum
+      }, 0)
       const hasPaginationConfig = !!props.pagination
       const hasPagination = resolvedPageSize > 0 && (
         hasPaginationConfig
@@ -111,6 +136,25 @@ const _TableComponent = defineComponent({
         },
       }, [
         // ── Scrollable table area ──
+        props.showClearButton ? h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'flex-end',
+            padding: '10px 12px 0 12px',
+          },
+        }, [
+          h('button', {
+            style: {
+              border: 'none',
+              background: 'transparent',
+              color: '#6366f1',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            },
+            onClick: () => props.onClear?.(),
+          }, 'Clear'),
+        ]) : null,
         h('div', { style: { flex: 1, overflowX: 'auto', overflowY: props.height ? 'auto' : 'visible' } }, [
           h('table', {
             style: {
@@ -133,7 +177,7 @@ const _TableComponent = defineComponent({
                     fontSize:      '12px',
                     color:         '#475467',
                     letterSpacing: '0.3px',
-                    width:         col.width,
+                    width:         resolveColumnWidth(col, flexTotal),
                     whiteSpace:    'nowrap',
                     borderBottom:  '1px solid #e5e7ee',
                   },
@@ -182,6 +226,7 @@ const _TableComponent = defineComponent({
                           whiteSpace:   col.wrap ? 'normal' : 'nowrap',
                           overflow:     col.allowOverflow ? 'visible' : 'hidden',
                           textOverflow: 'ellipsis',
+                          width:        resolveColumnWidth(col, flexTotal),
                           maxWidth:     col.maxWidth ?? '300px',
                           position:     col.allowOverflow ? 'relative' : undefined,
                           zIndex:       col.allowOverflow ? 2 : undefined,

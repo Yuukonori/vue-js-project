@@ -91,12 +91,16 @@ const sidebar = buildSidebar({
 // ── Page content (driven by active item) ─────────────────────────────────
 
 const content = computed(() => activeItem.value.content(MENU_CONFIG.user))
+const renderedPage = computed(() => ({
+  name: `Page-${currentPath.value}`,
+  render: () => content.value,
+}))
 </script>
 
 <template>
   <div style="min-height: 100vh; background: #f8fafc; display: flex;">
     <component :is="sidebar" />
-    <component :is="() => content" />
+    <component :is="renderedPage" :key="currentPath" />
   </div>
 </template>
 

@@ -13,7 +13,7 @@ export function UserListPage(user) {
         1: { colSpan: 2 },
         7: { colSpan: 6 }
     },
-    display: 'grid',
+    display: false,
     child: {
         1:  buildGrid({
             columns: 6 ,
@@ -35,7 +35,7 @@ export function UserListPage(user) {
                     radius: '20px',
                     containerStyle : 'square',
                     hover: true,
-                    onClick: () => {
+                    onPressed: () => {
                         if (typeof globalThis.__appNavigate === 'function') {
                         globalThis.__appNavigate('/support')
                         }

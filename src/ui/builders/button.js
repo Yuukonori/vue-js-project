@@ -17,7 +17,8 @@ import { token, colors, spacing, radius, fontSize, fontWeight, shadow } from '..
  *   loading    {boolean}        Shows spinner, disables interaction
  *   icon       {VNode}          Icon to prepend
  *   iconRight  {VNode}          Icon to append
- *   onClick    {function}
+ *   onPressed  {function}
+ *   onClick    {function}   Alias of onPressed
  *   style      {object}
  *   class      {string}
  *   attrs      {object}         Extra HTML attributes (e.g. type, name)
@@ -59,6 +60,7 @@ export function buildButton(label, options = {}) {
     loading,
     icon,
     iconRight,
+    onPressed,
     onClick,
     style    = {},
     class: className,
@@ -154,13 +156,15 @@ export function buildButton(label, options = {}) {
     if (typeof attrs.onMouseleave === 'function') attrs.onMouseleave(e)
   }
 
+  const handlePress = onPressed ?? onClick
+
   return h(
     'button',
     {
       style: computedStyle,
       class: className,
       disabled: disabled || loading,
-      onClick: disabled || loading ? undefined : onClick,
+      onClick: disabled || loading ? undefined : handlePress,
       onMouseenter: handleMouseenter,
       onMouseleave: handleMouseleave,
       ...attrs,

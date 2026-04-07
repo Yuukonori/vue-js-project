@@ -17,7 +17,8 @@ import { token, radius, shadow } from '../tokens.js'
  *   size     {number}     Used with circle/avatar (px)
  *   style    {object}
  *   class    {string}
- *   onClick  {function}
+ *   onPressed {function}
+ *   onClick  {function}  Alias of onPressed
  */
 export function buildImage(src, options = {}) {
   if (typeof src === 'object' && src !== null) {
@@ -37,8 +38,10 @@ export function buildImage(src, options = {}) {
     size,
     style  = {},
     class: className,
+    onPressed,
     onClick,
   } = options
+  const handlePress = onPressed ?? onClick
 
   const resolvedRadius = circle || avatar ? '9999px' : token(radius, r)
   const resolvedSize   = size ?? (avatar ? 40 : undefined)
@@ -51,11 +54,11 @@ export function buildImage(src, options = {}) {
     objectFit:    fit,
     display:      'block',
     flexShrink:   0,
-    cursor:       onClick ? 'pointer' : undefined,
+    cursor:       handlePress ? 'pointer' : undefined,
     ...style,
   }
 
   Object.keys(computedStyle).forEach(k => computedStyle[k] === undefined && delete computedStyle[k])
 
-  return h('img', { src, alt, style: computedStyle, class: className, onClick })
+  return h('img', { src, alt, style: computedStyle, class: className, onClick: handlePress })
 }

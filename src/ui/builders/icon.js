@@ -34,6 +34,7 @@ const icons = {
   'support':       'M4 12a8 8 0 0116 0v4a2 2 0 01-2 2h-2 M6 18H4a2 2 0 01-2-2v-4a8 8 0 0116 0 M9 18h6 M12 8v.01',
   'assets':        'M4 7h16v13H4z M7 7V5h10v2 M8 12h8',
   'activity-logs': 'M6 4h9l3 3v13H6z M15 4v3h3 M8 11h8 M8 14h8 M8 17h5',
+  'user-activities':'M12 2l2 2h3l1 3 3 1v3l2 2-2 2v3l-3 1-1 3h-3l-2 2-2-2H7l-1-3-3-1v-3l-2-2 2-2V8l3-1 1-3h3z',
   'repair-history':'M15 4l5 5-3 3-5-5 M14 5l-8 8v4h4l8-8',
   'monitoring':    'M3 12h4l2-4 3 8 2-4h7',
   'settings':      'M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z',
@@ -55,6 +56,7 @@ const icons = {
   'laptop':        'M4 6h16v10H4z M2 18h20 M10 20h4',
   'router':        'M6 14h12v5H6z M9 16.5h.01 M12 16.5h.01 M15 16.5h.01 M9 10a4 4 0 016 0 M10.7 11.7a1.6 1.6 0 012.6 0',
   'printer':       'M6 9h12v4H6z M4 13h16v7H4z M7 15h10v5H7z M16 16h.01',
+  'computer':      'M4 5h16v11H4z M8 18h8 M6 20h12',
   'clock':         'M12 2a10 10 0 100 20 10 10 0 000-20z M12 6v6l4 2',
   'star':          'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
   'heart':         'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z',
@@ -113,6 +115,8 @@ export function buildIcon(name, options = {}) {
   const isRouterIcon = name === 'router'
   const isPrinterIcon = name === 'printer'
   const isClipboardIcon = name === 'clipboard'
+  const isComputerIcon = name === 'computer'
+  const isUserActivitiesIcon = name === 'user-activities'
   const iconColor = token(colors, color) ?? 'currentColor'
   if (!paths) console.warn(`[buildIcon] Unknown icon: "${name}"`)
 
@@ -178,6 +182,85 @@ export function buildIcon(name, options = {}) {
           stroke: '#ffffff',
           strokeWidth: 1.8,
           strokeLinecap: 'round',
+        }),
+      ]
+    : isComputerIcon
+    ? [
+        // Monitor bezel
+        h('rect', { key: 'pc-screen-bezel', x: 4.2, y: 4.3, width: 15.6, height: 10.7, rx: 0.7, fill: '#2b313a' }),
+        // Screen
+        h('rect', { key: 'pc-screen', x: 5.1, y: 5.2, width: 13.8, height: 8.9, rx: 0.35, fill: '#52a9dd' }),
+        // Slight highlight
+        h('path', { key: 'pc-screen-gloss', d: 'M5.3 13.6L18.5 5.5v1.9L7.8 14.1H5.3z', fill: '#74c3f2', opacity: 0.55 }),
+        // Stand neck
+        h('rect', { key: 'pc-stand-neck', x: 10.6, y: 15.2, width: 2.8, height: 1.6, rx: 0.3, fill: '#bfc4cc' }),
+        // Stand base
+        h('rect', { key: 'pc-stand-base', x: 8.2, y: 16.8, width: 7.6, height: 1.1, rx: 0.35, fill: '#9ca3af' }),
+        // Keyboard body
+        h('rect', { key: 'pc-kb', x: 5.2, y: 18.1, width: 13.6, height: 2.3, rx: 0.35, fill: '#a6abb4' }),
+        // Keyboard keys
+        h('rect', { key: 'pc-k1', x: 6.2, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+        h('rect', { key: 'pc-k2', x: 7.8, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+        h('rect', { key: 'pc-k3', x: 9.4, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+        h('rect', { key: 'pc-k4', x: 11, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+        h('rect', { key: 'pc-k5', x: 12.6, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+        h('rect', { key: 'pc-k6', x: 14.2, y: 18.75, width: 1.1, height: 0.65, rx: 0.15, fill: '#d7dbe1' }),
+      ]
+    : isUserActivitiesIcon
+    ? [
+        h('path', {
+          key: 'ua-gear',
+          d: 'M9.5 2.5h3l.5 1.8a6.6 6.6 0 011.5.9l1.7-.7 2.1 2.1-.7 1.7c.35.48.65.99.88 1.54l1.82.46v3l-1.82.46a6.84 6.84 0 01-.88 1.54l.7 1.7-2.1 2.1-1.7-.7c-.47.35-.98.65-1.5.9l-.5 1.8h-3l-.5-1.8a6.8 6.8 0 01-1.5-.9l-1.7.7-2.1-2.1.7-1.7a6.84 6.84 0 01-.88-1.54L1.8 13.3v-3l1.82-.46a6.84 6.84 0 01.88-1.54l-.7-1.7 2.1-2.1 1.7.7c.47-.35.98-.65 1.5-.9z',
+          fill: iconColor,
+          opacity: 0.24,
+          stroke: iconColor,
+          strokeWidth: 1.8,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }),
+        h('path', {
+          key: 'ua-gear-highlight',
+          d: 'M6 8.4c1.8-2.4 4.7-3.7 7.7-3.3 1.2.15 2.3.55 3.3 1.2-.38.35-.78.9-.86 1.35l-.17.92c-.58-.4-1.23-.7-1.93-.88-2.7-.71-5.49.22-7.22 2.3z',
+          fill: '#ffffff',
+          opacity: 0.28,
+        }),
+        h('circle', {
+          key: 'ua-ring',
+          cx: 11,
+          cy: 11.8,
+          r: 3.8,
+          fill: '#ffffff',
+          stroke: iconColor,
+          strokeWidth: 1.8,
+        }),
+        h('path', {
+          key: 'ua-pulse',
+          d: 'M8.3 11.8h1.4l1-1.8 1.4 3 1-1.2h1.5',
+          fill: 'none',
+          stroke: iconColor,
+          strokeWidth: 1.8,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }),
+        h('circle', {
+          key: 'ua-head',
+          cx: 17.9,
+          cy: 16.3,
+          r: 2.6,
+          fill: iconColor,
+          opacity: 1,
+          stroke: iconColor,
+          strokeWidth: 1.8,
+        }),
+        h('path', {
+          key: 'ua-body',
+          d: 'M14 22c0-2.4 1.9-4.1 3.9-4.1s3.9 1.7 3.9 4.1v.1h-7.8z',
+          fill: iconColor,
+          opacity: 1,
+          stroke: iconColor,
+          strokeWidth: 1.8,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
         }),
       ]
     : isCalendarXIcon
@@ -322,7 +405,7 @@ export function buildIcon(name, options = {}) {
     width:  width ?? size,
     height: height ?? size,
     viewBox: '0 0 24 24',
-    stroke: (isFilledIcon || isGaugeIcon || isShieldIcon || isInfoIcon || isWarningIcon || isCircleCheckIcon || isCalendarXIcon || isRouterIcon || isPrinterIcon || isClipboardIcon) ? 'none' : iconColor,
+    stroke: (isFilledIcon || isGaugeIcon || isShieldIcon || isInfoIcon || isWarningIcon || isCircleCheckIcon || isCalendarXIcon || isRouterIcon || isPrinterIcon || isClipboardIcon || isComputerIcon || isUserActivitiesIcon) ? 'none' : iconColor,
     strokeWidth: isCalendarXIcon ? 2.8 : stroke,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',

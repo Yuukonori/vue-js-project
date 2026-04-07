@@ -3,6 +3,8 @@ import { AssetsPage } from './pages/assets.js'
 import { SupportPage } from './pages/support.js'
 import { RepairHistoryPage } from './pages/repairhistory.js'
 import { UserListPage } from './pages/userlist.js'
+import { MonitoringPage } from './pages/monitoring.js'
+import { ActivityLogsPage } from './pages/activitylog.js'
 
 export const MENU_CONFIG = {
   header: {

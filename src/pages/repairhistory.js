@@ -34,13 +34,13 @@ export function RepairHistoryPage(user) {
     columns: 4,
     rows: 6,
     colGap: 12,
-    rowGap: 20,
+    rowGap: 12,
     padding: '24px',
     cellPadding: 0,
     display: false,
     span: {
       1: { colSpan: 4 },
-      5: { colSpan: 5},
+      5: { colSpan: 4 },
       9: { colSpan: 2, rowSpan: 2 },
       11: { colSpan: 2, rowSpan: 2 },
       17: { colSpan: 3 },
@@ -53,6 +53,7 @@ export function RepairHistoryPage(user) {
       1: buildGrid({
         columns: 1,
         rows: 2,
+        padding: '0',
         display: false,
         child: {
           1: buildText('Repair & Maintenance History', {
@@ -72,7 +73,7 @@ export function RepairHistoryPage(user) {
           }),
         },
       }),
-      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '8px' }),
+      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '6px' }),
       9: buildGrid({
           columns: 3,
           rows: 4,
@@ -275,7 +276,7 @@ export function RepairHistoryPage(user) {
                     Color: 'primary',
                     size: 'md',
                     hover: true,
-                    onclick: () => {}
+                    onPressed: () => {}
                 }
               ),
           }

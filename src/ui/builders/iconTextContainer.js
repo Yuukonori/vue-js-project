@@ -24,7 +24,8 @@ import { buildText } from './text.js'
  *   iconWrapSize   {number}   Optional icon wrapper box size in px
  *   iconWrapColor  {string}   Optional icon wrapper bg color
  *   hover          {boolean}  Enable hover effects. Default: false
- *   onClick        {function}
+ *   onPressed      {function}
+ *   onClick        {function}  Alias of onPressed
  *   textStyle      {object}   Extra text styles merged into label styles
  *   style          {object}
  */
@@ -53,10 +54,12 @@ export function buildIconTextContainer(text = '', options = {}) {
     iconWrapSize,
     iconWrapColor,
     hover        = false,
+    onPressed,
     onClick,
     textStyle    = {},
     style        = {},
   } = options
+  const handlePress = onPressed ?? onClick
   const resolvedBgColor = colorCon ?? bgColor
 
   const hoverStyle = {
@@ -104,11 +107,11 @@ export function buildIconTextContainer(text = '', options = {}) {
       width,
       height,
       margin,
-      cursor: onClick ? 'pointer' : undefined,
+      cursor: handlePress ? 'pointer' : undefined,
       transition: hover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease' : undefined,
       ...style,
     },
-    onClick,
+    onClick: handlePress,
     onMouseenter: hover ? (e) => {
       Object.assign(e.currentTarget.style, hoverStyle)
     } : undefined,

@@ -14,7 +14,7 @@ export function SupportPage(user) {
         return baseBuildButton(label, {
           ...options,
           color: options.color ?? options.Color,
-          onClick: options.onClick ?? options.onclick,
+          onPressed: options.onPressed ?? options.onClick ?? options.onclick,
         })
       }
 
@@ -59,7 +59,7 @@ export function SupportPage(user) {
             rows: 1,
             display: true,
             padding: '10px 12px',
-            hovered: true,
+            hover: true,
             onPressed: () => openUserDetail(member),
             border: 'none',
             borderRadius: '8px',
@@ -117,7 +117,7 @@ export function SupportPage(user) {
             columns: 1,
             rows: 1,
             height: '100%',
-            hovered: true,
+            hover: true,
             display: true,
             padding: item ? '10px 12px' : undefined,
             align: item ? { 1: 'center left' } : {},
@@ -229,7 +229,7 @@ export function SupportPage(user) {
                 {
                     Color: 'primary',
                     size: 'md',
-                    onclick: onShowMoreUsers
+                    onPressed: onShowMoreUsers
                 }
               ),
             },
@@ -280,7 +280,7 @@ export function SupportPage(user) {
                             status: 'online',
                             showStatus: true,
                             hover: true,
-                            onClick: () => {}
+                            onPressed: () => {}
                         }),
                         2: buildText('Username', { variant: 'h2', weight: 'bold', color: 'gray800' }),
                         8: buildText('role: Admin IT', { variant: 'p', color: 'gray800' })
@@ -296,7 +296,7 @@ export function SupportPage(user) {
                     width: '200px',
                     height: '50px',
                     hover: true,
-                    onClick: () => {}
+                    onPressed: () => {}
                 }),
                 4: buildIconTextContainer('Update Assets Status',{
                     style: { justifyContent: 'center', marginLeft: '30px'},
@@ -309,7 +309,7 @@ export function SupportPage(user) {
                     width: '200px',
                     height: '50px',
                     hover: true,
-                    onClick: () => {}
+                    onPressed: () => {}
                 }),
                 5: buildGrid({
                     height: '100%',
@@ -342,7 +342,7 @@ export function SupportPage(user) {
                         9: buildGrid({
                             columns: 12, rows: 2,
                             height: '100%',
-                            hovered: true,
+                            hover: true,
                             padding: '12px',
                             display: true,
                             align: {
@@ -386,7 +386,7 @@ export function SupportPage(user) {
                         13: buildGrid({
                            columns: 12, rows: 2,
                             height: '100%',
-                            hovered: true,
+                            hover: true,
                             padding: '12px',
                             display: true,
                             align: {
@@ -460,7 +460,7 @@ export function SupportPage(user) {
                         9: buildGrid({
                             columns: 12, rows: 2,
                             height: '100%',
-                            hovered: true,
+                            hover: true,
                             padding: '12px',
                             display: true,
                             align: {
@@ -507,7 +507,7 @@ export function SupportPage(user) {
                             height: '100%',
                             keepStructure: true,
                             emptyRowHeight: 85,
-                            hovered: true,
+                            hover: true,
                             display: false
                         }),
                     }
@@ -541,7 +541,7 @@ export function SupportPage(user) {
                         1: 'center right',
                     },
                     child: {
-                        1: buildText('LAST SEEN: 4MIN AGO', {
+                        1: buildText('LAST UPDATE: 4MIN AGO', {
                             size: 14,
                             color: 'gray800',
                             weight: 'bold',

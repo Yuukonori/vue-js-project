@@ -30,7 +30,8 @@ export function GridSpan({ colSpan = 1, rowSpan = 1 } = {}) {
  *   borderRadius     {string|number}    Default: '16px'
  *   border           {string}           CSS border shorthand. Default: '1px solid #E5E7EE'
  *   boxShadow        {string}           Default: none
- *   hovered          {boolean}          Hover-darkening effect. Default: false
+ *   hover            {boolean}          Hover-darkening effect. Default: false
+ *   hovered          {boolean}          Backward-compatible alias of hover
  *   onPressed        {function}         Click handler
  *   align            {object}           1-indexed per-cell alignment: { 1: 'center', 3: 'end start' }
  *                                       Maps to CSS place-items. Values: 'start' | 'center' | 'end' | 'stretch'
@@ -119,6 +120,7 @@ const _GridComponent = defineComponent({
     border:           { default: undefined },
     boxShadow:        { default: undefined },
     align:            { default: () => ({}) },
+    hover:            { default: false },
     hovered:          { default: false },
     onPressed:        { default: undefined },
     mobileMaxColumns: { default: undefined },
@@ -150,7 +152,8 @@ const _GridComponent = defineComponent({
         ? props.mobileMaxColumns
         : props.columns
 
-      const bg = (props.hovered && isHovered.value)
+      const enableHover = props.hover || props.hovered
+      const bg = (enableHover && isHovered.value)
         ? _blendDark(props.backgroundColor, 0.04)
         : props.backgroundColor
 
@@ -173,10 +176,10 @@ const _GridComponent = defineComponent({
         boxShadow:            showChrome ? props.boxShadow : undefined,
         boxSizing:            'border-box',
         cursor:               props.onPressed ? 'pointer' : undefined,
-        transition:           props.hovered ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease' : undefined,
-        transform:            (props.hovered && isHovered.value) ? 'translateY(-1px)' : undefined,
-        filter:               (props.hovered && isHovered.value) ? 'brightness(0.99)' : undefined,
-        boxShadow:            (props.hovered && isHovered.value) ? '0 8px 20px rgba(15, 23, 42, 0.10)' : (showChrome ? props.boxShadow : undefined),
+        transition:           enableHover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease' : undefined,
+        transform:            (enableHover && isHovered.value) ? 'translateY(-1px)' : undefined,
+        filter:               (enableHover && isHovered.value) ? 'brightness(0.99)' : undefined,
+        boxShadow:            (enableHover && isHovered.value) ? '0 8px 20px rgba(15, 23, 42, 0.10)' : (showChrome ? props.boxShadow : undefined),
         ...props.style,
       }
       Object.keys(containerStyle).forEach(k => containerStyle[k] === undefined && delete containerStyle[k])
@@ -248,8 +251,8 @@ const _GridComponent = defineComponent({
       return h('div', {
         style:        containerStyle,
         onClick:      props.onPressed,
-        onMouseenter: props.hovered ? () => { isHovered.value = true  } : undefined,
-        onMouseleave: props.hovered ? () => { isHovered.value = false } : undefined,
+        onMouseenter: enableHover ? () => { isHovered.value = true  } : undefined,
+        onMouseleave: enableHover ? () => { isHovered.value = false } : undefined,
       }, cells)
     }
   },
@@ -328,7 +331,7 @@ const _ContentGridComponent = defineComponent({
 
       const scrollStyle = {
         width:     '100%',
-        overflowY: 'auto',
+        overflowY: props.fillViewport ? 'auto' : 'visible',
         flex:      props.fillViewport ? '1 1 0' : undefined,
         minHeight: props.fillViewport ? 0 : undefined,
       }

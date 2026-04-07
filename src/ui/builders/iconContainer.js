@@ -15,7 +15,8 @@ import { buildIcon } from './icon.js'
  *   radius         {string}   Border radius (overrides containerStyle). e.g. '8px'
  *   margin         {string}   CSS margin
  *   hover          {boolean}  Enable hover effects. Default: false
- *   onClick        {function}
+ *   onPressed      {function}
+ *   onClick        {function}  Alias of onPressed
  *   style          {object}
  */
 export function buildIconContainer(options = {}) {
@@ -30,6 +31,7 @@ export function buildIconContainer(options = {}) {
     radius,
     margin,
     hover          = false,
+    onPressed,
     onClick,
     style          = {},
   } = options
@@ -45,6 +47,8 @@ export function buildIconContainer(options = {}) {
     boxShadow: '0 8px 20px rgba(15, 23, 42, 0.10)',
   }
 
+  const handlePress = onPressed ?? onClick
+
   return h('div', {
     style: {
       display:        'inline-flex',
@@ -56,11 +60,11 @@ export function buildIconContainer(options = {}) {
       borderRadius:   resolvedRadius,
       flexShrink:     0,
       margin,
-      cursor:         onClick ? 'pointer' : undefined,
+      cursor:         handlePress ? 'pointer' : undefined,
       transition:     hover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease' : undefined,
       ...style,
     },
-    onClick,
+    onClick: handlePress,
     onMouseenter: hover ? (e) => {
       Object.assign(e.currentTarget.style, hoverStyle)
     } : undefined,

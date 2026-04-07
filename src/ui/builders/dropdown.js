@@ -12,6 +12,7 @@ import { h, defineComponent, ref, computed, watch, onMounted, onBeforeUnmount } 
  *   required     {boolean}  Red border when empty. Default: false
  *   disabled     {boolean}
  *   clearable    {boolean}  Show clear button when selected. Default: false
+ *   showClearButton {boolean} Alias of clearable
  *   width        {string}   CSS width
  *   height       {string}   CSS height
  *   bg           {string}   Background color. Default: '#ffffff'
@@ -33,6 +34,7 @@ const _DropdownComponent = defineComponent({
     required:    { default: false },
     disabled:    { default: false },
     clearable:   { default: false },
+    showClearButton: { default: false },
     width:       { default: undefined },
     height:      { default: '44px' },
     bg:          { default: '#ffffff' },
@@ -113,6 +115,7 @@ const _DropdownComponent = defineComponent({
     return () => {
       const label       = getLabel()
       const hasValue    = props.multiSelect ? selectedValues.value.length > 0 : getRaw() != null
+      const canClear    = props.clearable || props.showClearButton
       const borderColor = (props.required && !hasValue) ? '#ef4444' : (isOpen.value ? '#6366f1' : '#e2e8f0')
 
       return h('div', {
@@ -148,7 +151,7 @@ const _DropdownComponent = defineComponent({
             },
           }, label ?? props.placeholder),
 
-          hasValue && props.clearable
+          hasValue && canClear
             ? h('span', {
                 style: { color: '#94a3b8', fontSize: '16px', lineHeight: 1, padding: '0 2px', cursor: 'pointer' },
                 onClick: clear,

@@ -198,13 +198,13 @@ export function buildSidebar(options = {}) {
   } = options
 
   const EXPANDED_W  = parseInt(width)  || 260
-  const COLLAPSED_W = 72
+  const COLLAPSED_W = 68
   const ANIM_MS     = 600
   const TEXT_MS     = 400
   const EASE        = 'cubic-bezier(0.65, 0, 0.35, 1)'       // easeInOutCubic
   const EASE_BACK   = 'cubic-bezier(0.34, 1.56, 0.64, 1)'    // easeInOutBack (chevron)
   const hPadExp     = parseInt(pad) || 16
-  const hPadCol     = 10
+  const hPadCol     = 8
 
   return {
     setup() {
@@ -228,11 +228,7 @@ export function buildSidebar(options = {}) {
         const collapsed = isCollapsed.value
         const sideW     = collapsed ? COLLAPSED_W : EXPANDED_W
         const hPad      = collapsed ? hPadCol : hPadExp
-        // Inner width used to compute icon centering translateX
-        const innerW    = sideW - hPad * 2
         const ICON_SIZE = 18
-        // How far to push icon so it sits centered in the inner width
-        const iconShift = (innerW - ICON_SIZE) / 2
 
         // Resolve items — support plain array or computed/ref
         const rawItems = isRef(options.items) ? options.items.value : (options.items ?? [])
@@ -252,11 +248,13 @@ export function buildSidebar(options = {}) {
           return h('div', {
             key:     item.label ?? idx,
             style:   {
-              borderRadius: '8px',
+              width:        collapsed ? '44px' : '100%',
+              margin:       collapsed ? '0 auto 4px auto' : '0 0 4px 0',
+              borderRadius: '10px',
               background:   isActive ? `${accent}15` : 'transparent',
               cursor:       'pointer',
-              marginBottom: '4px',
               flexShrink:   0,
+              overflow:     'hidden',
             },
             onClick: item.onClick,
           }, [
@@ -264,6 +262,7 @@ export function buildSidebar(options = {}) {
               style: {
                 display:    'flex',
                 alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'flex-start',
                 padding:    `10px ${hPad}px`,
                 transition: `padding ${ANIM_MS}ms ${EASE}`,
                 minHeight:  '44px',
@@ -278,7 +277,8 @@ export function buildSidebar(options = {}) {
                   display:    'flex',
                   alignItems: 'center',
                   width:      `${ICON_SIZE}px`,
-                  transform:  collapsed ? `translateX(${iconShift}px)` : 'translateX(0)',
+                  justifyContent: 'center',
+                  transform:  collapsed ? 'translateX(0)' : 'translateX(0)',
                   transition: `transform ${ANIM_MS}ms ${EASE}`,
                   zIndex:     1,
                 },
@@ -353,22 +353,30 @@ export function buildSidebar(options = {}) {
           onClick: toggle,
           style:   {
             position:    'absolute',
-            top:         `${hPadExp + 16}px`,    // vertically aligns with header center
-            left:        `${sideW - 12}px`,       // half inside / half outside the sidebar
+            top:         `${hPadExp + 16}px`,
+            left:        `${sideW - 9}px`,
             transform:   'translateX(-50%)',
-            width:       '24px',
-            height:      '24px',
+            width:       '26px',
+            height:      '26px',
             borderRadius:'50%',
-            border:      '1px solid #E5E7EE',
+            border:      '1px solid #dbe2ef',
             background:  '#ffffff',
-            boxShadow:   '0 1px 4px rgba(0,0,0,0.12)',
+            boxShadow:   '0 4px 12px rgba(15, 23, 42, 0.16)',
             cursor:      'pointer',
             display:     'flex',
             alignItems:  'center',
             justifyContent: 'center',
             padding:     0,
             zIndex:      10,
-            transition:  `left ${ANIM_MS}ms ${EASE}`,
+            transition:  `left ${ANIM_MS}ms ${EASE}, box-shadow 180ms ease, transform 180ms ease`,
+          },
+          onMouseenter: (e) => {
+            e.currentTarget.style.boxShadow = '0 8px 18px rgba(15, 23, 42, 0.22)'
+            e.currentTarget.style.transform = 'translateX(-50%) scale(1.03)'
+          },
+          onMouseleave: (e) => {
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.16)'
+            e.currentTarget.style.transform = 'translateX(-50%)'
           },
         }, [
           h('span', {
@@ -380,7 +388,7 @@ export function buildSidebar(options = {}) {
               transition: `transform 400ms ${EASE_BACK}`,
             },
           }, [
-            buildIcon('chevron-right', { size: 13, color: '#6C63FF' }),
+            buildIcon('chevron-right', { size: 14, color: '#4f46e5' }),
           ]),
         ])
 
@@ -406,7 +414,10 @@ export function buildSidebar(options = {}) {
         // ── Wrapper — animates overall width, hosts the toggle button ────────
         return h('div', {
           style: {
-            position:   'relative',
+            position:   'sticky',
+            top:        '0',
+            height:     '100vh',
+            alignSelf:  'flex-start',
             flexShrink: 0,
             width:      `${sideW}px`,
             transition: `width ${ANIM_MS}ms ${EASE}`,

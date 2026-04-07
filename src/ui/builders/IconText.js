@@ -16,7 +16,8 @@ import { buildText } from './text.js'
  *   align        {'start'|'center'|'end'} Vertical alignment. Default: 'center'
  *   width        {string}   CSS width
  *   margin       {string}   CSS margin
- *   onClick      {function}
+ *   onPressed    {function}
+ *   onClick      {function}   Alias of onPressed
  *   style        {object}   Extra container style
  *   textStyle    {object}   Extra text style
  */
@@ -37,6 +38,7 @@ export function buildIconText(text = '', options = {}) {
     align = 'center',
     width,
     margin,
+    onPressed,
     onClick,
     style = {},
     textStyle = {},
@@ -48,6 +50,8 @@ export function buildIconText(text = '', options = {}) {
     end: 'flex-end',
   }
 
+  const handlePress = onPressed ?? onClick
+
   return h('span', {
     style: {
       display: 'inline-flex',
@@ -55,10 +59,10 @@ export function buildIconText(text = '', options = {}) {
       gap,
       width,
       margin,
-      cursor: onClick ? 'pointer' : undefined,
+      cursor: handlePress ? 'pointer' : undefined,
       ...style,
     },
-    onClick,
+    onClick: handlePress,
   }, [
     buildIcon(icon, { size: iconSize, color: iconColor }),
     buildText(text, {
@@ -72,4 +76,3 @@ export function buildIconText(text = '', options = {}) {
     }),
   ])
 }
-

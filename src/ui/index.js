@@ -32,6 +32,7 @@ export { buildTabs }                                  from './builders/tabs.js'
 // ── Form Inputs ──────────────────────────────────────────────────────────────
 export { buildInput }                                 from './builders/input.js'
 export { buildTextbox }                               from './builders/textbox.js'
+export { buildDateBoxContainer }                      from './builders/dateBoxContainer.js'
 export { buildDropdown }                              from './builders/dropdown.js'
 export { buildPopup }                                 from './builders/popup.js'
 export { buildSearch }                                from './builders/search.js'
@@ -45,6 +46,7 @@ export { buildLineChart }                             from './builders/lineChart
 export { buildDonutChart }                            from './builders/donutChart.js'
 export { buildPieChart }                              from './builders/pieChart.js'
 export { buildProgressBar }                           from './builders/progressBar.js'
+export { buildCircularProgress }                      from './builders/CircularProgress.js'
 
 // ── Media ────────────────────────────────────────────────────────────────────
 export { buildImage }                                 from './builders/image.js'
