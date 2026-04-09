@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, ref } from 'vue'
-import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildImage, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer } from '../ui/index.js'
+import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildGrid, buildHeader, buildIcon, buildImage, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer } from '../ui/index.js'
 import { USERS } from '../data/users.js'
+import { formatLastUpdate } from '../lastUpdate.js'
 
 /**
  * SupportPage(user)
@@ -26,6 +27,7 @@ export function SupportPage(user) {
       const detailVisibleRows = 2
       const assignedAssets = ['MacBook Pro M2', 'Cisco Edge Switch']
       const repairHistory = ['Ticket #12345 - Display Flicker']
+      const lastUpdatedAt = new Date(Date.now() - (4 * 60 * 1000))
 
       const supportVisibleCount = computed(() => (showMoreClicks.value === 0 ? defaultVisibleCount : maxSupportUsers))
       const visibleUsers = computed(() => users.slice(0, supportVisibleCount.value))
@@ -154,7 +156,7 @@ export function SupportPage(user) {
         return buildContentGrid({
         columns: 4,
         rows: 4,
-        colGap: 12,
+        colGap: 18,
         rowGap: 12,
         padding: '24px',
         cellPadding: 0,
@@ -162,46 +164,28 @@ export function SupportPage(user) {
         tabletConfig: { columns: 2, rows: 4 },
         display: false,
         align: {
-          1: 'center left',
-          4: 'center',
           9: 'center',
-          10: 'center'
+          10: 'center right'
         },
         span: {
-          1: { colSpan: 3, rowSpan: 1 },
-          5: { colSpan: 4 },
+          1: { colSpan: 4, rowSpan: 2 },
           9: { rowSpan: 2 },
           10: { colSpan: 3, rowSpan: 2 }
         },
         child: {
-          1: buildGrid({
-            columns: 1,
-            rows: 2,
-            padding: '0',
-            display: false,
-            child: {
-              1: buildText('User Directory', {
-                tag: 'div',
-                size: '4xl',
-                weight: 'bold',
-                color: 'gray800',
-                lineHeight: '1.1',
-                margin: '0',
-              }),
-              2: buildText(
-                'System-wide management of people, their assigned hardware, and historical system interactions',
-                {
-                  tag: 'div',
-                  size: 'sm',
-                  color: 'gray500',
-                  lineHeight: '1.3',
-                  margin: '0',
-                },
-              ),
+          1: buildHeader({
+            title: 'User Directory',
+            subtitle: 'System-wide management of people, their assigned hardware, and historical system interactions',
+            backgroundColor: 'white',
+            divider: false,
+            padding: '30px 24px 22px',
+            style: {
+              margin: '-24px 0 0 -24px',
+              width: 'calc(100% + 48px)',
             },
           }),
-          5: buildDivider({direction: 'h', color: 'gray200', thickness: '1px', margin: '8px' }),
           9: buildGrid({
+            style: { marginLeft: '12px' },
             columns: 2,
             rows: 4,
             height: '100%',
@@ -235,7 +219,7 @@ export function SupportPage(user) {
             },
           }),
           10: buildGrid({
-            width: '90%',
+            width: '100%',
             columns: 4,
             rows: 4,
             height: '100%',
@@ -275,6 +259,7 @@ export function SupportPage(user) {
                     },
                     child: {
                         1: buildImageProfile('https://i.pravatar.cc/96?img=3', {
+                            style: { marginTop: '5px' },
                             name: 'Admin User',
                             size: 72,
                             status: 'online',
@@ -282,8 +267,8 @@ export function SupportPage(user) {
                             hover: true,
                             onPressed: () => {}
                         }),
-                        2: buildText('Username', { variant: 'h2', weight: 'bold', color: 'gray800' }),
-                        8: buildText('role: Admin IT', { variant: 'p', color: 'gray800' })
+                        2: buildText('Username', { variant: 'h2', weight: 'bold', color: 'gray800', style: { marginTop: '5px' } }),
+                        8: buildText('role: Admin IT', { variant: 'p', color: 'gray800', style: { marginTop: '5px' } })
                     }
                 }),
                 3: buildIconTextContainer('Reset Password',{
@@ -312,8 +297,9 @@ export function SupportPage(user) {
                     onPressed: () => {}
                 }),
                 5: buildGrid({
+                    style: { marginTop: '30px'},
                     height: '100%',
-                    width: '90%',
+                    width: '100%',
                     columns: 4,
                     rows: 5,
                     backgroundColor: '#F5F7FB',
@@ -430,8 +416,9 @@ export function SupportPage(user) {
                     }
                 }),
                 7:  buildGrid({
+                    style: { marginTop: '30px' },
                     height: '100%',
-                    width: '90%',
+                    width: '100%',
                     columns: 4,
                     rows: 5,
                     backgroundColor: '#F5F7FB',
@@ -452,9 +439,16 @@ export function SupportPage(user) {
                             size: 14,
                             color: 'black'
                         }),
-                        3: buildText('VIEW ALL', {
-                            size: 14,
-                            color: 'primary'
+                        3: buildButton('VIEW ALL', {
+                            variant: 'link',
+                            color: 'primary',
+                            size: 'sm',
+                            onPressed: () => alert('View All Repair History clicked'),
+                            style: {
+                                fontWeight: '700',
+                                textDecoration: 'none',
+                                letterSpacing: '0.2px',
+                            },
                         }),
                         5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '4px' }),
                         9: buildGrid({
@@ -541,7 +535,7 @@ export function SupportPage(user) {
                         1: 'center right',
                     },
                     child: {
-                        1: buildText('LAST UPDATE: 4MIN AGO', {
+                        1: buildText(formatLastUpdate(lastUpdatedAt), {
                             size: 14,
                             color: 'gray800',
                             weight: 'bold',
@@ -553,7 +547,7 @@ export function SupportPage(user) {
                     },
                 }),
                 13: buildGrid({
-                    width: '95%',
+                    width: '100%',
                     columns: 1,
                     rows: 1,
                     display: false,

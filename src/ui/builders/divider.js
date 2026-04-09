@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, spacing } from '../tokens.js'
+import { token, colors, spacing } from '../ThemesColors.js'
 
 /**
  * buildDivider(options) — Horizontal or vertical separator

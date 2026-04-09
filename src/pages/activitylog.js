@@ -1,8 +1,10 @@
 import { ref } from 'vue'
-import { buildDateBoxContainer, buildButton, buildCircularProgress, buildContentGrid, buildDivider, buildDropdown, buildGrid, buildIcon, buildIconText, buildTable, buildText } from '../ui/index.js'
+import { buildDateBoxContainer, buildButton, buildContentGrid, buildDropdown, buildGrid, buildHeader, buildIcon, buildTable, buildText, buildTextBadge } from '../ui/index.js'
 
 const selectedActivityType = ref('all')
 const selectedSeverity = ref('mid')
+const startDate = ref('')
+const endDate = ref('')
 
 /**
  * ActivityLogsPage(user)
@@ -19,61 +21,47 @@ export function ActivityLogsPage(user){
         cellPadding: 0,
         display: false,
         span: {
-            1: { colSpan: 5 },
-            6: { colSpan: 1 },
-            7: { colSpan: 6 },
+            1: { colSpan: 6, rowSpan: 2 },
             13: { colSpan: 2, rowSpan: 2 },
             15: { colSpan: 2, rowSpan: 2 },
             17: { colSpan: 2, rowSpan: 2 },
             25: { colSpan: 6 }
         },
-        align: {
-            6: 'center right'
-        },
         child: {
-            1: buildGrid({
-                columns: 1,
-                rows: 2,
-                padding: '0',
-                display: false,
-                child: {
-                1: buildText('System Audit', { tag: 'div', size: '4xl', weight: 'bold', color: 'gray800', lineHeight: '1.1', margin: '0' }),
-                2: buildText('A Detail ledger of all administrative actions and automated system event accross the infrastructure.', { tag: 'div', size: 'sm', color: 'gray500', lineHeight: '1.3', margin: '0' }),
-                },
-            }),
-            6: buildButton('Export Report', {
-              size: 'sm',
-              color: 'primary',
-              variant: 'solid',
-              icon: buildIcon('download', { size: 14, color: '#ffffff' }),
+            1: buildHeader({
+              title: 'System Audit',
+              subtitle: 'A Detail ledger of all administrative actions and automated system event accross the infrastructure.',
+              actionText: 'Export Report',
+              actionIcon: buildIcon('download', { size: 14, color: '#ffffff' }),
+              onAction: () => {},
+              backgroundColor: 'white',
+              divider: false,
+              padding: '30px 24px 22px',
               style: {
-                minWidth: '140px',
-                height: '38px',
-                borderRadius: '10px',
-                fontWeight: '700',
-                fontSize: '14px',
-                boxShadow: 'none',
+                margin: '-24px 0 0 -24px',
+                width: 'calc(100% + 48px)',
               },
-              onPressed: () => {},
             }),
-            7: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '6px' }),
             13: buildGrid({
                 height: '100%',
                 columns: 7,
                 rows: 2,
                 display: true,
                 align:{
-                    11: 'center'
+                    11: 'center',
+                    6: 'center Right'
                 },
                 span: {
-                    1: { colSpan: 7 },
+                    1: { colSpan: 5 },
+                    6: {colSpan: 2 },  
                     8: { colSpan: 3 },
-                    12: { colSpan: 3 }
+                    12: { colSpan: 3 },
                 },
                 child:{
                     1: buildText('DATE RANGE SELECTION', { size: 'md', weight: 'bold', color: 'gray700', style: {marginLeft: '5px'} }),
                     8: buildDateBoxContainer({
                         placeHolder: 'mm/dd/yyyy',
+                        value: startDate,
                         width: '100%',
                         height: '40px',
                         color: '#6b7280',
@@ -91,6 +79,7 @@ export function ActivityLogsPage(user){
                     }),
                     12: buildDateBoxContainer({
                         placeHolder: 'mm/dd/yyyy',
+                        value: endDate,
                         width: '100%',
                         height: '40px',
                         color: '#6b7280',
@@ -102,7 +91,25 @@ export function ActivityLogsPage(user){
                         onPressed: () => {},
                         reqiured: false,
                         style: { boxSizing: 'border-box', marginTop: '5px' },
-                    })
+                    }),
+                    6: buildTextBadge('Clear', {
+                        variant: 'link',
+                        containerStyle: 'square',
+                        radius: '10px',
+                        width: '50px',
+                        color: 'primary',
+                        size: 'sm',
+                        disabled: !startDate.value && !endDate.value,
+                        onPressed: () => {
+                          startDate.value = ''
+                          endDate.value = ''
+                        },
+                        style: {
+                          marginTop: '5px',
+                          fontWeight: '700',
+                          textDecoration: 'none',
+                        },
+                    }),
                 }
             }),
             15: buildGrid({
@@ -146,10 +153,11 @@ export function ActivityLogsPage(user){
                 rowGap: 8,
                 colGap: 8,
                 span: {
-                  1: { colSpan: 3 },
+                  1: { colSpan: 2 },
                 },
                 align: {
                   1: 'end left',
+                  3: 'center Right',
                   4: 'start center',
                   5: 'start center',
                   6: 'start center',
@@ -161,6 +169,23 @@ export function ActivityLogsPage(user){
                     color: 'gray700',
                     style: {marginLeft: '5px'}
                   }),
+                  3: buildTextBadge('Clear', {
+                        variant: 'link',
+                        containerStyle: 'square',
+                        radius: '10px',
+                        width: '50px',
+                        color: 'primary',
+                        size: 'sm',
+                        disabled: !selectedSeverity.value,
+                        onPressed: () => {
+                          selectedSeverity.value = ''
+                        },
+                        style: {
+                          marginTop: '5px',
+                          fontWeight: '700',
+                          textDecoration: 'none',
+                        },
+                    }),
                   4: buildButton('Low', {
                     size: 'sm',
                     color: 'neutral',
@@ -220,7 +245,7 @@ export function ActivityLogsPage(user){
                     display: false,
                     rowGap: 2,
                     child: {
-                      1: buildText(String(value), { size: 'sm', weight: 'bold', color: 'gray700' }),
+                      1: buildText(String(value), { size: 'sm', weight: 'bold', color: 'primary' }),
                       2: buildText(String(row.time), { size: 'xs', color: 'gray400', weight: 'semibold' }),
                     },
                   }),

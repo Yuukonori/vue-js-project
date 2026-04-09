@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, fontSize, fontWeight, spacing } from '../tokens.js'
+import { token, colors, fontSize, fontWeight, spacing } from '../ThemesColors.js'
 
 /**
  * buildText(content, options) — Typography builder

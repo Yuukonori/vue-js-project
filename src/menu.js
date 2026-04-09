@@ -5,6 +5,7 @@ import { RepairHistoryPage } from './pages/repairhistory.js'
 import { UserListPage } from './pages/userlist.js'
 import { MonitoringPage } from './pages/monitoring.js'
 import { ActivityLogsPage } from './pages/activitylog.js'
+import { NewAssetsForm } from './pages/form/newAssetsForm.js'
 
 export const MENU_CONFIG = {
   header: {
@@ -33,6 +34,15 @@ export const MENU_CONFIG = {
       isDefault: true,
       line:      false,
       content:   (user) => AssetsPage(user),
+    },
+    {
+      label:     'Assets',
+      icon:      'assets',
+      path:      '/newassetsform',
+      isDefault: true,
+      line:      false,
+      hidden:    true,
+      content:   (user) => NewAssetsForm(user),
     },
     {
       label:     'Support',

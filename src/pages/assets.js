@@ -1,4 +1,4 @@
-import { buildBadge, buildButton, buildContentGrid, buildDivider, buildDropdown, buildGrid, buildIcon, buildPopup, buildTable, buildText } from '../ui/index.js'
+import { buildBadge, buildButton, buildContentGrid, buildDropdown, buildGrid, buildHeader, buildIcon, buildPopup, buildTable, buildText } from '../ui/index.js'
 import { ref } from 'vue'
 
 const selectedCategory = ref('all')
@@ -31,6 +31,12 @@ export function AssetsPage(user) {
     maintenance: 'warning',
   }
 
+  function onNewAssets() {
+    if (typeof globalThis.__appNavigate === 'function') {
+      globalThis.__appNavigate('/newassetsform')
+    }
+  }
+
   return buildContentGrid({
     columns: 6,
     rows: 5,
@@ -38,55 +44,31 @@ export function AssetsPage(user) {
     rowGap: 12,
     padding: '24px',
     cellPadding: 0,
-    display: true,
+    display: false,
     span: {
-      1: { colSpan: 4 },
-      5: { colSpan: 2 },
-      7: { colSpan: 6 },
+      1: { colSpan: 6, rowSpan: 2 },
       13: { colSpan: 6 },
       19: { colSpan: 6, rowSpan: 2 },
     },
     align: {
-      5: 'center right',
       13: 'center',
       19: 'start stretch',
     },
     child: {
-      1: buildGrid({
-        columns: 1,
-        rows: 2,
-        display: false,
-        child: {
-          1: buildText('Asset Inventory', { variant: 'h1', weight: 'bold', color: 'gray800' }),
-          2: buildText(
-            "Manage and track your organization's IT physical infrastructure with precision. Access lifecycle data and maintenance schedules.",
-            { size: 'sm', color: 'gray500' },
-          ),
+      1: buildHeader({
+        title: 'Asset Inventory',
+        subtitle: "Manage and track your organization's IT physical infrastructure with precision. Access lifecycle data and maintenance schedules.",
+        actionText: 'New Assets',
+        actionIcon: buildIcon('plus', { size: 14, color: '#ffffff' }),
+        onAction: onNewAssets,
+        backgroundColor: 'white',
+        divider: false,
+        padding: '30px 24px 22px',
+        style: {
+          margin: '-24px 0 0 -24px',
+          width: 'calc(100% + 48px)',
         },
       }),
-    //   5: buildGrid({
-    //     columns: 2,
-    //     rows: 1,
-    //     display: false,
-    //     colGap: 8,
-    //     align: {
-    //       1: 'center right',
-    //       2: 'center right',
-    //     },
-    //     child: {
-    //       1: buildButton('Export CSV', {
-    //         size: 'sm',
-    //         color: 'neutral',
-    //         icon: buildIcon('download', { size: 14 }),
-    //       }),
-    //       2: buildButton('Print Labels', {
-    //         size: 'sm',
-    //         color: 'neutral',
-    //         icon: buildIcon('printer', { size: 14 }),
-    //       }),
-    //     },
-    //   }),
-      7: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '4px' }),
       13: buildGrid({
         columns: 8,
         rows: 2,

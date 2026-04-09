@@ -1,4 +1,4 @@
-import { buildButton, buildCircularProgress, buildContentGrid, buildDivider, buildGrid, buildIcon, buildIconText, buildTable, buildText } from '../ui/index.js'
+import { buildButton, buildCircularProgress, buildContentGrid, buildDivider, buildGrid, buildHeader, buildIcon, buildIconText, buildTable, buildText } from '../ui/index.js'
 
 /**
  * MonitoringPage(user)
@@ -15,9 +15,7 @@ export function MonitoringPage(user) {
     cellPadding: 0,
     display: false,
     span: {
-      1: { colSpan: 5 },
-      6: { colSpan: 1 },
-      7: { colSpan: 6 },
+      1: { colSpan: 6, rowSpan: 2 },
       13: { colSpan: 2 },
       15: { colSpan: 4 },
       19: { colSpan: 2 },
@@ -27,21 +25,20 @@ export function MonitoringPage(user) {
       33: { colSpan: 4 }
     },
     align: {
-      6: 'center right',
       13: 'center left',
     },
     child: {
-      1: buildGrid({
-        columns: 1,
-        rows: 2,
-        padding: '0',
-        display: false,
-        child: {
-          1: buildText('Central Monitoring Hub', { tag: 'div', size: '4xl', weight: 'bold', color: 'gray800', lineHeight: '1.1', margin: '0' }),
-          2: buildText('A holistic archival view of system health, physical assets, and user engagement.', { tag: 'div', size: 'sm', color: 'gray500', lineHeight: '1.3', margin: '0' }),
+      1: buildHeader({
+        title: 'Central Monitoring Hub',
+        subtitle: 'A holistic archival view of system health, physical assets, and user engagement.',
+        backgroundColor: 'white',
+        divider: false,
+        padding: '30px 24px 22px',
+        style: {
+          margin: '-24px 0 0 -24px',
+          width: 'calc(100% + 48px)',
         },
       }),
-      7: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '6px' }),
       13: buildIconText('System Health', {
         icon: 'computer',
         iconSize: 30,

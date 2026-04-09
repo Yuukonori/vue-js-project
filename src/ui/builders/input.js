@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, spacing, radius, fontSize } from '../tokens.js'
+import { token, colors, spacing, radius, fontSize } from '../ThemesColors.js'
 import { buildText } from './text.js'
 import { buildIcon } from './icon.js'
 

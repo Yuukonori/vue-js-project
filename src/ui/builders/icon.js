@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors } from '../tokens.js'
+import { token, colors } from '../ThemesColors.js'
 
 /**
  * buildIcon(name, options) — SVG icon builder

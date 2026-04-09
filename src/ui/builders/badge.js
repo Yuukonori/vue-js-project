@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, radius, fontSize, fontWeight } from '../tokens.js'
+import { token, colors, radius, fontSize, fontWeight } from '../ThemesColors.js'
 
 /**
  * buildBadge(label, options) — Badge / chip / tag builder

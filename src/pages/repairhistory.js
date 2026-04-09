@@ -1,4 +1,4 @@
-import { buildBadge, buildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildIconText, buildProgressBar, buildTable, buildText, buildTextBadge } from '../ui/index.js'
+import { buildBadge, buildButton, buildContentGrid, buildGrid, buildHeader, buildIcon, buildIconText, buildProgressBar, buildTable, buildText, buildTextBadge } from '../ui/index.js'
 
 /**
  * RepairHistoryPage(user)
@@ -39,8 +39,7 @@ export function RepairHistoryPage(user) {
     cellPadding: 0,
     display: false,
     span: {
-      1: { colSpan: 4 },
-      5: { colSpan: 4 },
+      1: { colSpan: 4, rowSpan: 2 },
       9: { colSpan: 2, rowSpan: 2 },
       11: { colSpan: 2, rowSpan: 2 },
       17: { colSpan: 3 },
@@ -50,30 +49,17 @@ export function RepairHistoryPage(user) {
         17: 'center Left'
     },
     child: {
-      1: buildGrid({
-        columns: 1,
-        rows: 2,
-        padding: '0',
-        display: false,
-        child: {
-          1: buildText('Repair & Maintenance History', {
-            tag: 'div',
-            size: '4xl',
-            weight: 'bold',
-            color: 'gray800',
-            lineHeight: '1.1',
-            margin: '0',
-          }),
-          2: buildText('Deep diagnostics and technical log archival for enterprise assets.', {
-            tag: 'div',
-            size: 'sm',
-            color: 'gray500',
-            lineHeight: '1.3',
-            margin: '0',
-          }),
+      1: buildHeader({
+        title: 'Repair & Maintenance History',
+        subtitle: 'Deep diagnostics and technical log archival for enterprise assets.',
+        backgroundColor: 'white',
+        divider: false,
+        padding: '30px 24px 22px',
+        style: {
+          margin: '-24px 0 0 -24px',
+          width: 'calc(100% + 48px)',
         },
       }),
-      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '6px' }),
       9: buildGrid({
           columns: 3,
           rows: 4,

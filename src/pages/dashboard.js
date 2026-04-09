@@ -1,10 +1,47 @@
-import { buildIconTextContainer, buildBadge, buildButton, buildContentGrid, buildDivider, buildGrid, buildIcon, buildTable, buildText, buildTextBadge, colors, radius, spacing } from '../ui/index.js'
+import { buildHeader, buildBadge, buildButton, buildContentGrid, buildGrid, buildIcon, buildTable, buildText, colors } from '../ui/index.js'
+
+/**
+ * Dashboard color roles for this page.
+ * Each key explains what the color is used for in the UI.
+ */
+const dashboardColors = {
+  // Text hierarchy
+  headingText: 'gray800',        // Main section/page headings
+  subText: 'gray500',            // Supporting text under headings
+  bodyText: 'gray600',           // Standard value/label text
+  strongHeading: 'gray900',      // Highest-contrast heading text
+  metaText: 'gray400',           // Secondary metadata like "EXPIRING IN X DAYS"
+
+  // States
+  healthyState: 'success',       // Healthy/operational indicators
+  warningState: 'warning',       // Expiring-soon or caution indicators
+  criticalState: 'error',        // Urgent/alert indicators
+  neutralState: 'neutral',       // Neutral status indicators
+
+  // Brand action and emphasis
+  actionColor: 'primary',        // Action links/buttons and highlighted identifiers
+
+  // Surfaces and separators
+  cardBackground: colors.gray100, // Sub-card backgrounds
+  borderSoft: 'gray200',          // Light divider/border color
+  iconMuted: 'gray300',           // Subtle directional icons
+}
 
 /**
  * DashboardPage(user)
  * @param {{ name: string }} user
  */
 export function DashboardPage(user) {
+
+    function onShowNetworkMap() {
+      if (typeof globalThis.__appNavigate === 'function') {
+        globalThis.__appNavigate('/monitoring')
+        return
+      }
+      alert('Network map route is unavailable.')
+    }
+
+
   return buildContentGrid({
     columns: 4,
     rows:    4,
@@ -12,7 +49,7 @@ export function DashboardPage(user) {
     rowGap:  12,
     display: false,
         span: {
-        5: { colSpan: 4, rowSpan: 1 },
+        1: { colSpan: 4, rowSpan: 2 },
         9: { colSpan: 3, rowSpan: 1 },
         12: { rowSpan: 2 },
         13: { colSpan: 3, rowSpan: 1 },
@@ -23,51 +60,25 @@ export function DashboardPage(user) {
     mobileConfig: { columns: 1, rows: 3 },
     tabletConfig: { columns: 2, rows: 3 },
     align: {
-        5: 'center',
-        4: 'center',
         12: 'center',
     },
     child: {
-      1: buildGrid({
-        columns: 1, rows: 2,
-        padding: '0',
-        display: false,    
-        child: {
-          1: buildText('Dashboard', {
-            tag: 'div',
-            size: '4xl',
-            weight: 'bold',
-            color: 'gray800',
-            lineHeight: '1.1',
-            margin: '0',
-          }),
-          2: buildText('Welcome back, ' + user.name + '!', {
-            tag: 'div',
-            size: 'sm',
-            color: 'gray500',
-            lineHeight: '1.3',
-            margin: '0',
-          }),
+      1: buildHeader({
+        title: 'Dashboard',
+        subtitle: `Welcome back, ${user.name}!`,
+        statusText: 'ALL SYSTEM OPERATIONAL',
+        statusIcon: 'circle',
+        statusColor: dashboardColors.healthyState,
+        statusBg: 'gray200',
+        statusWidth: '195px',
+        backgroundColor: 'white',
+        divider: false,
+        padding: '30px 24px 22px',
+        style: {
+          margin: '-24px 0 0 -24px',
+          width: 'calc(100% + 48px)',
         },
       }),
-      4: buildGrid({
-        columns: 2, rows: 1,
-        padding: '0',
-        display: false,
-        align: {
-            2: 'center right',
-        },
-        child: {
-          2: buildIconTextContainer('ALL SYSTEM OPERATIONAL', {
-                icon: 'circle',
-                iconColor: '#32CD32',
-                textSize: '10px',
-                // textStyle: { marginTop: '2px'},
-                width: '195px'
-            })
-        },
-      }),
-      5: buildDivider({ direction: 'h', color: 'gray200', thickness: '1px', margin: '8px' }),
       9: buildGrid({
         columns: 3, rows: 2,
         padding: '20px',
@@ -81,12 +92,12 @@ export function DashboardPage(user) {
             7: { colSpan: 3, rowSpan: 1 }
         },
         child: {
-            1: buildText('System Health', { variant: 'h3', weight: 'bold', color: 'gray800' }),
+            1: buildText('System Health', { variant: 'h3', weight: 'bold', color: dashboardColors.headingText, style: { marginTop: '10px' } }),
             3: buildButton('VIEW NETWORK MAP', { 
                 variant: 'link',
-                color: 'primary',
+                color: dashboardColors.actionColor,
                 size: 'md',
-                onPressed: () => alert('Opening full expiration log...'),
+                onPressed: onShowNetworkMap,
                 style: {
                     fontWeight: '700',
                     textDecoration: 'none',
@@ -95,11 +106,11 @@ export function DashboardPage(user) {
             }),
             4: buildGrid({
                 columns: 3, rows: 3,
-                background: colors.gray100,
+                background: dashboardColors.cardBackground,
                 hover: true,
                 rowGap: 4,
                 display: true,
-                onPressed: () => alert('View Network Map clicked'),
+                onPressed: onShowNetworkMap,
                 span: {
                     4: { colSpan: 2, rowSpan: 1 }
                 },
@@ -110,9 +121,9 @@ export function DashboardPage(user) {
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('server', { size: 75, color: 'primary', style: {marginRight: '5px'},}),
+                    1: buildIcon('server', { size: 75, color: dashboardColors.actionColor, style: {marginRight: '5px'},}),
                     3: buildBadge('99.99%',
-                        { color: 'green',
+                        { color: dashboardColors.healthyState,
                             size: 'lg',
                             variant: 'solid',
                             style: {
@@ -122,25 +133,25 @@ export function DashboardPage(user) {
                     4: buildText('Server Uptime', {
                         tag: 'div',
                         size: '16px',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '10px', marginLeft: '5px' },
                     }),
                     7: buildText('42 Nodes', {
                         tag: 'div',
                         size: '20px',
                         weight: 'bold',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
             }),
             5: buildGrid({
                 columns: 3, rows: 3,
-                background: colors.gray100,
+                background: dashboardColors.cardBackground,
                 hover: true,
                 rowGap: 4,
                 display: true,
-                onPressed: () => alert('View Network Map clicked'),
+                onPressed: onShowNetworkMap,
                 span: {
                     4: { colSpan: 2, rowSpan: 1 },
                     7: { colSpan: 2, rowSpan: 1 }
@@ -152,9 +163,9 @@ export function DashboardPage(user) {
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('gauge', { size: 75, color: '#7a7600', style: {marginRight: '5px'}, }),
+                    1: buildIcon('gauge', { size: 75, color: dashboardColors.warningState, style: {marginRight: '5px'}, }),
                     3: buildBadge('STABLE',
-                        { color: 'grey',
+                        { color: dashboardColors.neutralState,
                             size: 'lg',
                             variant: 'solid',
                             style: {
@@ -164,25 +175,25 @@ export function DashboardPage(user) {
                     4: buildText('Network Latency', {
                         tag: 'div',
                         size: '16px',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '10px', marginLeft: '5px' },
                     }),
                     7: buildText('14ms', {
                         tag: 'div',
                         size: '24px',
                         weight: 'bold',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
             }),
             6: buildGrid({
                 columns: 3, rows: 3,
-                background: colors.gray100,
+                background: dashboardColors.cardBackground,
                 hover: true,
                 rowGap: 4,
                 display: true,
-                onPressed: () => alert('View Network Map clicked'),
+                onPressed: onShowNetworkMap,
                 span: {
                     4: { colSpan: 2, rowSpan: 1 },
                     7: { colSpan: 2, rowSpan: 1 }
@@ -194,9 +205,9 @@ export function DashboardPage(user) {
                     7: 'center left',
                 },
                 child: {
-                    1: buildIcon('shield', { size: 75, color: 'red', style: {marginRight: '5px'}, }),
+                    1: buildIcon('shield', { size: 75, color: dashboardColors.criticalState, style: {marginRight: '5px'}, }),
                     3: buildBadge('2 ALERTS',
-                        { color: 'red',
+                        { color: dashboardColors.criticalState,
                             size: 'lg',
                             variant: 'solid',
                             style: {
@@ -206,14 +217,14 @@ export function DashboardPage(user) {
                     4: buildText('Security Score', {
                         tag: 'div',
                         size: '16px',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '10px',marginLeft: '5px' },
                     }),
                     7: buildText('88 / 100', {
                         tag: 'div',
                         size: '24px',
                         weight: 'bold',
-                        color: 'gray600',
+                        color: dashboardColors.bodyText,
                         style: { marginTop: '6px', marginLeft: '5px' },
                     })
                 }
@@ -233,10 +244,18 @@ export function DashboardPage(user) {
                 4: { colSpan: 3, rowSpan: 1 }
             },
             child: {
-                1: buildText('Recent Repair Tickets', { variant: 'h3', weight: 'bold', color: 'gray800' }),
+                1: buildText('Recent Repair Tickets', { variant: 'h3', weight: 'bold', color: dashboardColors.headingText }),
                 4: buildTable({
                     columns: [
-                        { header: 'Ticket ID', accessor: 'id' },
+                        {
+                            header: 'Ticket ID',
+                            accessor: 'id',
+                            render: (value) => buildText(String(value || ''), {
+                                tag: 'span',
+                                color: dashboardColors.actionColor,
+                                weight: 'semibold',
+                            }),
+                        },
                         { header: 'Subject', accessor: 'subject' },
                         {
                             header: 'Status',
@@ -293,8 +312,8 @@ export function DashboardPage(user) {
             67: 'center',
         },
         child: {
-            1: buildIcon('calendar-x', { size: 40, color: '#7a7600' }),
-            2: buildText('Expiring Assets', { variant: 'h3', weight: 'bold', color: 'black' }),
+            1: buildIcon('calendar-x', { size: 40, color: dashboardColors.warningState }),
+            2: buildText('Expiring Assets', { variant: 'h3', weight: 'bold', color: dashboardColors.strongHeading }),
             7: buildGrid({
                 columns: 12, rows: 2,
                 hover: true,
@@ -320,21 +339,21 @@ export function DashboardPage(user) {
                         borderRadius: '6px',
                         padding: '8px',
                         child: {
-                            1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
+                            1: buildIcon('laptop', { size: 40, color: dashboardColors.warningState }),
                         },
                     }),
                     2: buildText('MacBook Pro M2', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
-                        color: 'gray800',
+                        color: dashboardColors.headingText,
                     }),
-                    12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                    12: buildIcon('chevron-right', { size: 26, color: dashboardColors.iconMuted }),
                     14: buildText('EXPIRING IN 12 DAYS', {
                         tag: 'div',
                         size: '14px',
                         weight: 'semibold',
-                        color: 'gray400',
+                        color: dashboardColors.metaText,
                     }),
                 },
             }),
@@ -363,21 +382,21 @@ export function DashboardPage(user) {
                         borderRadius: '6px',
                         padding: '8px',
                         child: {
-                            1: buildIcon('router', { size: 40, color: '#7a7600' }),
+                            1: buildIcon('router', { size: 40, color: dashboardColors.warningState }),
                         },
                     }),
                     2: buildText('Cisco Edge Switch', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
-                        color: 'gray800',
+                        color: dashboardColors.headingText,
                     }),
-                    12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                    12: buildIcon('chevron-right', { size: 26, color: dashboardColors.iconMuted }),
                     14: buildText('EXPIRING IN 24 DAYS', {
                         tag: 'div',
                         size: '14px',
                         weight: 'semibold',
-                        color: 'gray400',
+                        color: dashboardColors.metaText,
                     }),
                 },
             }),
@@ -406,21 +425,21 @@ export function DashboardPage(user) {
                         borderRadius: '6px',
                         padding: '8px',
                         child: {
-                            1: buildIcon('printer', { size: 40, color: '#7a7600' }),
+                            1: buildIcon('printer', { size: 40, color: dashboardColors.warningState }),
                         },
                     }),
                     2: buildText('Printer Laser Jett', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
-                        color: 'gray800',
+                        color: dashboardColors.headingText,
                     }),
-                    12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                    12: buildIcon('chevron-right', { size: 26, color: dashboardColors.iconMuted }),
                     14: buildText('DUE IN 2 DAYS', {
                         tag: 'div',
                         size: '14px',
                         weight: 'semibold',
-                        color: 'gray400',
+                        color: dashboardColors.metaText,
                     }),
                 },
             }),
@@ -449,21 +468,21 @@ export function DashboardPage(user) {
                         borderRadius: '6px',
                         padding: '8px',
                         child: {
-                            1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
+                            1: buildIcon('laptop', { size: 40, color: dashboardColors.warningState }),
                         },
                     }),
                     2: buildText('MacBook Pro M3', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
-                        color: 'gray800',
+                        color: dashboardColors.headingText,
                     }),
-                    12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                    12: buildIcon('chevron-right', { size: 26, color: dashboardColors.iconMuted }),
                     14: buildText('EXPIRING IN 12 DAYS', {
                         tag: 'div',
                         size: '14px',
                         weight: 'semibold',
-                        color: 'gray400',
+                        color: dashboardColors.metaText,
                     }),
                 },
             }),
@@ -492,27 +511,27 @@ export function DashboardPage(user) {
                         borderRadius: '6px',
                         padding: '8px',
                         child: {
-                            1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
+                            1: buildIcon('laptop', { size: 40, color: dashboardColors.warningState }),
                         },
                     }),
                     2: buildText('MacBook Pro M1', {
                         tag: 'div',
                         size: '16px',
                         weight: 'bold',
-                        color: 'gray800',
+                        color: dashboardColors.headingText,
                     }),
-                    12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                    12: buildIcon('chevron-right', { size: 26, color: dashboardColors.iconMuted }),
                     14: buildText('EXPIRING IN 12 DAYS', {
                         tag: 'div',
                         size: '14px',
                         weight: 'semibold',
-                        color: 'gray400',
+                        color: dashboardColors.metaText,
                     }),
                 },
             }),
             67: buildButton('FULL EXPIRATION LOG', {
                 variant: 'link',
-                color: 'primary',
+                color: dashboardColors.actionColor,
                 size: 'md',
                 onPressed: () => alert('Opening full expiration log...'),
                 style: {

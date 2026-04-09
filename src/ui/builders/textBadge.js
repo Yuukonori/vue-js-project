@@ -15,6 +15,8 @@ import { h } from 'vue'
  *   margin         {string}   CSS margin
  *   limit          {number}   Truncate text after N characters
  *   bold           {boolean}  Font-weight bold
+ *   onPressed      {function} Click handler
+ *   onClick        {function} Alias of onPressed
  *   style          {object}   Extra raw styles
  */
 export function buildTextBadge(text = '', options = {}) {
@@ -35,6 +37,8 @@ export function buildTextBadge(text = '', options = {}) {
     margin,
     limit,
     bold           = true,
+    onPressed,
+    onClick,
     style          = {},
   } = options
 
@@ -45,8 +49,11 @@ export function buildTextBadge(text = '', options = {}) {
   const resolvedPadding  = padding  ?? `${Math.round(6 * scale)}px ${Math.round(10 * scale)}px`
   const resolvedRadius   = isCircle ? '9999px' : (radius ?? `${Math.round(10 * scale)}px`)
 
+  const handlePress = onPressed ?? onClick
+
   return h('span', {
     title: (limit && text.length > limit) ? text : undefined,
+    onClick: handlePress,
     style: {
       display:        'inline-flex',
       alignItems:     'center',
@@ -62,6 +69,7 @@ export function buildTextBadge(text = '', options = {}) {
       margin,
       whiteSpace:     'nowrap',
       lineHeight:     1.2,
+      cursor:         handlePress ? 'pointer' : undefined,
       ...style,
     },
   }, displayText)

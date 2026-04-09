@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, radius, shadow } from '../tokens.js'
+import { token, radius, shadow } from '../ThemesColors.js'
 
 /**
  * buildImage(src, options) — Image builder

@@ -15,6 +15,7 @@ export { buildGrid, buildContentGrid, GridSpan }      from './builders/grid.js'
 // ── Typography ──────────────────────────────────────────────────────────────
 export { buildText }                                  from './builders/text.js'
 export { buildTextBadge }                             from './builders/textBadge.js'
+export { buildHeader }                                from './builders/header.js'
 
 // ── Buttons ─────────────────────────────────────────────────────────────────
 export { buildButton }                                from './builders/button.js'
@@ -63,4 +64,4 @@ export { buildCard }                                  from './builders/card.js'
 export { formatCurrencyShort, formatCurrency, formatValueShort, capitalize, replaceUnderscoreToSpace, replaceUnderscoreToEmpty } from './utils.js'
 
 // ── Design tokens (for custom styles) ────────────────────────────────────────
-export { colors, spacing, fontSize, fontWeight, radius, shadow, token } from './tokens.js'
+export { colors, themeColorDescriptions, spacing, fontSize, fontWeight, radius, shadow, token } from './ThemesColors.js'

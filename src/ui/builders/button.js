@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, spacing, radius, fontSize, fontWeight, shadow } from '../tokens.js'
+import { token, colors, spacing, radius, fontSize, fontWeight, shadow } from '../ThemesColors.js'
 
 /**
  * buildButton(label, options) — Button builder

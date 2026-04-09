@@ -1,5 +1,5 @@
 import { h, ref, isRef } from 'vue'
-import { token, colors, spacing, radius, shadow, fontSize } from '../tokens.js'
+import { token, colors, spacing, radius, shadow, fontSize } from '../ThemesColors.js'
 import { buildIcon } from './icon.js'
 import { buildText } from './text.js'
 
@@ -195,6 +195,12 @@ export function buildSidebar(options = {}) {
     border      = true,
     pad         = '16px',
     activeColor = '#6366f1',
+    itemColor   = '#334155',
+    mutedColor  = '#64748b',
+    dividerColor = '#e2e8f0',
+    activeBgColor,
+    radius      = '0px',
+    outerPadding = '0px',
   } = options
 
   const EXPANDED_W  = parseInt(width)  || 260
@@ -235,10 +241,32 @@ export function buildSidebar(options = {}) {
 
         // ── Items ────────────────────────────────────────────────────────────
         const itemNodes = rawItems.map((item, idx) => {
+          if (item.section) {
+            return h('div', {
+              key: `s${idx}`,
+              style: {
+                marginTop: '10px',
+                marginBottom: '8px',
+                padding: `0 ${collapsed ? '0' : `${hPad}px`}`,
+                opacity: collapsed ? 0 : 1,
+                maxHeight: collapsed ? '0' : '24px',
+                overflow: 'hidden',
+                transition: `opacity ${TEXT_MS}ms ${EASE}, max-height ${ANIM_MS}ms ${EASE}`,
+              },
+            }, [
+              buildText(item.section, {
+                tag: 'span',
+                size: 'xs',
+                weight: 'semibold',
+                color: mutedColor,
+                style: { letterSpacing: '0.4px', textTransform: 'none' },
+              }),
+            ])
+          }
           if (item.divider) {
             return h('div', {
               key: `d${idx}`,
-              style: { height: '1px', background: '#e2e8f0', margin: '6px 0', flexShrink: 0 },
+              style: { height: '1px', background: dividerColor, margin: '8px 0', flexShrink: 0 },
             })
           }
 
@@ -251,7 +279,7 @@ export function buildSidebar(options = {}) {
               width:        collapsed ? '44px' : '100%',
               margin:       collapsed ? '0 auto 4px auto' : '0 0 4px 0',
               borderRadius: '10px',
-              background:   isActive ? `${accent}15` : 'transparent',
+              background:   isActive ? (activeBgColor ?? `${accent}15`) : 'transparent',
               cursor:       'pointer',
               flexShrink:   0,
               overflow:     'hidden',
@@ -283,7 +311,7 @@ export function buildSidebar(options = {}) {
                   zIndex:     1,
                 },
               }, [
-                buildIcon(item.icon, { size: ICON_SIZE, color: isActive ? accent : '#64748b' }),
+                buildIcon(item.icon, { size: ICON_SIZE, color: isActive ? accent : mutedColor }),
               ]),
 
               // Label — slides right + fades out (mirrors AnimatedSlide + AnimatedOpacity in dart)
@@ -302,7 +330,7 @@ export function buildSidebar(options = {}) {
                 buildText(item.label, {
                   size:   'sm',
                   weight: isActive ? 'semibold' : 'normal',
-                  color:  isActive ? accent : 'gray700',
+                  color:  isActive ? accent : itemColor,
                 }),
               ]),
             ]),
@@ -332,7 +360,7 @@ export function buildSidebar(options = {}) {
         const footerNode = footer
           ? h('div', {
               style: {
-                borderTop:  '1px solid #e2e8f0',
+                borderTop:  `1px solid ${dividerColor}`,
                 paddingTop: '12px',
                 marginTop:  '16px',
                 overflow:   'hidden',
@@ -400,7 +428,8 @@ export function buildSidebar(options = {}) {
             width:         '100%',
             minHeight:     '100vh',
             background:    token(colors, bg) ?? bg,
-            borderRight:   border ? '1px solid #e2e8f0' : undefined,
+            borderRight:   border ? `1px solid ${dividerColor}` : undefined,
+            borderRadius:  radius,
             padding:       `${pad} ${hPad}px`,
             overflow:      'hidden',
             transition:    `padding ${ANIM_MS}ms ${EASE}`,
@@ -420,6 +449,7 @@ export function buildSidebar(options = {}) {
             alignSelf:  'flex-start',
             flexShrink: 0,
             width:      `${sideW}px`,
+            padding:    outerPadding,
             transition: `width ${ANIM_MS}ms ${EASE}`,
           },
         }, [aside, toggleBtn])

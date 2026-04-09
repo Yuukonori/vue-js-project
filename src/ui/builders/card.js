@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import { token, colors, spacing, radius, shadow } from '../tokens.js'
+import { token, colors, spacing, radius, shadow } from '../ThemesColors.js'
 import { buildText } from './text.js'
 import { buildDivider } from './divider.js'
 

@@ -1,4 +1,4 @@
-import { buildContentGrid, buildGrid, buildIconContainer, buildImage, buildTable, buildText } from '../ui/index.js'
+import { buildContentGrid, buildHeader, buildGrid, buildIconContainer, buildImage, buildTable, buildText } from '../ui/index.js'
 import { USERS } from '../data/users.js'
 
 /**
@@ -9,43 +9,46 @@ export function UserListPage(user) {
   return buildContentGrid({
     columns: 6,
     rows: 2,
+    padding: '24px',
+    cellPadding: 0,
     span: {
-        1: { colSpan: 2 },
+        1: { colSpan: 6 },
         7: { colSpan: 6 }
     },
     display: false,
     child: {
-        1:  buildGrid({
-            columns: 6 ,
-            rows: 2,
-            span: {
-                1: { rowSpan: 2 },
-                2: { colSpan: 5, rowSpan: 2 }
+        1: buildHeader({
+          title: 'Users List',
+          rowProps: {
+            colGap: 0,
+          },
+          titleOptions: {
+            align: 'left'
+          },
+          titleStyle: {
+            marginLeft: '0px',
+          },
+          leftNode: buildIconContainer({
+            icon: 'arrow-back',
+            colorIcon: '#6366f1',
+            colorCon: '#e0e7ff',
+            size: '50',
+            radius: '16px',
+            containerStyle: 'square',
+            hover: true,
+            onPressed: () => {
+              if (typeof globalThis.__appNavigate === 'function') {
+                globalThis.__appNavigate('/support')
+              }
             },
-            align: {
-                2: 'center left'
-            },
-            display: false,
-            child: {
-                1: buildIconContainer({
-                    icon : 'arrow-back',
-                    colorIcon : '#6366f1',
-                    colorCon : '#e0e7ff',
-                    size : '60',
-                    radius: '20px',
-                    containerStyle : 'square',
-                    hover: true,
-                    onPressed: () => {
-                        if (typeof globalThis.__appNavigate === 'function') {
-                        globalThis.__appNavigate('/support')
-                        }
-                    }
-                }),
-                2: buildText('Users List', {
-                    variant: 'h1',
-                    color: 'black',
-                })
-            }
+          }),
+          backgroundColor: 'white',
+          divider: false,
+          padding: '30px 24px 22px',
+          style: {
+            margin: '-24px 0 0 -24px',
+            width: 'calc(100% + 48px)',
+          },
         }),
         7: buildTable({
           columns: [
