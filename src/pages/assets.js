@@ -1,9 +1,9 @@
-import { buildBadge, buildButton, buildContentGrid, buildDropdown, buildGrid, buildHeader, buildIcon, buildPopup, buildTable, buildText } from '../ui/index.js'
+import { buildBadge, buildButton, buildContentGrid, buildDropdown, buildGrid, buildHeader, buildIcon, buildPopup, buildTable, buildText, buildTextBadge } from '../ui/index.js'
 import { ref } from 'vue'
 
-const selectedCategory = ref('all')
-const selectedStatus = ref('all')
-const selectedExpiry = ref('all')
+const selectedCategory = ref(null)
+const selectedStatus = ref(null)
+const selectedExpiry = ref(null)
 
 /**
  * AssetsPage(user)
@@ -31,11 +31,17 @@ export function AssetsPage(user) {
     maintenance: 'warning',
   }
 
-  function onNewAssets() {
-    if (typeof globalThis.__appNavigate === 'function') {
-      globalThis.__appNavigate('/newassetsform')
-    }
+function onNewAssets() {
+  if (typeof globalThis.__appNavigate === 'function') {
+    globalThis.__appNavigate('/newassetsform')
   }
+}
+
+function onClearFilters() {
+  selectedCategory.value = null
+  selectedStatus.value = null
+  selectedExpiry.value = null
+}
 
   return buildContentGrid({
     columns: 6,
@@ -70,41 +76,32 @@ export function AssetsPage(user) {
         },
       }),
       13: buildGrid({
-        columns: 8,
+        columns: 7,
         rows: 2,
         display: true,
         colGap: 10,
         rowGap: 6,
         span: {
-          1: { colSpan: 2 },
-          3: { colSpan: 2 },
-          5: { colSpan: 2 },
-          8: { colSpan: 2 },
-          9: { colSpan: 2 },
-          11: { colSpan: 2 },
-          13: { colSpan: 2 },
-          16: { colSpan: 2 },
+              1: { colSpan: 2 },
+              3: { colSpan: 2 },
+              5: { colSpan: 2 },
+              8: { colSpan: 2 },
+              10: { colSpan: 2 },
+              12: { colSpan: 2 },
         },
         align: {
             1: 'end left',
             3: 'end left',
             5: 'end left',
-          16: 'end center',
+          14: 'start center',
         },
         child: {
-          1: buildText('ASSET CATEGORY', { variant: 'h6', color: 'gray400', weight: 'semibold', letterSpacing: '0.8px', style: {marginLeft: '10px'}}),
+            1: buildText('ASSET CATEGORY', { variant: 'h6', color: 'gray400', weight: 'semibold', letterSpacing: '0.8px', style: {marginLeft: '10px'}}),
           3: buildText('DEVICE STATUS', { variant: 'h6', color: 'gray400', weight: 'semibold', letterSpacing: '0.8px', style: {marginLeft: '10px'} }),
           5: buildText('WARRANTY EXPIRY', { variant: 'h6', color: 'gray400', weight: 'semibold', letterSpacing: '0.8px', style: {marginLeft: '10px'} }),
-        //   8: buildText('Clear All', {
-        //     size: 'sm',
-        //     color: 'primary',
-        //     weight: 'semibold',
-        //     style: { cursor: 'pointer' },
-        //   }),
-          9: buildDropdown({
+          8: buildDropdown({
             placeholder: 'All Categories',
             items: [
-              { text: 'All Categories', value: 'all' },
               { text: 'Laptop', value: 'laptop' },
               { text: 'Monitor', value: 'monitor' },
               { text: 'Tablet', value: 'tablet' },
@@ -116,10 +113,9 @@ export function AssetsPage(user) {
             width: '100%',
             height: '38px',
           }),
-          11: buildDropdown({
+          10: buildDropdown({
             placeholder: 'All Statuses',
             items: [
-              { text: 'All Statuses', value: 'all' },
               { text: 'Assigned', value: 'assigned' },
               { text: 'Available', value: 'available' },
               { text: 'Maintenance', value: 'maintenance' },
@@ -130,10 +126,9 @@ export function AssetsPage(user) {
             width: '100%',
             height: '38px',
           }),
-          13: buildDropdown({
+          12: buildDropdown({
             placeholder: 'Any Time',
             items: [
-              { text: 'Any Time', value: 'all' },
               { text: 'Expiring in 30 Days', value: '30days' },
               { text: 'Expiring in 90 Days', value: '90days' },
               { text: 'Expired', value: 'expired' },
@@ -144,12 +139,20 @@ export function AssetsPage(user) {
             width: '100%',
             height: '38px',
           }),
-        //   16: buildText('Clear All', {
-        //     size: 'sm',
-        //     color: 'primary',
-        //     weight: 'semibold',
-        //     style: { cursor: 'pointer' },
-        //   }),
+          14: buildTextBadge('Clear', {
+            variant: 'link',
+            containerStyle: 'square',
+            radius: '10px',
+            width: '50px',
+            color: 'primary',
+            size: 'sm',
+            onPressed: onClearFilters,
+            style: {
+              marginTop: '7px',
+              fontWeight: '700',
+              textDecoration: 'none',
+            },
+          }),
         },
       }),
       19: buildTable({

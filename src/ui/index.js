@@ -56,6 +56,7 @@ export { buildImageProfile }                          from './builders/imageProf
 // ── Decorators ───────────────────────────────────────────────────────────────
 export { buildDivider }                               from './builders/divider.js'
 export { buildBadge, buildChip }                      from './builders/badge.js'
+export { buildReceiveCard }                           from './builders/receiveCard.js'
 
 // ── Cards ────────────────────────────────────────────────────────────────────
 export { buildCard }                                  from './builders/card.js'

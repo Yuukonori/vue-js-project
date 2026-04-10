@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { buildDateBoxContainer, buildButton, buildContentGrid, buildDropdown, buildGrid, buildHeader, buildIcon, buildTable, buildText, buildTextBadge } from '../ui/index.js'
 
-const selectedActivityType = ref('all')
+const selectedActivityType = ref(null)
 const selectedSeverity = ref('mid')
 const startDate = ref('')
 const endDate = ref('')
@@ -133,7 +133,6 @@ export function ActivityLogsPage(user){
                       placeholder: 'All Activities',
                       showClearButton: true,
                       items: [
-                        { text: 'All Activities', value: 'all' },
                         { text: 'Login', value: 'login' },
                         { text: 'Update', value: 'update' },
                         { text: 'Delete', value: 'delete' },

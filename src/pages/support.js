@@ -415,8 +415,8 @@ export function SupportPage(user) {
                         })
                     }
                 }),
-                7:  buildGrid({
-                    style: { marginTop: '30px' },
+                7: buildGrid({
+                    style: { marginTop: '30px'},
                     height: '100%',
                     width: '100%',
                     columns: 4,
@@ -427,7 +427,7 @@ export function SupportPage(user) {
                         1: { colSpan: 2 },
                         3: { colSpan: 2 },
                         5: { colSpan: 4 },
-                        9: { colSpan: 4 },
+                        9: { colSpan: 4, rowSpan: 2 },
                         13: { colSpan: 4 }
                     },
                     align: {
@@ -439,7 +439,7 @@ export function SupportPage(user) {
                             size: 14,
                             color: 'black'
                         }),
-                        3: buildButton('VIEW ALL', {
+                        3: buildText('VIEW ALL', {
                             variant: 'link',
                             color: 'primary',
                             size: 'sm',
@@ -487,23 +487,58 @@ export function SupportPage(user) {
                                     color: 'gray800',
                                 }),
                                 12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
-                                14: buildText('DONE CHECKING OFFICE', {
+                                14: buildText('ACTIVE', {
                                     tag: 'div',
                                     size: '14px',
                                     weight: 'semibold',
                                     color: 'gray400',
                                 }),
-                            },  
+                            },
                         }),
                         13: buildGrid({
-                            columns: 1,
-                            rows: 1,
+                           columns: 12, rows: 2,
                             height: '100%',
-                            keepStructure: true,
-                            emptyRowHeight: 85,
                             hover: true,
-                            display: false
-                        }),
+                            padding: '12px',
+                            display: true,
+                            align: {
+                                1: 'center left',
+                                2: 'center left',
+                                12: 'center',
+                            },
+                            span: {
+                                1: { rowSpan: 2 },
+                                2: { colSpan: 10 },
+                                12: { rowSpan: 2 },
+                                14: { colSpan: 10 },
+                            },
+                            onPressed: () => alert('View Expiring Assets clicked'),
+                            child: {
+                                1: buildGrid({
+                                    columns: 1, rows: 1,
+                                    display: true,
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    padding: '8px',
+                                    child: {
+                                        1: buildIcon('laptop', { size: 40, color: '#7a7600' }),
+                                    },
+                                }),
+                                2: buildText('MacBook Pro M1', {
+                                    tag: 'div',
+                                    size: '16px',
+                                    weight: 'bold',
+                                    color: 'gray800',
+                                }),
+                                12: buildIcon('chevron-right', { size: 26, color: 'gray300' }),
+                                14: buildText('INACTIVE', {
+                                    tag: 'div',
+                                    size: '14px',
+                                    weight: 'semibold',
+                                    color: 'gray400',
+                                }),
+                            },
+                        })
                     }
                 }),
                 9: buildGrid({

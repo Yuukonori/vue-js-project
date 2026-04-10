@@ -25,6 +25,9 @@ import { token, colors, fontSize, fontWeight, spacing } from '../ThemesColors.js
  *   letterSpacing {string}
  *   style      {object}
  *   class      {string}
+ *   onPress    {function}
+ *   onPressed  {function}
+ *   onClick    {function}
  */
 
 const variantDefaults = {
@@ -78,10 +81,11 @@ export function buildText(content, options = {}) {
     letterSpacing,
     style = {},
     class: className,
+    onPress,
     onPressed,
     onClick,
   } = options
-  const handlePress = onPressed ?? onClick
+  const handlePress = onPress ?? onPressed ?? onClick
 
   const decorations = [
     underline && 'underline',
@@ -117,6 +121,8 @@ export function buildText(content, options = {}) {
   }
 
   Object.keys(computedStyle).forEach(k => computedStyle[k] === undefined && delete computedStyle[k])
+
+  if (handlePress) computedStyle.cursor = 'pointer'
 
   return h(resolvedTag, { style: computedStyle, class: className, onClick: handlePress }, content)
 }
