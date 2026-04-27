@@ -58,6 +58,7 @@ const icons = {
   'printer':       'M6 9h12v4H6z M4 13h16v7H4z M7 15h10v5H7z M16 16h.01',
   'computer':      'M4 5h16v11H4z M8 18h8 M6 20h12',
   'clock':         'M12 2a10 10 0 100 20 10 10 0 000-20z M12 6v6l4 2',
+  'circle':        'M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0 -20 0',
   'star':          'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
   'heart':         'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z',
   'link':          'M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71 M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71',
@@ -105,7 +106,8 @@ export function buildIcon(name, options = {}) {
   } = options
 
   const paths = icons[name]
-  const isFilledIcon = name === 'server'
+  const isFilledIcon = name === 'server' || name === 'circle'
+  const isCircleIcon = name === 'circle'
   const isGaugeIcon = name === 'gauge'
   const isShieldIcon = name === 'shield'
   const isInfoIcon = name === 'info'
@@ -384,6 +386,10 @@ export function buildIcon(name, options = {}) {
           d: 'M11.05 13.6 Q11.85 14.5 12.95 14.0 L17.25 8.55 Q17.5 8.25 17.2 7.95 L16.5 7.25 Q16.2 6.95 15.9 7.2 L10.45 11.5 Q9.95 12.6 11.05 13.6 Z',
           fill: '#ffffff',
         }),
+      ]
+    : isCircleIcon
+    ? [
+        h('circle', { key: 'circle-dot', cx: 12, cy: 12, r: 10, fill: iconColor }),
       ]
     : isFilledIcon
     ? [

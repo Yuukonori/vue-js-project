@@ -1,2 +1,7 @@
 node_modules/
 dist/
+vue-front-end/node_modules/
+vue-front-end/dist/
+vue-back-end/node_modules/
+vue-back-end/.postgres/
+vue-back-end/.env

@@ -59,7 +59,7 @@ const _ProgressBarComponent = defineComponent({
           width:        props.width,
           height:       props.height,
           background:   '#ffffff',
-          border:       '1px solid #e2e5eb',
+          border:       'none',
           borderRadius: '12px',
           padding:      '20px',
           boxSizing:    'border-box',
@@ -74,7 +74,7 @@ const _ProgressBarComponent = defineComponent({
         }, props.title),
 
         props.bars.length === 0
-          ? h('span', { style: { fontSize: `${props.fontSize}px`, color: '#7e8696' } }, 'No data')
+          ? h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: `${props.fontSize}px`, color: '#7e8696' } }, 'No data')
           : props.bars.map((bar, i) => {
               const value = Math.max(0, bar.value ?? 0)
               const ratio = maxValue > 0 ? value / maxValue : 0

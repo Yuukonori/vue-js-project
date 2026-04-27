@@ -1,4 +1,5 @@
 import { h, defineComponent, computed } from 'vue'
+import { buildIcon } from './icon.js'
 
 /**
  * buildReceiveCard(options) — stacked mail receipt cards
@@ -13,7 +14,7 @@ import { h, defineComponent, computed } from 'vue'
  *   mails        {Array}   Array of mail objects. Newest can be first or last; use `order`.
  *   order        {'newest-first'|'oldest-first'} Default: 'newest-first'
  *   titleKey     {string}  Property name for title text. Default: 'title'
- *   bodyKey      {string}  Property name for body text. Default: 'body'
+ *   statusKey    {string}  Property name for status text. Default: 'status'
  *   metaKey      {string}  Property name for subtitle/meta text. Default: 'meta'
  *   emptyTitle   {string}  Empty state title. Default: 'No mail received'
  *   emptyBody    {string}  Empty state body. Default: 'Incoming messages will appear here.'
@@ -32,7 +33,7 @@ const _ReceiveCardComponent = defineComponent({
     mails:       { default: () => [] },
     order:       { default: 'newest-first' },
     titleKey:    { default: 'title' },
-    bodyKey:     { default: 'body' },
+    statusKey:   { default: 'status' },
     metaKey:     { default: 'meta' },
     emptyTitle:  { default: 'No mail received' },
     emptyBody:   { default: 'Incoming messages will appear here.' },
@@ -70,37 +71,81 @@ const _ReceiveCardComponent = defineComponent({
       }
 
       const stack = visibleMails.value.map((mail, idx) => {
-        const topOffset = idx * Number(props.overlap || 0)
         const zIndex = visibleMails.value.length - idx
 
         return h('div', {
           key: mail.id ?? idx,
           style: {
-            position: idx === 0 ? 'relative' : 'relative',
+            position: 'relative',
             zIndex,
-            marginTop: idx === 0 ? '0' : `-${Number(props.overlap || 0)}px`,
+            marginTop: idx === 0 ? '0' : '-4px',
             background: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '16px',
-            padding: '16px',
-            boxShadow: '0 8px 20px rgba(15, 23, 42, 0.08)',
-            transform: idx === 0 ? 'none' : `translateY(${topOffset}px)`,
+            border: '1px solid #dde3ee',
+            borderRadius: '18px',
+            padding: '18px 20px',
             boxSizing: 'border-box',
             overflow: 'hidden',
           },
         }, [
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' } }, [
-            h('div', { style: { minWidth: 0, flex: 1 } }, [
-              h('div', { style: { fontSize: '16px', fontWeight: '700', color: '#0f172a' } }, String(mail?.[props.titleKey] ?? mail?.subject ?? 'Untitled mail')),
-              mail?.[props.metaKey] || mail?.from || mail?.date
-                ? h('div', { style: { marginTop: '4px', fontSize: '12px', fontWeight: '600', color: '#94a3b8' } },
-                    String(mail?.[props.metaKey] ?? mail?.from ?? mail?.date))
-                : null,
-            ].filter(Boolean)),
-            h('div', { style: { fontSize: '12px', fontWeight: '700', color: '#64748b', flexShrink: 0 } }, `#${visibleMails.value.length - idx}`),
+          h('div', {
+            style: {
+              display: 'grid',
+              gridTemplateColumns: '40px minmax(0, 1fr) 24px',
+              gap: '14px',
+              alignItems: 'center',
+              minHeight: '58px',
+            },
+          }, [
+            h('div', {
+              style: {
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              },
+            }, [buildIcon(mail?.icon ?? 'laptop', { size: 34, color: '#8a8400' })]),
+            h('div', {
+              style: {
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+              },
+            }, [
+              h('div', {
+                style: {
+                  fontSize: '17px',
+                  fontWeight: '700',
+                  lineHeight: 1.15,
+                  color: '#0f172a',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                },
+              }, String(mail?.[props.titleKey] ?? mail?.subject ?? 'Untitled mail')),
+              h('div', {
+                style: {
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  lineHeight: 1.15,
+                  color: '#9fb0cc',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                },
+              }, String(mail?.[props.statusKey] ?? mail?.[props.metaKey] ?? '')),
+            ]),
+            h('div', {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+              },
+            }, [buildIcon('chevron-right', { size: 24, color: '#d6deea' })]),
           ]),
-          h('div', { style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.5, color: '#334155' } },
-            String(mail?.[props.bodyKey] ?? mail?.message ?? ''))
         ])
       })
 

@@ -141,10 +141,18 @@ const sidebar = buildSidebar({
 // ── Page content (driven by active item) ─────────────────────────────────
 
 const content = computed(() => activeItem.value.content(MENU_CONFIG.user))
-const renderedPage = computed(() => ({
-  name: `Page-${currentPath.value}`,
-  render: () => content.value,
-}))
+const renderedPage = computed(() => {
+  const page = content.value
+  // If it's already a component object (with setup/render), use it directly
+  if (page && (page.setup || page.render || typeof page === 'function')) {
+    return page
+  }
+  // Otherwise, wrap it in a simple render component
+  return {
+    name: `Page-${currentPath.value}`,
+    render: () => page,
+  }
+})
 </script>
 
 <template>

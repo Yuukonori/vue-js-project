@@ -60,6 +60,7 @@ export { buildReceiveCard }                           from './builders/receiveCa
 
 // ── Cards ────────────────────────────────────────────────────────────────────
 export { buildCard }                                  from './builders/card.js'
+export { buildStackedCardsList }                      from './builders/stackedCardsList.js'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 export { formatCurrencyShort, formatCurrency, formatValueShort, capitalize, replaceUnderscoreToSpace, replaceUnderscoreToEmpty } from './utils.js'
