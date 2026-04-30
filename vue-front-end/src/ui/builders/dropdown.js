@@ -128,7 +128,7 @@ const _DropdownComponent = defineComponent({
             display:      'flex',
             alignItems:   'center',
             height:       props.height,
-            padding:      '0 14px',
+            padding:      '0 10px',
             background:   props.disabled ? '#f8fafc' : props.bg,
             border:       `1.5px solid ${borderColor}`,
             borderRadius: props.radius,

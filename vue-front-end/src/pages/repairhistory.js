@@ -28,17 +28,19 @@ export function RepairHistoryPage(user) {
 
       return { ongoingRepairs, serviceHistory, problemFrequency }
     },
-    render(ctx) {
+    render(Ruki) {
       return buildContentGrid({
-        columns: 4, rows: 6, colGap: 12, rowGap: 12, padding: '24px', cellPadding: 0, display: false,
+        columns: 4, rows: 6, colGap: 12, rowGap: 12, padding: '16px', cellPadding: 0, display: false,
+        fillViewport: true,
         span: { 1: { colSpan: 4, rowSpan: 2 }, 9: { colSpan: 2, rowSpan: 2 }, 11: { colSpan: 2, rowSpan: 2 }, 17: { colSpan: 3 }, 21: { colSpan: 4 } },
         align: { 17: 'center Left' },
         child: {
           1: buildHeader({
             title: 'Repair & Maintenance History',
             subtitle: 'Deep diagnostics and technical log archival for enterprise assets.',
-            backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
-            style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
+            titleOptions: { size: '2xl' },
+            backgroundColor: 'white', divider: false, padding: '16px 24px 12px',
+            style: { margin: '-16px 0 0 -16px', width: 'calc(100% + 32px)' },
           }),
           9: buildGrid({
             columns: 3, rows: 4, display: true, align: { 4: 'start', 11: 'center' },
@@ -46,8 +48,8 @@ export function RepairHistoryPage(user) {
             span: { 1: { colSpan: 3 }, 4: { colSpan: 3, rowSpan: 10 } },
             child: {
               1: buildIconText('Ongoing Repairs', { textWeight: 'bold', icon: 'clipboard', iconSize: '50px', color: 'gray400', weight: 'semibold', letterSpacing: '0.8px', textSize: '24px', style: { marginLeft: '10px' } }),
-              4: ctx.ongoingRepairs.length > 0 ? buildStackedCardsList({
-                data: ctx.ongoingRepairs,
+              4: Ruki.ongoingRepairs.length > 0 ? buildStackedCardsList({
+                data: Ruki.ongoingRepairs,
                 columns: [
                   { key: 'icon', accessor: 'severity', render: (val) => buildIcon('circle', { size: 22, color: (val || '').includes('URGENT') ? '#ff7c01' : '#f51818' }) },
                   { key: 'title', accessor: 'name' },
@@ -68,11 +70,11 @@ export function RepairHistoryPage(user) {
             columns: 1, rows: 2, display: false, span: { 1: { rowSpan: 2 } },
             style: { height: '100%' },
             child: {
-              1: buildProgressBar({ height: '100%', title: 'Problem Frequency', titleColor: '#475569', bars: ctx.problemFrequency, animation: true, hover: true })
+              1: buildProgressBar({ height: '100%', title: 'Problem Frequency', titleColor: '#475569', bars: Ruki.problemFrequency, animation: true, hover: true })
             }
           }),
           17: buildText('SERVICE HISTOY & FAILURE MONITORING', { variant: 'h4', color: '#475569', weight: 'bold', style: { marginLeft: '5px' } }),
-          21: ctx.serviceHistory.length > 0 ? buildTable({
+          21: Ruki.serviceHistory.length > 0 ? buildTable({
             columns: [
               { header: 'ASSET ID', accessor: 'asset_id', render: (val, row) => buildGrid({ columns: 1, rows: 2, display: false, rowGap: 2, child: { 1: buildText(val, { tag: 'div', size: 'xl', weight: 'bold', color: 'gray800' }), 2: buildText(row.asset_name, { tag: 'div', size: 'sm', color: 'gray500' }) } }) },
               { header: 'FAILURE FREQUENCY', accessor: 'failure_frequency', align: 'center', render: (val) => buildText(val, { tag: 'div', size: 'sm', color: 'gray500', weight: 'semibold' }) },
@@ -80,7 +82,7 @@ export function RepairHistoryPage(user) {
               { header: 'CONDITION', accessor: 'condition', align: 'center', render: (val) => buildTextBadge(val, { colorText: (val || '').includes('Degrading') ? '#7a7600' : (val || '').includes('Unstable') ? '#dc2626' : '#0e8004', colorCon: '#f8fafc', size: 14, bold: true, padding: '4px 10px', radius: '8px' }) },
               { header: 'STATUS', accessor: 'status_icon', align: 'center', render: (val) => buildIcon(val === 'error' ? 'circle-x' : val === 'warning' ? 'warning' : 'circle-check', { size: 16, color: val === 'error' ? '#c81e1e' : val === 'warning' ? '#7a7600' : '#0e8004' }) },
             ],
-            data: ctx.serviceHistory,
+            data: Ruki.serviceHistory,
             pagination: { maxRows: 3, align: 'center' },
             style: { borderRadius: '14px', border: '1px solid #e5e7eb' },
           }) : buildText('No service history records available.', { size: 'md', color: 'gray400', style: { padding: '80px 0', textAlign: 'center', borderRadius: '14px', width: '100%', backgroundColor: 'white' } })

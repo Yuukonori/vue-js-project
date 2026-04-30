@@ -24,17 +24,19 @@ export function MonitoringPage(user) {
 
       return { activityFeed, maintenanceTasks }
     },
-    render(ctx) {
+    render(Ruki) {
       return buildContentGrid({
-        columns: 6, rows: 6, height: '100%', colGap: 12, rowGap: 12, padding: '24px', cellPadding: 0, display: false,
+        columns: 6, rows: 6, height: '100%', colGap: 12, rowGap: 12, padding: '16px', cellPadding: 0, display: false,
+        fillViewport: true,
         span: { 1: { colSpan: 6, rowSpan: 2 }, 13: { colSpan: 2 }, 15: { colSpan: 4 }, 19: { colSpan: 2 }, 21: { colSpan: 4 }, 25: { colSpan: 6 }, 31: { colSpan: 2 }, 33: { colSpan: 4 } },
         align: { 13: 'center left' },
         child: {
           1: buildHeader({
             title: 'Central Monitoring Hub',
+            titleOptions: { size: '2xl' },
             subtitle: 'A holistic archival view of system health, physical assets, and user engagement.',
-            backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
-            style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
+            backgroundColor: 'white', divider: false, padding: '16px 24px 12px',
+            style: { margin: '-16px 0 0 -16px', width: 'calc(100% + 32px)' },
           }),
           13: buildIconText('System Health', { icon: 'computer', iconSize: 30, iconColor: 'primary', textSize: '2xl', textWeight: 'bold', textColor: 'gray800', gap: '8px', style: { marginLeft: '10px' } }),
           15: buildIconText('User Activities', { icon: 'user-activities', iconSize: '30', iconColor: 'primary', textSize: '2xl', textWeight: 'bold', textColor: 'gray800', gap: '8px', style: { marginLeft: '10px' } }),
@@ -59,8 +61,8 @@ export function MonitoringPage(user) {
               1: buildText('Real-time Activity Feed', { size: 'lg', weight: 'bold', color: 'gray700' }),
               7: buildButton('View Detailed Logs ->', { size: 'sm', weight: 'semibold', color: 'primary', onPressed: () => { if (globalThis.__appNavigate) globalThis.__appNavigate('/activity-logs') } }),
               9: buildText('Latest events from authenticated users across all nodes', { size: 'sm', color: 'gray500' }),
-              17: ctx.activityFeed.length > 0 ? buildStackedCardsList({
-                data: ctx.activityFeed,
+              17: Ruki.activityFeed.length > 0 ? buildStackedCardsList({
+                data: Ruki.activityFeed,
                 columns: [
                   {
                     key: 'icon', accessor: 'type', render: (val) => {
@@ -107,7 +109,7 @@ export function MonitoringPage(user) {
             style: { height: '100%' },
             child: {
               1: buildText('Critical Maintenance', { size: '2xl', weight: 'bold', color: 'gray700' }),
-              4: ctx.maintenanceTasks.length > 0 ? buildTable({
+              4: Ruki.maintenanceTasks.length > 0 ? buildTable({
                 width: '100%',
                 columns: [
                   { header: 'ASSET ID', accessor: 'asset_id', render: (val) => buildText(String(val), { size: 'sm', weight: 'bold', color: 'gray700', style: { whiteSpace: 'nowrap' } }) },
@@ -115,7 +117,7 @@ export function MonitoringPage(user) {
                   { header: 'PRIORITY', accessor: 'priority', align: 'center', render: (val) => buildText(String(val).toUpperCase(), { size: 'sm', weight: 'bold', color: (val || '').toLowerCase().includes('critical') ? '#ef4444' : '#f59e0b', letterSpacing: '0.4px' }) },
                   { header: 'ACTION', accessor: 'action_text', align: 'center', render: (val) => buildText(String(val), { size: 'sm', weight: 'bold', color: '#2563eb', style: { cursor: 'pointer', whiteSpace: 'nowrap' } }) },
                 ],
-                data: ctx.maintenanceTasks,
+                data: Ruki.maintenanceTasks,
                 style: { borderRadius: '12px', border: '1px solid #e5e7eb' },
                 pagination: { maxRows: 3 }
               }) : buildText('No critical maintenance required.', { size: 'md', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' } }),

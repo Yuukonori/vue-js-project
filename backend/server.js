@@ -73,6 +73,26 @@ app.get("/api/assets/inventory", async (req, res) => {
   }
 });
 
+app.post("/api/assets/add", async (req, res) => {
+  const { asset_id, category, serial_number, service_years, purchase_date, warranty_expiry, status } = req.body;
+  try {
+    const result = await pool.query(
+      "INSERT INTO inventory (asset_id, category, serial_number, service_years, purchase_date, warranty_expiry, status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [asset_id, category, serial_number, service_years || 0, purchase_date, warranty_expiry, status]
+    );
+
+    // Also add to activity feed
+    await pool.query(
+      "INSERT INTO activity_feed (type, title, description, time_label) VALUES ($1, $2, $3, $4)",
+      ['update', `New ${category} Registered: ${asset_id}`, `Asset ${asset_id} was added to the inventory.`, 'JUST NOW']
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Screenshot: Real-time Activity Feed
 app.get("/api/activity/feed", async (req, res) => {
   try {
@@ -147,12 +167,17 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: err.message || 'Internal Server Error' });
+});
+
 async function startServer() {
   try {
     await pool.query("SELECT NOW()");
     await bootstrapDatabase();
-    app.listen(5000, () => {
-      console.log("Full-Stack Dashboard Backend running on http://localhost:5000");
+    app.listen(5050, "0.0.0.0", () => {
+      console.log("Full-Stack Dashboard Backend running on http://127.0.0.1:5050");
       console.log(
         `DB connected: ${dbConfig.user}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
       );

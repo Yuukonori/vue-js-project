@@ -33,8 +33,8 @@ import { buildIcon } from './icon.js'
 
 const sizeMap = {
   sm: { pad: '6px 10px', font: 'sm', height: '32px' },
-  md: { pad: '9px 12px', font: 'base', height: '40px' },
-  lg: { pad: '12px 16px', font: 'lg', height: '48px' },
+  md: { pad: '9px 10px', font: 'base', height: '40px' },
+  lg: { pad: '12px 10px', font: 'lg', height: '48px' },
 }
 
 export function buildInput(options = {}) {

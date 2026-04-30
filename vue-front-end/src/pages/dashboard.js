@@ -43,7 +43,7 @@ export function DashboardPage(user) {
                 expiringAssets
             }
         },
-        render(ctx) {
+        render(Ruki) {
             function onShowNetworkMap() {
                 if (typeof globalThis.__appNavigate === 'function') {
                     globalThis.__appNavigate('/monitoring')
@@ -53,18 +53,20 @@ export function DashboardPage(user) {
 
             return buildContentGrid({
                 columns: 4, rows: 4, colGap: 12, rowGap: 12, display: false,
+                fillViewport: true,
                 span: { 1: { colSpan: 4, rowSpan: 2 }, 9: { colSpan: 3, rowSpan: 1 }, 12: { rowSpan: 2 }, 13: { colSpan: 3, rowSpan: 1 }, 17: { colSpan: 4 } },
-                padding: '24px', cellPadding: 0, mobileConfig: { columns: 1, rows: 3 }, tabletConfig: { columns: 2, rows: 3 },
+                padding: '16px', cellPadding: 0, mobileConfig: { columns: 1, rows: 3 }, tabletConfig: { columns: 2, rows: 3 },
                 align: { 12: 'center' },
                 child: {
                     1: buildHeader({
                         title: 'Dashboard',
+                        titleOptions: { size: '2xl' },
                         subtitle: `Welcome back, ${user.name}!`,
                         statusText: 'ALL SYSTEM OPERATIONAL',
                         statusIcon: 'circle',
                         statusColor: dashboardColors.healthyState,
-                        statusBg: 'gray200', statusWidth: '195px', backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
-                        style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
+                        statusBg: 'gray200', statusWidth: '195px', backgroundColor: 'white', divider: false, padding: '16px 24px 12px',
+                        style: { margin: '-16px 0 0 -16px', width: 'calc(100% + 32px)' },
                     }),
                     9: buildGrid({
                         columns: 3, rows: 2, padding: '20px', rowGap: '30', display: true,
@@ -114,14 +116,14 @@ export function DashboardPage(user) {
                         span: { 1: { colSpan: 2, rowSpan: 1 }, 4: { colSpan: 3, rowSpan: 1 } },
                         child: {
                             1: buildText('Recent Repair Tickets', { variant: 'h3', weight: 'bold', color: dashboardColors.headingText }),
-                            4: ctx.repairTickets.length > 0 ? buildTable({
+                            4: Ruki.repairTickets.length > 0 ? buildTable({
                                 columns: [
                                     { header: 'Ticket ID', accessor: 'ticket_id', render: (val) => buildText(String(val || ''), { tag: 'span', color: dashboardColors.actionColor, weight: 'semibold' }) },
                                     { header: 'Subject', accessor: 'subject' },
                                     { header: 'Status', accessor: 'status', align: 'center', render: (val) => buildBadge(String(val || '').toUpperCase(), { color: (val || '').toLowerCase().includes('urgent') ? 'error' : (val || '').toLowerCase().includes('resolved') ? 'success' : 'info', variant: 'soft', size: 'lg', radius: 'full' }) },
                                     { header: 'Updated', accessor: 'updated_at', align: 'center', render: (val) => val ? new Date(val).toLocaleDateString() : '' }
                                 ],
-                                data: ctx.repairTickets,
+                                data: Ruki.repairTickets,
                                 rowHover: true,
                             }) : buildText('No recent tickets found.', { size: 'md', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' } })
                         },
@@ -133,8 +135,8 @@ export function DashboardPage(user) {
                         child: {
                             1: buildIcon('calendar-x', { size: 40, color: dashboardColors.warningState }),
                             2: buildText('Expiring Assets', { variant: 'h3', weight: 'bold', color: dashboardColors.strongHeading }),
-                            7: ctx.expiringAssets.length > 0 ? buildStackedCardsList({
-                                data: ctx.expiringAssets,
+                            7: Ruki.expiringAssets.length > 0 ? buildStackedCardsList({
+                                data: Ruki.expiringAssets,
                                 columns: [
                                     { key: 'icon', accessor: 'type', render: (val) => buildIcon(val, { size: 32, color: dashboardColors.warningState }) },
                                     { key: 'title', accessor: 'name' },

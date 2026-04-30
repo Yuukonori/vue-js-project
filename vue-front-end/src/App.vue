@@ -163,7 +163,7 @@ const renderedPage = computed(() => {
       render: () => LoginPage({ onAuthenticate: handleAuthenticate }),
     }"
   />
-  <div v-else style="min-height: 100vh; background: #eef1f8; display: flex;">
+  <div v-else style="height: 100vh; background: #eef1f8; display: flex; overflow: hidden;">
     <component :is="sidebar" />
     <component :is="renderedPage" :key="currentPath" />
   </div>
