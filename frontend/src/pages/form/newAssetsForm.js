@@ -1,4 +1,4 @@
-import { ref, h } from 'vue'
+import { ref, h, computed, onMounted } from 'vue'
 import {
   buildButton,
   buildContentGrid,
@@ -16,6 +16,28 @@ export function NewAssetsForm(user) {
     setup() {
       const isSuccess = ref(false)
       const formRef = ref(null)
+      const users = ref([])
+      const selectedOwnerId = ref(null)
+
+      async function fetchUsers() {
+        try {
+          let res = await fetch('http://127.0.0.1:5050/api/users')
+          if (!res.ok) {
+            res = await fetch('/api/users')
+          }
+          if (!res.ok) throw new Error(`Failed to fetch users: ${res.status}`)
+          const list = await res.json()
+          users.value = Array.isArray(list) ? list : []
+        } catch (err) {
+          console.error('Failed to fetch users for asset form:', err)
+          users.value = []
+        }
+      }
+
+      const assignItems = computed(() => ([
+        { text: 'Unassigned', value: null },
+        ...users.value.map(u => ({ text: u.name, value: u.id })),
+      ]))
 
       function goBack() {
         if (typeof globalThis.__appNavigate === 'function') {
@@ -30,7 +52,11 @@ export function NewAssetsForm(user) {
 
       const triggerSubmit = () => formRef.value?.submitForm()
 
-      return { isSuccess, goBack, handleSuccess, formRef, triggerSubmit }
+      onMounted(async () => {
+        await fetchUsers()
+      })
+
+      return { isSuccess, goBack, handleSuccess, formRef, triggerSubmit, assignItems, selectedOwnerId }
     },
     render(Ruki) {
       if (Ruki.isSuccess) {
@@ -82,6 +108,9 @@ export function NewAssetsForm(user) {
           }),
           7: h(AssetForm, {
             ref: 'formRef',
+            assignItems: Ruki.assignItems.value || Ruki.assignItems,
+            assignedOwner: Ruki.selectedOwnerId,
+            onAssignedOwnerUpdate: (v) => { Ruki.selectedOwnerId = v },
             onSuccess: Ruki.handleSuccess,
             onCancel: Ruki.goBack
           }),

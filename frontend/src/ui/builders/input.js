@@ -73,7 +73,7 @@ export function buildInput(options = {}) {
     flex:        '1',
     height:      type === 'textarea' ? undefined : sz.height,
     padding:     sz.pad,
-    paddingLeft: iconLeft  ? '36px' : undefined,
+    paddingLeft: iconLeft ? '36px' : '14px',
     paddingRight: iconRight ? '36px' : undefined,
     fontSize:    token(fontSize, sz.font),
     fontFamily:  'inherit',

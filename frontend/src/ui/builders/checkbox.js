@@ -12,6 +12,7 @@ import { h } from 'vue'
  *   disabled   {boolean}
  *   color      {string}    Checked color. Default: '#6366f1'
  *   onClick    {function}
+ *   style      {object}    Extra wrapper style
  */
 export function buildCheckbox(options = {}) {
   const {
@@ -23,6 +24,7 @@ export function buildCheckbox(options = {}) {
     disabled = false,
     color    = '#6366f1',
     onClick,
+    style    = {},
   } = options
 
   const checkIcon = h('svg', {
@@ -55,6 +57,7 @@ export function buildCheckbox(options = {}) {
       width:        width ? `${width}px` : undefined,
       height:       height ? `${height}px` : undefined,
       boxSizing:    'border-box',
+      ...style,
     },
     onClick: disabled ? undefined : onClick,
   }, [

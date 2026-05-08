@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, ref } from 'vue'
-import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildDropdown, buildFileUpload, buildGrid, buildHeader, buildIcon, buildImage, buildInput, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer, buildTextBadge, buildIconText, buildTapOption } from '../ui/index.js'
+import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildDropdown, buildFileUpload, buildGrid, buildHeader, buildIcon, buildIconContainer, buildImage, buildInput, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer, buildTextBadge, buildIconText, buildTapOption } from '../ui/index.js'
 import { USERS } from '../data/users.js'
 import { formatLastUpdate } from '../lastUpdate.js'
 
@@ -31,6 +31,13 @@ export function SupportPage(user) {
       const priorityLevel = ref('low')
       const severityLevel = ref('low')
       const selectedUploadFiles = ref([])
+      const subjectTitle = ref('')
+      const assetTag = ref('')
+      const issueDescription = ref('')
+      const isSubmitting = ref(false)
+      const submitMessage = ref('')
+      const showSuccessPopup = ref(false)
+      const submittedTicketId = ref('')
       const supportVisibleCount = computed(() => (showMoreClicks.value === 0 ? defaultVisibleCount : maxSupportUsers))
       const visibleUsers = computed(() => users.slice(0, supportVisibleCount.value))
 
@@ -48,6 +55,64 @@ export function SupportPage(user) {
 
       function openUserDetail(member) {
         alert(`User Detail\n\nName: ${member.name}\nRole: ${member.role}\nID: ${member.id}`)
+      }
+
+      function resetTicketForm() {
+        ticketCategory.value = 'hardware'
+        priorityLevel.value = 'low'
+        subjectTitle.value = ''
+        assetTag.value = ''
+        issueDescription.value = ''
+        selectedUploadFiles.value = []
+        submitMessage.value = ''
+      }
+
+      async function submitTicket() {
+        if (!subjectTitle.value.trim()) {
+          submitMessage.value = 'Subject title is required.'
+          return
+        }
+
+        isSubmitting.value = true
+        submitMessage.value = ''
+        try {
+          const payload = {
+            category: ticketCategory.value,
+            priority: priorityLevel.value,
+            subject: subjectTitle.value.trim(),
+            assetTag: assetTag.value.trim(),
+            description: issueDescription.value.trim(),
+          }
+
+          let res = await fetch('/api/repair/tickets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+
+          if (!res.ok && [404, 405].includes(res.status)) {
+            res = await fetch('http://127.0.0.1:5050/api/repair/tickets', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+          }
+
+          const raw = await res.text()
+          let data = null
+          try { data = raw ? JSON.parse(raw) : null } catch { data = { error: raw?.slice(0, 140) || 'Invalid server response' } }
+          if (!res.ok) throw new Error(data?.error || 'Failed to submit ticket')
+
+          submittedTicketId.value = String(data.ticket_id || '')
+          submitMessage.value = `Ticket ${data.ticket_id} submitted successfully.`
+          showSuccessPopup.value = true
+          resetTicketForm()
+          setTimeout(() => { showSuccessPopup.value = false }, 1800)
+        } catch (err) {
+          submitMessage.value = err?.message || 'Failed to submit ticket.'
+        } finally {
+          isSubmitting.value = false
+        }
       }
 
       function buildUserRows() {
@@ -130,7 +195,7 @@ export function SupportPage(user) {
           })
         }
 
-        return buildContentGrid({
+        const mainPage = buildContentGrid({
           columns: 4,
           rows: 7,
           colGap: 18,
@@ -284,9 +349,30 @@ export function SupportPage(user) {
                     }),
                   },
                 }),
-                7: buildInput({ label: 'SUBJECT TITLE', placeholder: 'e.g., Critical failure in database connectivity', full: true, style: { paddingLeft: '14px' } }),
-                13: buildInput({ label: 'ASSET TAG/ID (OPTIONAL)', placeholder: 'ALX-####-####', full: true, style: { paddingLeft: '14px' } }),
-                19: buildInput({ label: 'DESCRIPTION', placeholder: 'Describe the issue in detail...', full: true, style: { paddingLeft: '14px' } }),
+                7: buildInput({
+                  label: 'SUBJECT TITLE',
+                  placeholder: 'e.g., Critical failure in database connectivity',
+                  full: true,
+                  value: subjectTitle,
+                  onUpdate: (v) => { subjectTitle.value = v },
+                  style: { paddingLeft: '14px' }
+                }),
+                13: buildInput({
+                  label: 'ASSET TAG/ID (OPTIONAL)',
+                  placeholder: 'ALX-####-####',
+                  full: true,
+                  value: assetTag,
+                  onUpdate: (v) => { assetTag.value = v },
+                  style: { paddingLeft: '14px' }
+                }),
+                19: buildInput({
+                  label: 'DESCRIPTION',
+                  placeholder: 'Describe the issue in detail...',
+                  full: true,
+                  value: issueDescription,
+                  onUpdate: (v) => { issueDescription.value = v },
+                  style: { paddingLeft: '14px' }
+                }),
                 25: buildGrid({
                   columns: 1,
                   rows: 1,
@@ -313,23 +399,62 @@ export function SupportPage(user) {
                   rows: 1,
                   display: false,
                   child: {
-                    1: buildButton('Cancel', { variant: 'outline', size: 'sm', height: '40px', style: { width: '100%', borderColor: '#eaf2ff', color: '#1d4ed8', background: '#bcd6fb', fontWeight: '600' } }),
-                    2: buildButton('Submit', { variant: 'outline', size: 'sm', height: '40px', style: { width: '100%', borderColor: '#bcd6fb', color: '#eaf2ff', background: '#1d4ed8', fontWeight: '600' } }),
+                    1: buildButton('Cancel', { variant: 'outline', size: 'sm', height: '40px', onPressed: resetTicketForm, style: { width: '100%', borderColor: '#eaf2ff', color: '#1d4ed8', background: '#bcd6fb', fontWeight: '600' } }),
+                    2: buildButton(isSubmitting.value ? 'Submitting...' : 'Submit', { variant: 'outline', size: 'sm', height: '40px', onPressed: submitTicket, style: { width: '100%', borderColor: '#bcd6fb', color: '#eaf2ff', background: '#1d4ed8', fontWeight: '600' } }),
                   },
                 }),
-                34: buildGrid({
-                  columns: 2,
-                  rows: 1,
-                  display: false,
-                  child: {
-                    1: buildButton('Cancel', { variant: 'outline', size: 'sm', height: '40px', style: { width: '100%', borderColor: '#eaf2ff', color: '#1d4ed8', background: '#bcd6fb', fontWeight: '600' } }),
-                    2: buildButton('Submit', { variant: 'outline', size: 'sm', height: '40px', style: { width: '100%', borderColor: '#bcd6fb', color: '#eaf2ff', background: '#1d4ed8', fontWeight: '600' } }),
-                  }
-                })
+                31: submitMessage.value
+                  ? buildText(submitMessage.value, {
+                      size: 'sm',
+                      color: submitMessage.value.includes('successfully') ? 'success' : 'error',
+                      style: { textAlign: 'left', marginTop: '6px' }
+                    })
+                  : buildText('', { size: 'sm' })
               }
             })
           }
         })
+
+        const successDialog = showSuccessPopup.value ? buildGrid({
+          columns: 1,
+          rows: 1,
+          display: true,
+          fillViewport: true,
+          style: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 10050,
+            backgroundColor: 'rgba(15, 23, 42, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(4px)',
+          },
+          child: {
+            1: buildGrid({
+              columns: 1,
+              rows: 4,
+              display: true,
+              rowGap: 16,
+              padding: '34px',
+              radius: 24,
+              backgroundColor: '#ffffff',
+              style: { width: '400px', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' },
+              align: { 1: 'center', 2: 'center', 3: 'center', 4: 'center' },
+              child: {
+                1: buildIconContainer({ icon: 'circle-check', colorIcon: '#10b981', colorCon: '#d1fae5', size: '80', radius: '50%', containerStyle: 'square', style: { margin: '0 auto' } }),
+                2: buildText('Success!', { size: '3xl', weight: 'bold', color: '#111827' }),
+                3: buildText('Ticket successfully submitted.', { size: 'md', color: '#4b5563' }),
+                4: submittedTicketId.value ? buildText(`Ticket ID: ${submittedTicketId.value}`, { size: 'sm', color: '#6b7280' }) : buildText('', { size: 'sm' }),
+              },
+            }),
+          },
+        }) : null
+
+        return h('div', [mainPage, successDialog])
       }
     }
   }

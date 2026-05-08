@@ -56,34 +56,38 @@
           class="menu-item-wrapper"
           :style="{ '--item-index': index }"
         >
-          <!-- Active Indicator -->
-          <div v-if="props.activeItem === item.id" class="active-indicator"></div>
-          
-          <div
-            :class="['menu-item', { active: props.activeItem === item.id }]"
-            @click="handleItemClick(item.id)"
-            @mouseenter="handleItemHover(item.id, $event)"
-            @mouseleave="handleItemLeave"
-          >
-            <div class="icon-container">
-              <component :is="item.icon" class="menu-icon" />
-            </div>
-            <transition name="fade-slide">
-              <span v-if="!isCollapsed" class="menu-label">{{ item.label }}</span>
-            </transition>
-            
-            <!-- Badge -->
-            <transition name="scale-fade">
-              <span v-if="item.badge && !isCollapsed" class="menu-badge">{{ item.badge }}</span>
-            </transition>
-          </div>
+          <div v-if="item.line" class="menu-divider" role="separator" aria-hidden="true"></div>
 
-          <!-- Tooltip for collapsed state -->
-          <transition name="tooltip-fade">
-            <div v-if="isCollapsed && hoveredItem === item.id" class="menu-tooltip">
-              {{ item.label }}
+          <template v-else>
+            <!-- Active Indicator -->
+            <div v-if="props.activeItem === item.id" class="active-indicator"></div>
+            
+            <div
+              :class="['menu-item', { active: props.activeItem === item.id }]"
+              @click="handleItemClick(item.id)"
+              @mouseenter="handleItemHover(item.id, $event)"
+              @mouseleave="handleItemLeave"
+            >
+              <div class="icon-container">
+                <component :is="item.icon" class="menu-icon" />
+              </div>
+              <transition name="fade-slide">
+                <span v-if="!isCollapsed" class="menu-label">{{ item.label }}</span>
+              </transition>
+              
+              <!-- Badge -->
+              <transition name="scale-fade">
+                <span v-if="item.badge" :class="['menu-badge', { 'collapsed-badge': isCollapsed }]">{{ item.badge }}</span>
+              </transition>
             </div>
-          </transition>
+
+            <!-- Tooltip for collapsed state -->
+            <transition name="tooltip-fade">
+              <div v-if="isCollapsed && hoveredItem === item.id" class="menu-tooltip">
+                {{ item.label }}
+              </div>
+            </transition>
+          </template>
         </div>
       </nav>
 
@@ -280,7 +284,8 @@ const displayMenuItems = computed(() => {
     id: item.path || item.id,
     label: item.label,
     icon: iconMap[item.icon] || DefaultIcon,
-    badge: item.badge
+    badge: item.badge,
+    line: !!item.line,
   }))
 })
 
@@ -643,6 +648,7 @@ onMounted(() => {
 }
 
 .menu-badge {
+  margin-left: auto;
   padding: 2px 8px;
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
@@ -650,6 +656,27 @@ onMounted(() => {
   font-weight: 600;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.collapsed-badge {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  margin-left: 0;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 2px solid #14233f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.45);
+  transform: translate(28%, -22%);
+  z-index: 3;
 }
 
 .menu-tooltip {

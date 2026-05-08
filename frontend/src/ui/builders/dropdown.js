@@ -129,6 +129,18 @@ const _DropdownComponent = defineComponent({
       const canClear    = props.clearable || props.showClearButton
       const borderColor = (props.required && !hasValue) ? '#ef4444' : (isOpen.value ? '#6366f1' : '#e2e8f0')
 
+      // Debug logging
+      if (isOpen.value) {
+        console.log('Dropdown opened:', {
+          items: props.items,
+          itemsLength: props.items?.length,
+          isArray: Array.isArray(props.items),
+          menuTop: menuTop.value,
+          menuLeft: menuLeft.value,
+          menuWidth: menuWidth.value
+        })
+      }
+
       return h('div', {
         ref: container,
         style: { position: 'relative', width: props.width, display: 'inline-block', ...props.style },
@@ -188,11 +200,11 @@ const _DropdownComponent = defineComponent({
             border:       '1px solid rgba(0,0,0,0.1)',
             borderRadius: props.radius,
             boxShadow:    '0 8px 24px rgba(0,0,0,0.08)',
-            zIndex:       9999,
+            zIndex:       10050,
             maxHeight:    '220px',
             overflowY:    'auto',
           },
-        }, props.items.map((item, idx) =>
+        }, (props.items && props.items.length > 0) ? props.items.map((item, idx) =>
           h('div', {
             key: idx,
             style: {
@@ -213,7 +225,7 @@ const _DropdownComponent = defineComponent({
             }, isSelected(item.value) ? '☑' : '☐') : null,
             item.text,
           ].filter(Boolean))
-        )) : null,
+        ) : [h('div', { style: { padding: '10px 14px', fontSize: '14px', color: '#94a3b8' } }, 'No items available')]) : null,
       ])
     }
   },

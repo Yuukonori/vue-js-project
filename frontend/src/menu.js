@@ -6,9 +6,11 @@ import { RepairHistoryPage } from './pages/repairhistory.js'
 import { MonitoringPage } from './pages/monitoring.js'
 import { ActivityLogsPage } from './pages/activitylog.js'
 import { NewAssetsForm } from './pages/form/newAssetsForm.js'
+import { UserFormPage } from './pages/form/userForm.js'
 import { AdminUsersPage } from './pages/adminUsers.js'
 import { CasesPage } from './pages/cases.js'
 import { UserProfilePage } from './pages/userProfile.js'
+import { AccessControlPage } from './pages/accessControl.js'
 
 export const MENU_CONFIG = {
   header: {
@@ -87,12 +89,29 @@ export const MENU_CONFIG = {
       content:   () => AdminUsersPage(),
     },
     {
+      label:     'User Form',
+      icon:      'user',
+      path:      '/userform',
+      isDefault: false,
+      line:      false,
+      hidden:    true,
+      content:   (user) => UserFormPage(user),
+    },
+    {
       label:     'Cases',
       icon:      'clipboard',
       path:      '/cases',
       isDefault: true,
       line:      false,
       content:   () => CasesPage(),
+    },
+    {
+      label:     'Access Control',
+      icon:      'user',
+      path:      '/access-control',
+      isDefault: false,
+      line:      false,
+      content:   () => AccessControlPage(),
     },
     {
       label:     'User Profile',

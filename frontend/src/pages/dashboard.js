@@ -176,6 +176,7 @@ export function DashboardPage(user) {
                                     { header: 'Updated', accessor: 'updated_at', align: 'center', render: (val) => val ? new Date(val).toLocaleDateString() : '' }
                                 ],
                                 data: Ruki.repairTickets,
+                                pagination: { maxRows: 5, align: 'right' },
                                 rowHover: true,
                             }) : buildText('No recent tickets found.', { size: 'md', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' } })
                         },

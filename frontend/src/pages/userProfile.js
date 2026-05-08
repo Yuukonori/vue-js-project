@@ -97,7 +97,7 @@ export function UserProfilePage(user) {
                     display: false,
                     child: {
                       1: buildText('Version', { size: 'sm', weight: 'bold', color: 'gray800' }),
-                      2: buildText('1.3', { size: 'xs', color: 'gray500' }),
+                      2: buildText('1.1', { size: 'xs', color: 'gray500' }),
                     }
                   })
                 }

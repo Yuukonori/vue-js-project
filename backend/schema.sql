@@ -11,7 +11,11 @@ CREATE TABLE IF NOT EXISTS expiring_assets (
 -- 2. Recent Repair Tickets (Table View)
 CREATE TABLE IF NOT EXISTS repair_tickets (
     ticket_id VARCHAR(50) PRIMARY KEY,
+    category VARCHAR(50),
+    priority VARCHAR(20),
     subject VARCHAR(255),
+    asset_tag VARCHAR(100),
+    description TEXT,
     status VARCHAR(50), -- IN PROGRESS, RESOLVED, PENDING, URGENT
     updated_at DATE
 );
@@ -24,7 +28,8 @@ CREATE TABLE IF NOT EXISTS inventory (
     service_years DECIMAL(3,1),
     purchase_date DATE,
     warranty_expiry DATE,
-    status VARCHAR(50) -- ASSIGNED, AVAILABLE, MAINTENANCE
+    status VARCHAR(50), -- ASSIGNED, AVAILABLE, MAINTENANCE
+    assigned_user_id INTEGER
 );
 
 -- 4. Real-time Activity Feed (List View)
@@ -91,6 +96,8 @@ CREATE TABLE IF NOT EXISTS app_users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(80) DEFAULT 'User',
     is_active BOOLEAN DEFAULT TRUE,
+    assets_count INTEGER DEFAULT 0,
+    asset_ids JSONB DEFAULT '[]'::jsonb,
     avatar TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

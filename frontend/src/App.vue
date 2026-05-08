@@ -1,12 +1,16 @@
 ﻿<script setup>
-import { ref, computed, h } from 'vue'
-import FuturisticSidebar from './components/FuturisticSidebar.vue'
-import FuturisticPageWrapper from './components/FuturisticPageWrapper.vue'
+import { ref, computed, h, onMounted, onBeforeUnmount, watch } from 'vue'
+import FuturisticSidebar from './pages/FuturisticSidebar.vue'
+import FuturisticPageWrapper from './pages/FuturisticPageWrapper.vue'
 import { MENU_CONFIG } from './menu.js'
 import { LoginPage } from './pages/aut/login.js'
 
 const currentPath = ref('/dashboard')
 const isAuthenticated = ref(false) // For demo, we stay logged in
+const pendingCasesCount = ref(0)
+const currentUser = ref({ ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' })
+const accessPolicies = ref({})
+let badgeInterval = null
 
 function navigate(path) {
   currentPath.value = path
@@ -20,6 +24,76 @@ function handleAuthenticate() {
   isAuthenticated.value = true
 }
 
+function handleAuthenticateWithPayload(payload) {
+  isAuthenticated.value = true
+  if (payload?.user) {
+    currentUser.value = {
+      ...payload.user,
+      department: payload.user.department || 'IT',
+    }
+  }
+}
+
+function isDoneStatus(status) {
+  const normalized = String(status || '').trim().toLowerCase()
+  return normalized === 'resolved' || normalized === 'completed' || normalized === 'done' || normalized === 'closed'
+}
+
+async function fetchPendingCasesCount() {
+  const readTickets = async (url) => {
+    const res = await fetch(url)
+    const raw = await res.text()
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+    return raw ? JSON.parse(raw) : []
+  }
+
+  try {
+    let tickets = []
+    try {
+      tickets = await readTickets('/api/repair/tickets')
+    } catch {
+      tickets = await readTickets('http://127.0.0.1:5050/api/repair/tickets')
+    }
+    const unresolved = (Array.isArray(tickets) ? tickets : []).filter(t => !isDoneStatus(t?.status))
+    pendingCasesCount.value = unresolved.length
+  } catch (err) {
+    console.error('Failed to fetch pending cases badge count:', err)
+    pendingCasesCount.value = 0
+  }
+}
+
+async function loadAccessPolicies() {
+  try {
+    const res = await fetch('/api/access-policies')
+    if (!res.ok) throw new Error(`Failed to load policies: ${res.status}`)
+    const rows = await res.json()
+    const map = {}
+    for (const row of Array.isArray(rows) ? rows : []) {
+      map[String(row.department || '').toLowerCase()] = Array.isArray(row.allowed_pages) ? row.allowed_pages : []
+    }
+    accessPolicies.value = map
+  } catch (err) {
+    console.error('Failed to load access policies:', err)
+    accessPolicies.value = {}
+  }
+}
+
+function isITDepartment(dept) {
+  const value = String(dept || '').trim().toLowerCase()
+  return value === 'it' || value.includes('it')
+}
+
+const defaultNonITPaths = ['/dashboard', '/assets', '/support', '/repair-history']
+
+const allowedPaths = computed(() => {
+  const deptKey = String(currentUser.value?.department || '').trim().toLowerCase()
+  const fromPolicy = accessPolicies.value[deptKey]
+  if (Array.isArray(fromPolicy) && fromPolicy.includes('*')) return '*'
+  if (Array.isArray(fromPolicy) && fromPolicy.length > 0) return fromPolicy
+  if (isITDepartment(deptKey)) return '*'
+  return defaultNonITPaths
+})
+
 globalThis.__appNavigate = navigate
 
 const defaultItem = MENU_CONFIG.items[0]
@@ -28,19 +102,33 @@ const activeItem = computed(() =>
   ?? defaultItem
 )
 
-const visibleItems = computed(() => MENU_CONFIG.items.filter(i => !i.hidden && !i.line))
+const visibleItems = computed(() => {
+  return MENU_CONFIG.items.filter(i => {
+    if (i.hidden) return false
+    if (i.path === '/access-control') {
+      return isITDepartment(currentUser.value?.department)
+    }
+    if (allowedPaths.value === '*') return true
+    return allowedPaths.value.includes(i.path)
+  })
+})
 
 const sidebarMenuItems = computed(() => {
   return visibleItems.value.map(item => ({
-    id: item.path,
+    id: item.path || item.id || ('divider-' + item.label),
     path: item.path,
     label: item.label,
     icon: item.icon,
+    badge: item.path === '/cases' && pendingCasesCount.value > 0 ? String(pendingCasesCount.value) : null,
+    line: !!item.line,
   }))
 })
 
 const renderedPage = computed(() => {
-  const page = activeItem.value.content(MENU_CONFIG.user)
+  if (allowedPaths.value !== '*' && !allowedPaths.value.includes(currentPath.value)) {
+    currentPath.value = '/dashboard'
+  }
+  const page = activeItem.value.content(currentUser.value || MENU_CONFIG.user)
   if (page && (page.setup || page.render || typeof page === 'function')) {
     return page
   }
@@ -51,8 +139,24 @@ const renderedPage = computed(() => {
 })
 
 const loginView = computed(() =>
-  LoginPage({ onAuthenticate: handleAuthenticate })
+  LoginPage({ onAuthenticate: handleAuthenticateWithPayload })
 )
+
+onMounted(() => {
+  loadAccessPolicies()
+  fetchPendingCasesCount()
+  badgeInterval = setInterval(fetchPendingCasesCount, 15000)
+})
+
+onBeforeUnmount(() => {
+  if (badgeInterval) clearInterval(badgeInterval)
+})
+
+watch(currentPath, () => {
+  if (allowedPaths.value !== '*' && !allowedPaths.value.includes(currentPath.value)) {
+    currentPath.value = '/dashboard'
+  }
+})
 </script>
 
 <template>
@@ -63,8 +167,8 @@ const loginView = computed(() =>
       :activeItem="currentPath"
       :onNavigate="navigate"
       :onLogout="signOut"
-      :userName="MENU_CONFIG.user.name"
-      :userRole="MENU_CONFIG.user.role"
+      :userName="currentUser.name || MENU_CONFIG.user.name"
+      :userRole="currentUser.role || MENU_CONFIG.user.role"
     />
     <div style="flex: 1; margin-left: 280px; position: relative; overflow-y: auto; transition: margin-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
       <FuturisticPageWrapper>
