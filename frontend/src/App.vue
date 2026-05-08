@@ -1,0 +1,159 @@
+﻿<script setup>
+import { ref, computed, h } from 'vue'
+import FuturisticSidebar from './components/FuturisticSidebar.vue'
+import FuturisticPageWrapper from './components/FuturisticPageWrapper.vue'
+import { MENU_CONFIG } from './menu.js'
+import { LoginPage } from './pages/aut/login.js'
+
+const currentPath = ref('/dashboard')
+const isAuthenticated = ref(false) // For demo, we stay logged in
+
+function navigate(path) {
+  currentPath.value = path
+}
+
+function signOut() {
+  isAuthenticated.value = false
+}
+
+function handleAuthenticate() {
+  isAuthenticated.value = true
+}
+
+globalThis.__appNavigate = navigate
+
+const defaultItem = MENU_CONFIG.items[0]
+const activeItem = computed(() =>
+  MENU_CONFIG.items.find(i => !i.line && i.path === currentPath.value)
+  ?? defaultItem
+)
+
+const visibleItems = computed(() => MENU_CONFIG.items.filter(i => !i.hidden && !i.line))
+
+const sidebarMenuItems = computed(() => {
+  return visibleItems.value.map(item => ({
+    id: item.path,
+    path: item.path,
+    label: item.label,
+    icon: item.icon,
+  }))
+})
+
+const renderedPage = computed(() => {
+  const page = activeItem.value.content(MENU_CONFIG.user)
+  if (page && (page.setup || page.render || typeof page === 'function')) {
+    return page
+  }
+  return h('div', { style: { padding: '40px', color: '#e2e8f0' } }, [
+    h('h1', { style: { color: '#f8fafc', marginBottom: '16px' } }, activeItem.value.label),
+    h('p', 'This page is under construction.')
+  ])
+})
+
+const loginView = computed(() =>
+  LoginPage({ onAuthenticate: handleAuthenticate })
+)
+</script>
+
+<template>
+  <component v-if="!isAuthenticated" :is="loginView" />
+  <div v-else style="display: flex; height: 100vh; background: transparent; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
+    <FuturisticSidebar 
+      :menuItems="sidebarMenuItems"
+      :activeItem="currentPath"
+      :onNavigate="navigate"
+      :onLogout="signOut"
+      :userName="MENU_CONFIG.user.name"
+      :userRole="MENU_CONFIG.user.role"
+    />
+    <div style="flex: 1; margin-left: 280px; position: relative; overflow-y: auto; transition: margin-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <FuturisticPageWrapper>
+        <transition 
+          name="fade" 
+          mode="out-in"
+        >
+          <component :is="renderedPage" :key="currentPath" />
+        </transition>
+      </FuturisticPageWrapper>
+    </div>
+  </div>
+</template>
+
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background: Transparent;
+}
+.nx-login {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.18), transparent 60%),
+    radial-gradient(1000px 520px at 100% 0%, rgba(99, 102, 241, 0.24), transparent 60%),
+    linear-gradient(180deg, #050816, #080c1d 60%, #060915);
+  color: #e6ecff;
+  font-family: Inter, Segoe UI, system-ui, sans-serif;
+}
+.nx-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(124, 154, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 154, 255, 0.09) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 75%);
+  transform: perspective(900px) rotateX(60deg) translateY(24%);
+}
+.nx-bg-rings,.nx-bg-lines,.nx-mouse-glow,.nx-holo{position:absolute;pointer-events:none}
+.nx-bg-rings{inset:-20%;background:radial-gradient(circle at 20% 30%,rgba(59,130,246,.18),transparent 35%),radial-gradient(circle at 75% 20%,rgba(168,85,247,.22),transparent 35%),radial-gradient(circle at 50% 80%,rgba(34,211,238,.12),transparent 45%);animation:floatBg 14s ease-in-out infinite}
+.nx-bg-lines{inset:0;background:repeating-linear-gradient(115deg,transparent 0 140px,rgba(56,189,248,.08) 140px 141px,transparent 141px 280px);animation:scan 9s linear infinite}
+.nx-mouse-glow{width:420px;height:420px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(59,130,246,.26),rgba(168,85,247,.13) 35%,transparent 70%);filter:blur(14px);transition:left .18s linear,top .18s linear}
+.nx-card-wrap{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.nx-holo{width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.16),rgba(168,85,247,.1),transparent 72%);filter:blur(10px);animation:pulse 5s ease-in-out infinite}
+.nx-card{position:relative;width:min(92vw,480px);padding:30px 28px 24px;border-radius:28px;background:linear-gradient(135deg,rgba(16,23,42,.65),rgba(30,41,59,.45));backdrop-filter:blur(18px);border:1px solid rgba(148,163,184,.34);box-shadow:0 30px 90px rgba(0,0,0,.52),0 0 0 1px rgba(147,197,253,.2) inset;animation:cardIn .8s cubic-bezier(.22,1,.36,1)}
+.nx-card::before{content:'';position:absolute;inset:-1px;border-radius:28px;padding:1px;background:linear-gradient(120deg,rgba(56,189,248,.7),rgba(99,102,241,.58),rgba(168,85,247,.7));mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:borderFlow 6s linear infinite}
+.nx-logo{font-size:42px;font-weight:800;letter-spacing:.4px;background:linear-gradient(90deg,#e6f2ff,#9ad8ff 45%,#c7b8ff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;text-shadow:0 0 24px rgba(96,165,250,.35)}
+.nx-sub{text-align:center;font-size:11px;letter-spacing:3.6px;text-transform:uppercase;color:#b3c4ef;margin-top:6px}
+.nx-divider{height:1px;margin:16px 0 14px;background:linear-gradient(90deg,transparent,rgba(148,163,184,.6),transparent)}
+.nx-label{display:block;font-size:12px;color:#b8c6eb;text-transform:uppercase;letter-spacing:1.2px;margin:8px 0 8px}
+.nx-pass-head{display:flex;justify-content:space-between;align-items:center}
+.nx-input-wrap{position:relative;margin-bottom:8px}
+.nx-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9eb4e6;font-size:12px}
+.nx-input{width:100%;height:48px;border-radius:14px;border:1px solid rgba(148,163,184,.34);background:rgba(15,23,42,.46);color:#eff6ff;padding:0 40px 0 36px;outline:none;transition:all .25s ease}
+.nx-input::placeholder{color:#9fb0d4}
+.nx-input:hover{transform:translateY(-1px);border-color:rgba(96,165,250,.5)}
+.nx-input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.2),0 0 30px rgba(56,189,248,.18)}
+.nx-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:#9eb4e6;cursor:pointer}
+.nx-link{border:none;background:transparent;color:#9cc8ff;font-size:12px;cursor:pointer}
+.nx-link:hover{text-decoration:underline}
+.nx-error{min-height:18px;margin:4px 0 8px;color:#fda4af;font-size:12px}
+.nx-error-empty{opacity:0}
+.nx-login-btn{position:relative;width:100%;height:52px;border:none;border-radius:14px;color:#fff;cursor:pointer;overflow:hidden;background:linear-gradient(92deg,#2563eb,#6366f1 50%,#8b5cf6);box-shadow:0 12px 32px rgba(79,70,229,.45);transition:transform .2s ease,box-shadow .2s ease}
+.nx-login-btn:hover{transform:translateY(-1px);box-shadow:0 16px 38px rgba(79,70,229,.55)}
+.nx-login-btn:active{transform:translateY(1px) scale(.997)}
+.nx-btn-shine{position:absolute;inset:-40% -120%;background:linear-gradient(110deg,transparent 36%,rgba(255,255,255,.3) 48%,transparent 62%);animation:shine 2.8s linear infinite}
+.nx-btn-text{position:relative;font-weight:700;letter-spacing:1.2px}
+.nx-btn-arrow{position:relative;margin-left:10px;display:inline-block;animation:arrowPulse 1.5s ease-in-out infinite}
+.nx-policy{margin-top:12px;width:100%;height:38px;border-radius:11px;border:1px solid rgba(148,163,184,.38);background:rgba(15,23,42,.5);color:#c7d5f5;cursor:pointer}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes borderFlow{to{filter:hue-rotate(360deg)}}
+@keyframes shine{to{transform:translateX(60%)}}
+@keyframes arrowPulse{50%{transform:translateX(3px)}}
+@keyframes pulse{50%{transform:scale(1.03)}}
+@keyframes floatBg{50%{transform:translateY(-10px)}}
+@keyframes scan{to{transform:translateX(-160px)}}
+@media (max-width:640px){.nx-card{padding:24px 18px 18px}.nx-logo{font-size:34px}.nx-sub{letter-spacing:2.4px}}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
