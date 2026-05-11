@@ -28,8 +28,6 @@ export function CasesPage(user) {
       const statusItems = [
         { text: 'Pending', value: 'PENDING' },
         { text: 'In Progress', value: 'IN PROGRESS' },
-        { text: 'Urgent', value: 'URGENT' },
-        { text: 'Resolved', value: 'RESOLVED' },
         { text: 'Completed', value: 'COMPLETED' },
       ]
       const categoryItems = [

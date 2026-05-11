@@ -2,6 +2,7 @@ import { computed, defineComponent, h, ref } from 'vue'
 import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildDropdown, buildFileUpload, buildGrid, buildHeader, buildIcon, buildIconContainer, buildImage, buildInput, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer, buildTextBadge, buildIconText, buildTapOption } from '../ui/index.js'
 import { USERS } from '../data/users.js'
 import { formatLastUpdate } from '../lastUpdate.js'
+import { authFetch } from '../utils/auth.js'
 
 /**
  * SupportPage(user)
@@ -82,9 +83,10 @@ export function SupportPage(user) {
             subject: subjectTitle.value.trim(),
             assetTag: assetTag.value.trim(),
             description: issueDescription.value.trim(),
+            submittedBy: user.id, // Add current user ID
           }
 
-          const res = await fetch('/api/repair/tickets', {
+          const res = await authFetch('/api/repair/tickets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -98,8 +100,18 @@ export function SupportPage(user) {
           submittedTicketId.value = String(data.ticket_id || '')
           submitMessage.value = `Ticket ${data.ticket_id} submitted successfully.`
           showSuccessPopup.value = true
+          
+          // Play notification sound
+          try {
+            const audio = new Audio('/src/sfx/notification sound.mp3')
+            audio.volume = 0.5
+            audio.play().catch(err => console.log('Audio play failed:', err))
+          } catch (err) {
+            console.log('Audio error:', err)
+          }
+          
           resetTicketForm()
-          setTimeout(() => { showSuccessPopup.value = false }, 1800)
+          setTimeout(() => { showSuccessPopup.value = false }, 3000)
         } catch (err) {
           submitMessage.value = err?.message || 'Failed to submit ticket.'
         } finally {

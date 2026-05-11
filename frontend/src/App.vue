@@ -5,9 +5,10 @@ import FuturisticPageWrapper from './pages/FuturisticPageWrapper.vue'
 import { MENU_CONFIG } from './menu.js'
 import { LoginPage } from './pages/aut/login.js'
 import { ForgotPasswordPage } from './pages/aut/forgotPassword.js'
+import { authUtils, authFetch } from './utils/auth.js'
 
 const currentPath = ref('/dashboard')
-const isAuthenticated = ref(false) // For demo, we stay logged in
+const isAuthenticated = ref(false)
 const showForgot = ref(false)
 const pendingCasesCount = ref(0)
 const currentUser = ref({ ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' })
@@ -19,21 +20,67 @@ function navigate(path) {
 }
 
 function signOut() {
+  authUtils.clearAuth()
   isAuthenticated.value = false
+  currentUser.value = { ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' }
 }
 
 function handleAuthenticate() {
   isAuthenticated.value = true
 }
 
-function handleAuthenticateWithPayload(payload) {
+async function handleAuthenticateWithPayload(payload) {
+  if (payload?.token) {
+    // Store token and user data
+    authUtils.setToken(payload.token)
+    authUtils.setUser(payload.user)
+  }
+  
   isAuthenticated.value = true
+  
   if (payload?.user) {
     currentUser.value = {
       ...payload.user,
       department: payload.user.department || 'IT',
     }
   }
+}
+
+// Auto-login if token exists
+async function checkAuth() {
+  const token = authUtils.getToken()
+  const savedUser = authUtils.getUser()
+  
+  if (token && savedUser) {
+    try {
+      // Verify token with backend
+      const res = await authFetch('/api/auth/verify', {
+        method: 'POST'
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        isAuthenticated.value = true
+        currentUser.value = {
+          ...data.user,
+          department: data.user.department || 'IT',
+        }
+        console.log('Auto-login successful')
+      } else {
+        // Token invalid, clear auth
+        authUtils.clearAuth()
+      }
+    } catch (err) {
+      console.error('Auto-login failed:', err)
+      authUtils.clearAuth()
+    }
+  }
+}
+
+// Listen for auth expiration
+function handleAuthExpired() {
+  isAuthenticated.value = false
+  currentUser.value = { ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' }
 }
 
 function isDoneStatus(status) {
@@ -175,13 +222,16 @@ const authView = computed(() => {
 })
 
 onMounted(() => {
+  checkAuth() // Check for existing token on mount
   loadAccessPolicies()
   fetchPendingCasesCount()
   badgeInterval = setInterval(fetchPendingCasesCount, 15000)
+  window.addEventListener('auth-expired', handleAuthExpired)
 })
 
 onBeforeUnmount(() => {
   if (badgeInterval) clearInterval(badgeInterval)
+  window.removeEventListener('auth-expired', handleAuthExpired)
 })
 
 watch(currentPath, () => {

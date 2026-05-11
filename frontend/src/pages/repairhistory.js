@@ -110,7 +110,7 @@ export function RepairHistoryPage(user) {
                   },
                   { key: 'rightNode', accessor: 'status', render: (val, row) => buildButton('View Details', { variant: 'solid', size: 'sm', style: { minWidth: '120px', color: 'white', fontWeight: '700', borderRadius: '8px', backgroundColor: '#4f46e5' }, onPressed: () => Ruki.openTicketDetails(row) }) }
                 ],
-                pagination: { maxRows: 3, align: 'center' },
+                pagination: { maxRows: 3 },
               }) : buildText('No ongoing repairs at this time.', { size: 'sm', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '260px' } }),
               11: buildButton('Show More', { color: 'primary', size: 'md', hover: true }),
             }
@@ -133,7 +133,7 @@ export function RepairHistoryPage(user) {
               { header: 'UPDATED', accessor: 'updated_at', render: (val) => buildText(val ? new Date(val).toLocaleDateString() : '', { size: 'sm', color: '#334155', weight: 'semibold' }) },
             ],
             data: Ruki.serviceHistory,
-            pagination: { maxRows: 3, align: 'center', fillRows: true },
+            pagination: { maxRows: 3, fillRows: true },
             onPressed: (row) => Ruki.openTicketDetails(row),
             style: { backgroundColor: 'white', borderRadius: '14px' },
           }) : buildGrid({

@@ -5,3 +5,21 @@ vue-front-end/dist/
 vue-back-end/node_modules/
 vue-back-end/.postgres/
 vue-back-end/.env
+
+# Log files
+*.log
+*.out.log
+*.err.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

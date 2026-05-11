@@ -207,7 +207,7 @@ export function DashboardPage(user) {
                                     { header: 'Updated', accessor: 'updated_at', flex: 2, align: 'center', render: (val) => val ? new Date(val).toLocaleDateString() : '' }
                                 ],
                                 data: Ruki.repairTickets,
-                                pagination: { maxRows: 3, align: 'right', fillRows: true },
+                                pagination: { maxRows: 3, fillRows: true },
                                 onRowClick: (row) => Ruki.openTicketDetails(row),
                                 rowHover: true,
                             }) : buildText('No recent tickets found.', { size: 'md', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' } })
