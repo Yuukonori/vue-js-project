@@ -46,6 +46,7 @@ const _TableComponent = defineComponent({
     showClearButton: { default: false },
     onClear:         { default: null },
     onRowClick:      { default: null },
+    onPressed:       { default: null },
     headerUppercase: { default: false },
     width:           { default: undefined },
     height:          { default: undefined },
@@ -72,7 +73,18 @@ const _TableComponent = defineComponent({
       const size = resolvePageSize()
       if (size <= 0) return props.data
       const start = (page.value - 1) * size
-      return props.data.slice(start, start + size)
+      const dataSlice = props.data.slice(start, start + size)
+
+      if (props.pagination?.fillRows || props.pagination?.fill_rows) {
+        if (dataSlice.length > 0 && dataSlice.length < size) {
+          const padded = [...dataSlice]
+          while (padded.length < size) {
+            padded.push({ __isPadding: true })
+          }
+          return padded
+        }
+      }
+      return dataSlice
     })
 
     function colKey(col) {
@@ -90,6 +102,7 @@ const _TableComponent = defineComponent({
     }
 
     function renderCell(row, col, idx) {
+      if (row.__isPadding) return h('div', { style: { height: '30px' } }, '\u00A0')
       const val = cellValue(row, col)
       if (col.render) return col.render(val, row, idx)
       return String(val)
@@ -197,23 +210,24 @@ const _TableComponent = defineComponent({
                 : rows.value.map((row, ri) => {
                     const isHovered  = hovered.value === ri
                     const isStriped  = props.striped && ri % 2 === 1
-                    const isClickable = !!props.onRowClick
+                    const clickHandler = props.onRowClick || props.onPressed
+                    const isClickable = !!clickHandler
 
                     return h('tr', {
                       key: ri,
                       style: {
-                        background: isHovered   ? '#f7f8fc'
+                        background: !row.__isPadding && isHovered   ? '#f7f8fc'
                                   : isStriped   ? '#fafbfc'
                                   : '#ffffff',
-                        cursor:     isClickable ? 'pointer' : 'default',
+                        cursor:     !row.__isPadding && isClickable ? 'pointer' : 'default',
                         transition: 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease',
-                        transform:  isHovered ? 'translateY(-1px)' : undefined,
-                        filter:     isHovered ? 'brightness(0.99)' : undefined,
-                        boxShadow:  isHovered ? '0 8px 20px rgba(15, 23, 42, 0.10)' : undefined,
+                        transform:  !row.__isPadding && isHovered ? 'translateY(-1px)' : undefined,
+                        filter:     !row.__isPadding && isHovered ? 'brightness(0.99)' : undefined,
+                        boxShadow:  !row.__isPadding && isHovered ? '0 8px 20px rgba(15, 23, 42, 0.10)' : undefined,
                       },
-                      onMouseenter: () => { hovered.value = ri },
-                      onMouseleave: () => { if (hovered.value === ri) hovered.value = -1 },
-                      onClick:      isClickable ? () => props.onRowClick(row) : undefined,
+                      onMouseenter: row.__isPadding ? undefined : () => { hovered.value = ri },
+                      onMouseleave: row.__isPadding ? undefined : () => { if (hovered.value === ri) hovered.value = -1 },
+                      onClick:      !row.__isPadding && isClickable ? () => clickHandler(row) : undefined,
                     }, props.columns.map((col, ci) =>
                       h('td', {
                         key: ci,

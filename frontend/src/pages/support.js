@@ -84,19 +84,11 @@ export function SupportPage(user) {
             description: issueDescription.value.trim(),
           }
 
-          let res = await fetch('/api/repair/tickets', {
+          const res = await fetch('/api/repair/tickets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           })
-
-          if (!res.ok && [404, 405].includes(res.status)) {
-            res = await fetch('http://127.0.0.1:5050/api/repair/tickets', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            })
-          }
 
           const raw = await res.text()
           let data = null
@@ -298,13 +290,11 @@ export function SupportPage(user) {
                 7: { colSpan: 6 },
                 13: { colSpan: 6 },
                 19: { colSpan: 6 },
-                25: { colSpan: 6 },
-                31: { colSpan: 3 },
-                34: { colSpan: 3 }
+                25: { colSpan: 3 },
+                28: { colSpan: 3 }
               },
               align: {
-                37: 'center right',
-                40: 'center right',
+                28: 'center right',
               },
               child: {
                 1: buildGrid({
@@ -339,7 +329,8 @@ export function SupportPage(user) {
                         { label: 'Medium', value: 'medium' },
                         { label: 'High', value: 'high' },
                       ],
-                      value: priorityLevel,
+                      value: priorityLevel.value,
+                      onUpdate: (v) => { priorityLevel.value = v },
                       height: '40px',
                       bg: '#f8fafc',
                       selectedBg: '#ffffff',
@@ -373,28 +364,7 @@ export function SupportPage(user) {
                   onUpdate: (v) => { issueDescription.value = v },
                   style: { paddingLeft: '14px' }
                 }),
-                25: buildGrid({
-                  columns: 1,
-                  rows: 1,
-                  display: false,
-                  child: {
-                    1: buildFileUpload({
-                      title: 'FILE UPLOAD',
-                      hint: 'Drag and drop diagnostic logs or screenshots here',
-                      maxSizeText: 'MAX FILE SIZE: 25MB',
-                      accept: '.png,.jpg,.jpeg,.pdf,.txt,.log,.csv,.doc,.docx,.xls,.xlsx',
-                      multiple: true,
-                      files: selectedUploadFiles.value,
-                      onPressed: () => {
-                        // Optional hook before picker opens (analytics/custom action).
-                      },
-                      onUpdate: (files) => {
-                        selectedUploadFiles.value = files
-                      },
-                    }),
-                  },
-                }),
-                34: buildGrid({
+                28: buildGrid({
                   columns: 2,
                   rows: 1,
                   display: false,
@@ -403,12 +373,12 @@ export function SupportPage(user) {
                     2: buildButton(isSubmitting.value ? 'Submitting...' : 'Submit', { variant: 'outline', size: 'sm', height: '40px', onPressed: submitTicket, style: { width: '100%', borderColor: '#bcd6fb', color: '#eaf2ff', background: '#1d4ed8', fontWeight: '600' } }),
                   },
                 }),
-                31: submitMessage.value
+                25: submitMessage.value
                   ? buildText(submitMessage.value, {
-                      size: 'sm',
-                      color: submitMessage.value.includes('successfully') ? 'success' : 'error',
-                      style: { textAlign: 'left', marginTop: '6px' }
-                    })
+                    size: 'sm',
+                    color: submitMessage.value.includes('successfully') ? 'success' : 'error',
+                    style: { textAlign: 'left', marginTop: '6px' }
+                  })
                   : buildText('', { size: 'sm' })
               }
             })

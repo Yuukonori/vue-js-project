@@ -122,6 +122,7 @@ const _GridComponent = defineComponent({
     align:            { default: () => ({}) },
     hover:            { default: false },
     hovered:          { default: false },
+    hoverColor:       { default: undefined },
     onPressed:        { default: undefined },
     mobileMaxColumns: { default: undefined },
     width:            { default: '100%' },
@@ -154,7 +155,7 @@ const _GridComponent = defineComponent({
 
       const enableHover = props.hover || props.hovered
       const bg = (enableHover && isHovered.value)
-        ? _blendDark(props.backgroundColor, 0.04)
+        ? (props.hoverColor ?? _blendDark(props.backgroundColor, 0.04))
         : props.backgroundColor
 
       // Default padding to '12px' only when chrome is visible; explicit prop always wins

@@ -32,6 +32,10 @@ const _StackedCardsListComponent = defineComponent({
     itemBorder:  { type: Boolean, default: true },
     divider:     { type: Boolean, default: false },
     isStacked:   { type: Boolean, default: false },
+    hoverColor:  { type: String, default: undefined },
+    backgroundColor: { type: String, default: undefined },
+    hover:       { type: Boolean, default: true },
+    clickable:   { type: Boolean, default: true },
   },
   setup(props) {
     const page = ref(1)
@@ -120,7 +124,15 @@ const _StackedCardsListComponent = defineComponent({
 
     return () => {
       const items = resolveItems(displayedItems.value)
-      const hasPagination = maxRows.value > 0 && props.data.length > maxRows.value
+      const hasPagination = !!props.pagination
+
+      const renderItems = [...items]
+      if (maxRows.value > 0 && renderItems.length < maxRows.value) {
+        const diff = maxRows.value - renderItems.length
+        for (let i = 0; i < diff; i++) {
+          renderItems.push({ isEmptyPlaceholder: true })
+        }
+      }
 
       return h('div', {
         style: {
@@ -142,7 +154,18 @@ const _StackedCardsListComponent = defineComponent({
             padding: props.border ? '16px' : '0',
             flex: 1,
           }
-        }, items.map((item, index) => {
+        }, renderItems.map((item, index) => {
+          if (item.isEmptyPlaceholder) {
+            return h('div', { 
+              style: { 
+                height: props.divider ? '76px' : '104px', 
+                flex: '0 0 auto', 
+                visibility: 'hidden', 
+                pointerEvents: 'none' 
+              } 
+            })
+          }
+
           const hasIconContainer = !!item.iconBg
           const isLast = index === items.length - 1
           
@@ -159,7 +182,7 @@ const _StackedCardsListComponent = defineComponent({
           return buildGrid({
             columns: 12, rows: 1, display: true, padding: props.divider ? '20px 10px' : '18px 24px', 
             borderRadius: props.divider ? '0' : 'xl', 
-            backgroundColor: '#ffffff',
+            backgroundColor: props.backgroundColor ?? '#ffffff',
             border: props.divider 
               ? (isLast ? 'none' : 'none') 
               : (props.itemBorder ? '1px solid #eef2f6' : 'none'),
@@ -167,8 +190,9 @@ const _StackedCardsListComponent = defineComponent({
               ...(props.divider ? { borderBottom: isLast ? 'none' : '1px solid #f1f5f9' } : {}),
               ...stackStyle
             },
-            hover: true,
-            onPressed: () => item.onClick?.(),
+            hover: props.hover,
+            hoverColor: props.hoverColor,
+            onPressed: props.clickable ? (() => item.onClick?.()) : undefined,
             span: { 1: { colSpan: 1 }, 2: { colSpan: 10 }, 12: { colSpan: 1 } },
             align: { 1: 'start start', 2: 'start start', 12: 'center end' },
             child: {

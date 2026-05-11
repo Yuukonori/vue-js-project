@@ -7,7 +7,8 @@ const path = require("path");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
@@ -105,21 +106,42 @@ async function bootstrapDatabase() {
   await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS priority VARCHAR(20)`);
   await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS asset_tag VARCHAR(100)`);
   await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS description TEXT`);
+  await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS submitted_by_id INTEGER`);
+  await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS prepared_by VARCHAR(100)`);
+  await pool.query(`ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS evidence JSONB DEFAULT '[]'::jsonb`);
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS access_policies (
-      department VARCHAR(80) PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS access_policies (      department VARCHAR(80) PRIMARY KEY,
       allowed_pages JSONB NOT NULL DEFAULT '[]'::jsonb,
+      allowed_features JSONB NOT NULL DEFAULT '[]'::jsonb,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
+  await pool.query(`ALTER TABLE access_policies ADD COLUMN IF NOT EXISTS allowed_features JSONB NOT NULL DEFAULT '[]'::jsonb`);
+
+  // Migrate ticket_id to SERIAL if it's currently VARCHAR
+  const tableInfo = await pool.query(`SELECT data_type FROM information_schema.columns WHERE table_name = 'repair_tickets' AND column_name = 'ticket_id'`);
+  if (tableInfo.rows[0]?.data_type === 'character varying') {
+    console.log("Migrating repair_tickets.ticket_id to SERIAL...");
+    // 1. Drop the primary key constraint
+    await pool.query(`ALTER TABLE repair_tickets DROP CONSTRAINT IF EXISTS repair_tickets_pkey`);
+    // 2. Clear existing data or try to convert. User likely wants a clean start if they ask for 1,2,3.
+    // For safety, we'll try to convert if possible, otherwise clear.
+    await pool.query(`TRUNCATE repair_tickets CASCADE`);
+    // 3. Change column type
+    await pool.query(`ALTER TABLE repair_tickets ALTER COLUMN ticket_id TYPE INTEGER USING ticket_id::integer`);
+    await pool.query(`CREATE SEQUENCE IF NOT EXISTS repair_tickets_ticket_id_seq`);
+    await pool.query(`ALTER TABLE repair_tickets ALTER COLUMN ticket_id SET DEFAULT nextval('repair_tickets_ticket_id_seq')`);
+    await pool.query(`ALTER TABLE repair_tickets ADD PRIMARY KEY (ticket_id)`);
+  }
+
   await pool.query(`
-    INSERT INTO access_policies (department, allowed_pages)
+    INSERT INTO access_policies (department, allowed_pages, allowed_features)
     VALUES
-      ('finance', '["/dashboard","/assets","/support","/repair-history"]'::jsonb),
-      ('hr', '["/dashboard","/assets","/support","/repair-history"]'::jsonb),
-      ('procurement', '["/dashboard","/assets","/support","/repair-history"]'::jsonb),
-      ('it', '["*"]'::jsonb)
+      ('finance', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
+      ('hr', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
+      ('procurement', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
+      ('it', '["*"]'::jsonb, '["network_map", "all_tickets"]'::jsonb)
     ON CONFLICT (department) DO NOTHING
   `);
 
@@ -139,6 +161,8 @@ async function bootstrapDatabase() {
       status = EXCLUDED.status`,
     ["Ruki Nasa", "nasaaaxd@gmail.com", "Ruki@123", "Administrator", "IT", "Web Administrator", "CC-IT-001", "BuilderUI", 3, 0, "Active"]
   );
+
+  // Removed seed data logic for repair_tickets to prevent duplication
 
   // Ensure second user exists for assignment demo.
   await pool.query(
@@ -199,7 +223,12 @@ app.get("/api/assets/expiring", async (req, res) => {
 // Screenshot: Recent Repair Tickets
 app.get("/api/repair/tickets", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM repair_tickets ORDER BY updated_at DESC");
+    const result = await pool.query(`
+      SELECT t.*, u.full_name as submitted_by_name
+      FROM repair_tickets t
+      LEFT JOIN app_users u ON t.submitted_by_id = u.id
+      ORDER BY t.updated_at DESC
+    `);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -207,27 +236,31 @@ app.get("/api/repair/tickets", async (req, res) => {
 });
 
 app.post("/api/repair/tickets", async (req, res) => {
+  const start = Date.now();
   try {
     const category = String(req.body?.category ?? "hardware").trim().toLowerCase();
     const subject = String(req.body?.subject ?? "").trim();
     const priority = String(req.body?.priority ?? "low").trim().toLowerCase();
     const assetTag = String(req.body?.assetTag ?? "").trim();
     const description = String(req.body?.description ?? "").trim();
+    const submittedBy = req.body?.submittedBy ? Number(req.body.submittedBy) : null;
+    const evidence = Array.isArray(req.body?.evidence) ? req.body.evidence : [];
+
+    console.log(`[Backend] Creating ticket. Evidence count: ${evidence.length}, Total payload size: ~${Math.round(JSON.stringify(req.body).length / 1024)} KB`);
 
     if (!subject) {
       return res.status(400).json({ error: "Subject is required." });
     }
 
     const now = new Date();
-    const ticketId = `${now.getTime()}-${Math.floor(Math.random() * 1000)}`;
-    const status = priority === "high" ? "URGENT" : "PENDING";
-
     const result = await pool.query(
-      `INSERT INTO repair_tickets (ticket_id, category, priority, subject, asset_tag, description, status, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE)
-       RETURNING *`,
-      [ticketId, category, priority, subject, assetTag || null, description || null, status]
+      `INSERT INTO repair_tickets (category, priority, subject, asset_tag, description, status, submitted_by_id, evidence, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
+       RETURNING ticket_id`,
+      [category, priority, subject, assetTag || null, description || null, priority === "high" ? "URGENT" : "PENDING", submittedBy, JSON.stringify(evidence), now]
     );
+
+    const ticketId = result.rows[0].ticket_id;
 
     await pool.query(
       "INSERT INTO activity_feed (type, title, description, time_label) VALUES ($1, $2, $3, $4)",
@@ -235,20 +268,31 @@ app.post("/api/repair/tickets", async (req, res) => {
         "update",
         `Ticket Submitted: ${ticketId}`,
         `New support ticket created${assetTag ? ` for ${assetTag}` : ""}${description ? "." : ""}`,
-        "",
+        "Just now",
       ]
     );
 
-    return res.status(201).json(result.rows[0]);
+    const duration = Date.now() - start;
+    console.log(`[Backend] Ticket ${ticketId} created in ${duration}ms`);
+
+    res.status(201).json({
+      message: "Ticket submitted successfully.",
+      ticket_id: ticketId,
+    });
   } catch (err) {
+    console.error(`[Backend] Error creating ticket:`, err.message);
     return res.status(500).json({ error: err.message });
   }
 });
 
 app.put("/api/repair/tickets/:id", async (req, res) => {
+  const start = Date.now();
   try {
     const id = String(req.params.id || "").trim();
     if (!id) return res.status(400).json({ error: "Ticket ID is required." });
+
+    const evidence = Array.isArray(req.body?.evidence) ? req.body.evidence : [];
+    console.log(`[Backend] Updating ticket ${id}. Evidence count: ${evidence.length}, Total payload size: ~${Math.round(JSON.stringify(req.body).length / 1024)} KB`);
 
     const category = String(req.body?.category ?? "hardware").trim().toLowerCase();
     const priority = String(req.body?.priority ?? "low").trim().toLowerCase();
@@ -256,6 +300,8 @@ app.put("/api/repair/tickets/:id", async (req, res) => {
     const assetTag = String(req.body?.assetTag ?? "").trim();
     const description = String(req.body?.description ?? "").trim();
     const status = String(req.body?.status ?? "").trim().toUpperCase();
+    const preparedBy = String(req.body?.preparedBy ?? "").trim();
+
     if (!subject || !status) {
       return res.status(400).json({ error: "Subject and status are required." });
     }
@@ -268,15 +314,21 @@ app.put("/api/repair/tickets/:id", async (req, res) => {
            asset_tag = $4,
            description = $5,
            status = $6,
-           updated_at = CURRENT_DATE
-       WHERE ticket_id = $7
+           prepared_by = $7,
+           evidence = $8::jsonb,
+           updated_at = NOW()
+       WHERE ticket_id = $9
        RETURNING *`,
-      [category, priority, subject, assetTag || null, description || null, status, id]
+      [category, priority, subject, assetTag || null, description || null, status, preparedBy || null, JSON.stringify(evidence), id]
     );
+
+    const duration = Date.now() - start;
+    console.log(`[Backend] Ticket ${id} updated in ${duration}ms`);
 
     if (result.rowCount === 0) return res.status(404).json({ error: "Ticket not found." });
     return res.json(result.rows[0]);
   } catch (err) {
+    console.error(`[Backend] Error updating ticket:`, err.message);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -343,7 +395,7 @@ app.get("/api/users", async (req, res) => {
 app.get("/api/access-policies", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT department, allowed_pages
+      SELECT department, allowed_pages, allowed_features
       FROM access_policies
       ORDER BY department ASC
     `);
@@ -357,6 +409,7 @@ app.put("/api/access-policies/:department", async (req, res) => {
   try {
     const department = String(req.params.department || "").trim().toLowerCase();
     const allowedPages = Array.isArray(req.body?.allowed_pages) ? req.body.allowed_pages : [];
+    const allowedFeatures = Array.isArray(req.body?.allowed_features) ? req.body.allowed_features : [];
     if (!department) return res.status(400).json({ error: "Department is required." });
 
     const normalizedPages = allowedPages
@@ -364,13 +417,14 @@ app.put("/api/access-policies/:department", async (req, res) => {
       .filter(Boolean);
 
     const result = await pool.query(
-      `INSERT INTO access_policies (department, allowed_pages, updated_at)
-       VALUES ($1, $2::jsonb, CURRENT_TIMESTAMP)
+      `INSERT INTO access_policies (department, allowed_pages, allowed_features, updated_at)
+       VALUES ($1, $2::jsonb, $3::jsonb, CURRENT_TIMESTAMP)
        ON CONFLICT (department) DO UPDATE
        SET allowed_pages = EXCLUDED.allowed_pages,
+           allowed_features = EXCLUDED.allowed_features,
            updated_at = CURRENT_TIMESTAMP
-       RETURNING department, allowed_pages, updated_at`,
-      [department, JSON.stringify(normalizedPages)]
+       RETURNING department, allowed_pages, allowed_features, updated_at`,
+      [department, JSON.stringify(normalizedPages), JSON.stringify(allowedFeatures)]
     );
 
     res.json(result.rows[0]);
@@ -644,12 +698,12 @@ app.get("/api/activity/feed", async (req, res) => {
 
 // Screenshot: Critical Maintenance Table
 app.get('/api/maintenance/tasks', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM maintenance');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    const result = await pool.query('SELECT * FROM maintenance');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/repair/ongoing", (req, res) => {

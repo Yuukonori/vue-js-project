@@ -1,4 +1,4 @@
-﻿import { h, defineComponent, ref, watch } from 'vue'
+import { h, defineComponent, ref, watch } from 'vue'
 
 /**
  * buildTapOption(options) - Segmented option/tap selector
@@ -55,10 +55,14 @@ const _TapOptionComponent = defineComponent({
     function setValue(v) {
       if (props.disabled) return
       selected.value = v
+      // Update parent ref if passed
       if (typeof props.value === 'object' && props.value !== null && 'value' in props.value) {
         props.value.value = v
       }
-      props.onUpdate?.(v)
+      // Trigger update event
+      if (props.onUpdate) {
+        props.onUpdate(v)
+      }
     }
 
     return () => h('div', {

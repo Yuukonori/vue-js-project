@@ -1,12 +1,14 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, h, onMounted, onBeforeUnmount, watch } from 'vue'
 import FuturisticSidebar from './pages/FuturisticSidebar.vue'
 import FuturisticPageWrapper from './pages/FuturisticPageWrapper.vue'
 import { MENU_CONFIG } from './menu.js'
 import { LoginPage } from './pages/aut/login.js'
+import { ForgotPasswordPage } from './pages/aut/forgotPassword.js'
 
 const currentPath = ref('/dashboard')
 const isAuthenticated = ref(false) // For demo, we stay logged in
+const showForgot = ref(false)
 const pendingCasesCount = ref(0)
 const currentUser = ref({ ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' })
 const accessPolicies = ref({})
@@ -48,12 +50,9 @@ async function fetchPendingCasesCount() {
   }
 
   try {
-    let tickets = []
-    try {
-      tickets = await readTickets('/api/repair/tickets')
-    } catch {
-      tickets = await readTickets('http://127.0.0.1:5050/api/repair/tickets')
-    }
+    const res = await fetch('/api/repair/tickets')
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+    const tickets = await res.json()
     const unresolved = (Array.isArray(tickets) ? tickets : []).filter(t => !isDoneStatus(t?.status))
     pendingCasesCount.value = unresolved.length
   } catch (err) {
@@ -69,7 +68,10 @@ async function loadAccessPolicies() {
     const rows = await res.json()
     const map = {}
     for (const row of Array.isArray(rows) ? rows : []) {
-      map[String(row.department || '').toLowerCase()] = Array.isArray(row.allowed_pages) ? row.allowed_pages : []
+      map[String(row.department || '').toLowerCase()] = {
+        pages: Array.isArray(row.allowed_pages) ? row.allowed_pages : [],
+        features: Array.isArray(row.allowed_features) ? row.allowed_features : []
+      }
     }
     accessPolicies.value = map
   } catch (err) {
@@ -86,11 +88,17 @@ function isITDepartment(dept) {
 const defaultNonITPaths = ['/dashboard', '/assets', '/support', '/repair-history']
 
 const allowedPaths = computed(() => {
+  const roleKey = String(currentUser.value?.role || '').trim().toLowerCase()
   const deptKey = String(currentUser.value?.department || '').trim().toLowerCase()
-  const fromPolicy = accessPolicies.value[deptKey]
+  
+  // Try Role first, then Department for policy lookups
+  const policy = accessPolicies.value[roleKey] || accessPolicies.value[deptKey]
+  const fromPolicy = policy?.pages
+
   if (Array.isArray(fromPolicy) && fromPolicy.includes('*')) return '*'
   if (Array.isArray(fromPolicy) && fromPolicy.length > 0) return fromPolicy
-  if (isITDepartment(deptKey)) return '*'
+  
+  if (currentUser.value?.role === 'Administrator' || isITDepartment(deptKey) || isITDepartment(roleKey)) return '*'
   return defaultNonITPaths
 })
 
@@ -106,7 +114,9 @@ const visibleItems = computed(() => {
   return MENU_CONFIG.items.filter(i => {
     if (i.hidden) return false
     if (i.path === '/access-control') {
-      return isITDepartment(currentUser.value?.department)
+      const role = String(currentUser.value?.role || '').toLowerCase()
+      const dept = String(currentUser.value?.department || '').toLowerCase()
+      return role === 'administrator' || isITDepartment(dept) || isITDepartment(role)
     }
     if (allowedPaths.value === '*') return true
     return allowedPaths.value.includes(i.path)
@@ -124,11 +134,27 @@ const sidebarMenuItems = computed(() => {
   }))
 })
 
+const allowedFeatures = computed(() => {
+  const roleKey = String(currentUser.value?.role || '').trim().toLowerCase()
+  const deptKey = String(currentUser.value?.department || '').trim().toLowerCase()
+  
+  const policy = accessPolicies.value[roleKey] || accessPolicies.value[deptKey]
+  const fromPolicy = policy?.features
+
+  if (currentUser.value?.role === 'Administrator' || isITDepartment(deptKey) || isITDepartment(roleKey)) {
+    return ['network_map', 'all_tickets', 'create_ticket', 'delete_ticket', 'edit_asset', 'delete_asset', 'export_data', 'view_costs']
+  }
+  return Array.isArray(fromPolicy) ? fromPolicy : []
+})
+
 const renderedPage = computed(() => {
   if (allowedPaths.value !== '*' && !allowedPaths.value.includes(currentPath.value)) {
     currentPath.value = '/dashboard'
   }
-  const page = activeItem.value.content(currentUser.value || MENU_CONFIG.user)
+  const page = activeItem.value.content({ 
+    ...currentUser.value, 
+    allowedFeatures: allowedFeatures.value 
+  })
   if (page && (page.setup || page.render || typeof page === 'function')) {
     return page
   }
@@ -138,9 +164,15 @@ const renderedPage = computed(() => {
   ])
 })
 
-const loginView = computed(() =>
-  LoginPage({ onAuthenticate: handleAuthenticateWithPayload })
-)
+const authView = computed(() => {
+  if (showForgot.value) {
+    return ForgotPasswordPage({ onBack: () => { showForgot.value = false } })
+  }
+  return LoginPage({ 
+    onAuthenticate: handleAuthenticateWithPayload,
+    onForgot: () => { showForgot.value = true }
+  })
+})
 
 onMounted(() => {
   loadAccessPolicies()
@@ -160,7 +192,7 @@ watch(currentPath, () => {
 </script>
 
 <template>
-  <component v-if="!isAuthenticated" :is="loginView" />
+  <component v-if="!isAuthenticated" :is="authView" />
   <div v-else style="display: flex; height: 100vh; background: transparent; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
     <FuturisticSidebar 
       :menuItems="sidebarMenuItems"
@@ -213,7 +245,7 @@ body {
 .nx-bg-rings,.nx-bg-lines,.nx-mouse-glow,.nx-holo{position:absolute;pointer-events:none}
 .nx-bg-rings{inset:-20%;background:radial-gradient(circle at 20% 30%,rgba(59,130,246,.18),transparent 35%),radial-gradient(circle at 75% 20%,rgba(168,85,247,.22),transparent 35%),radial-gradient(circle at 50% 80%,rgba(34,211,238,.12),transparent 45%);animation:floatBg 14s ease-in-out infinite}
 .nx-bg-lines{inset:0;background:repeating-linear-gradient(115deg,transparent 0 140px,rgba(56,189,248,.08) 140px 141px,transparent 141px 280px);animation:scan 9s linear infinite}
-.nx-mouse-glow{width:420px;height:420px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(59,130,246,.26),rgba(168,85,247,.13) 35%,transparent 70%);filter:blur(14px);transition:left .18s linear,top .18s linear}
+.nx-mouse-glow{width:420px;height:420px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(59,130,246,.26),rgba(168,85,247,.13) 35%,transparent 70%);filter:blur(14px);transition:left 2ms linear,top 2ms linear}
 .nx-card-wrap{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .nx-holo{width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.16),rgba(168,85,247,.1),transparent 72%);filter:blur(10px);animation:pulse 5s ease-in-out infinite}
 .nx-card{position:relative;width:min(92vw,480px);padding:30px 28px 24px;border-radius:28px;background:linear-gradient(135deg,rgba(16,23,42,.65),rgba(30,41,59,.45));backdrop-filter:blur(18px);border:1px solid rgba(148,163,184,.34);box-shadow:0 30px 90px rgba(0,0,0,.52),0 0 0 1px rgba(147,197,253,.2) inset;animation:cardIn .8s cubic-bezier(.22,1,.36,1)}

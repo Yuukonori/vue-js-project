@@ -19,8 +19,10 @@ export const MENU_CONFIG = {
     icon:     'dashboard',
   },
   user: {
+    id:     1,
     name:   'Ruki Nasa',
-    role:   'Admin',
+    role:   'Administrator',
+    department: 'IT',
   },
   items: [
     {
@@ -103,7 +105,7 @@ export const MENU_CONFIG = {
       path:      '/cases',
       isDefault: true,
       line:      false,
-      content:   () => CasesPage(),
+      content:   (user) => CasesPage(user),
     },
     {
       label:     'Access Control',

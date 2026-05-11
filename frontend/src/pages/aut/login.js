@@ -5,9 +5,9 @@ import { defineComponent, h, ref, onMounted, onBeforeUnmount } from 'vue'
  * @param {{ onAuthenticate?: (payload: { email: string, password: string, user?: any }) => void }} options
  */
 export function LoginPage(options = {}) {
-  const { onAuthenticate } = options
+  const { onAuthenticate, onForgot } = options
 
-  return h(defineComponent({
+  return defineComponent({
     name: 'LoginPage',
     setup() {
       const email = ref('')
@@ -90,7 +90,6 @@ export function LoginPage(options = {}) {
               ]),
               h('h1', { class: 'text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50' }, 'BuilderUI'),
               h('p', { class: 'mt-1 text-sm font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300' }, 'Management Systems'),
-              h('div', { class: 'mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600' }),
             ]),
             h('form', {
               onSubmit: (e) => { e.preventDefault(); handleAuthenticate() }
@@ -108,9 +107,18 @@ export function LoginPage(options = {}) {
                     onInput: (e) => { email.value = e.target.value },
                   }),
               ]),
-              h('div', { class: 'nx-pass-head' }, [
+              h('div', { class: 'nx-pass-head', style: { position: 'relative', zIndex: 10 } }, [
                 h('label', { class: 'nx-label', for: 'nx-password' }, 'Password'),
-                h('button', { type: 'button', class: 'nx-link' }, 'Forgot password?'),
+                h('button', { 
+                  type: 'button', 
+                  class: 'nx-link', 
+                  style: { cursor: 'pointer', position: 'relative', zIndex: 20, padding: '5px' },
+                  onClick: (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (options.onForgot) options.onForgot();
+                  }
+                }, 'Forgot password?'),
               ]),
               h('div', { class: 'nx-input-wrap' }, [
                 h('span', { class: 'nx-icon', 'aria-hidden': 'true' }, '*'),
@@ -158,5 +166,5 @@ export function LoginPage(options = {}) {
         ]),
       ])
     },
-  }))
+  })
 }
