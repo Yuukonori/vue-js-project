@@ -5,6 +5,7 @@
  * Connects to PostgreSQL database and handles API requests
  */
 
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { bootstrapDatabase } = require("./utils/database");
@@ -17,7 +18,7 @@ const ticketRoutes = require("./routes/tickets.routes");
 const miscRoutes = require("./routes/misc.routes");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // ============================================================================
 // MIDDLEWARE

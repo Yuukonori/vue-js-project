@@ -1,6 +1,6 @@
 import { computed, defineComponent, h, ref } from 'vue'
 import { buildImageProfile, buildButton as baseBuildButton, buildContentGrid, buildDivider, buildDropdown, buildFileUpload, buildGrid, buildHeader, buildIcon, buildIconContainer, buildImage, buildInput, buildTable, buildText, GridSpan, spacing, colors, buildIconTextContainer, buildTextBadge, buildIconText, buildTapOption } from '../ui/index.js'
-import { USERS } from '../data/users.js'
+
 import { formatLastUpdate } from '../lastUpdate.js'
 import { authFetch } from '../utils/auth.js'
 
@@ -21,7 +21,7 @@ export function SupportPage(user) {
         })
       }
 
-      const users = USERS
+
 
       const defaultVisibleCount = 5
       const maxSupportUsers = 10
@@ -39,8 +39,15 @@ export function SupportPage(user) {
       const submitMessage = ref('')
       const showSuccessPopup = ref(false)
       const submittedTicketId = ref('')
-      const supportVisibleCount = computed(() => (showMoreClicks.value === 0 ? defaultVisibleCount : maxSupportUsers))
-      const visibleUsers = computed(() => users.slice(0, supportVisibleCount.value))
+      const selectedMember = ref(null)
+
+      const supportMembers = [
+        { id: 'S01', name: 'Visal', role: 'Front-end Developer', dept: 'IT Department', icon: 'person' },
+        { id: 'S02', name: 'Piseth', role: 'Automation Programmer', dept: 'IT Department', icon: 'person' },
+        { id: 'S03', name: 'Pong', role: 'IT Support', dept: 'IT Department', icon: 'person' },
+        { id: 'S04', name: 'Tykea', role: 'Engeneering', dept: 'IT Department', icon: 'person' },
+      ]
+
 
       //------------Function-----------------//
 
@@ -55,7 +62,7 @@ export function SupportPage(user) {
       }
 
       function openUserDetail(member) {
-        alert(`User Detail\n\nName: ${member.name}\nRole: ${member.role}\nID: ${member.id}`)
+        selectedMember.value = member
       }
 
       function resetTicketForm() {
@@ -100,7 +107,7 @@ export function SupportPage(user) {
           submittedTicketId.value = String(data.ticket_id || '')
           submitMessage.value = `Ticket ${data.ticket_id} submitted successfully.`
           showSuccessPopup.value = true
-          
+
           // Play notification sound
           try {
             const audio = new Audio('/src/sfx/notification sound.mp3')
@@ -109,7 +116,7 @@ export function SupportPage(user) {
           } catch (err) {
             console.log('Audio error:', err)
           }
-          
+
           resetTicketForm()
           setTimeout(() => { showSuccessPopup.value = false }, 3000)
         } catch (err) {
@@ -119,17 +126,7 @@ export function SupportPage(user) {
         }
       }
 
-      function buildUserRows() {
-        const child = {}
 
-        return buildGrid({
-          columns: 1,
-          rows: Math.max(visibleUsers.value.length, 1),
-          display: false,
-          rowGap: 0,
-          child,
-        })
-      }
 
       function buildDetailCard(title, actionText, items) {
         const normalizedItems = Array.from({ length: detailVisibleRows }, (_, i) => items[i] ?? '')
@@ -242,7 +239,7 @@ export function SupportPage(user) {
               rows: 2,
               display: true,
               align: { 1: 'center', 2: 'center' },
-              onPressed: () => { },
+              onPressed: () => openUserDetail(supportMembers[0]),
               hover: true,
               child: {
                 1: buildIcon('person', { size: 120, color: '#111827' }),
@@ -254,7 +251,7 @@ export function SupportPage(user) {
               rows: 2,
               display: true,
               align: { 1: 'center', 2: 'center' },
-              onPressed: () => { },
+              onPressed: () => openUserDetail(supportMembers[1]),
               hover: true,
               child: {
                 1: buildIcon('person', { size: 120, color: '#111827' }),
@@ -266,7 +263,7 @@ export function SupportPage(user) {
               rows: 2,
               display: true,
               align: { 1: 'center', 2: 'center' },
-              onPressed: () => { },
+              onPressed: () => openUserDetail(supportMembers[2]),
               hover: true,
               child: {
                 1: buildIcon('person', { size: 120, color: '#111827' }),
@@ -278,7 +275,7 @@ export function SupportPage(user) {
               rows: 2,
               display: true,
               align: { 1: 'center', 2: 'center' },
-              onPressed: () => { },
+              onPressed: () => openUserDetail(supportMembers[3]),
               hover: true,
               child: {
                 1: buildIcon('person', { size: 120, color: '#111827' }),
@@ -436,7 +433,73 @@ export function SupportPage(user) {
           },
         }) : null
 
-        return h('div', [mainPage, successDialog])
+        const memberPopup = selectedMember.value ? buildGrid({
+          columns: 1,
+          rows: 1,
+          display: true,
+          fillViewport: true,
+          style: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 10060,
+            backgroundColor: 'rgba(15, 23, 42, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(8px)',
+          },
+          onPressed: () => { selectedMember.value = null },
+          child: {
+            1: buildGrid({
+              columns: 1,
+              rows: 6,
+              display: true,
+              rowGap: 12,
+              padding: '34px',
+              radius: 28,
+              backgroundColor: '#ffffff',
+              style: {
+                width: '420px',
+                textAlign: 'center',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              },
+              align: { 1: 'center', 2: 'center', 3: 'center', 4: 'center', 5: 'center', 6: 'center' },
+              onPressed: (e) => { e.stopPropagation() }, // Prevent closing when clicking inside
+              child: {
+                1: buildIconContainer({ icon: 'person', colorIcon: '#3b82f6', colorCon: '#eff6ff', size: '100', radius: '50%', containerStyle: 'square', style: { margin: '0 auto 10px' } }),
+                2: buildText(selectedMember.value.name, { size: '3xl', weight: 'bold', color: '#111827' }),
+                3: buildTextBadge(selectedMember.value.role, { color: 'primary', size: 'sm', style: { margin: '0 auto' } }),
+                4: buildDivider({ margin: '20px 0' }),
+                5: buildGrid({
+                  columns: 2,
+                  rows: 2,
+                  display: true,
+                  rowGap: 12,
+                  align: { 1: 'center left', 2: 'center right', 3: 'center left', 4: 'center right' },
+                  child: {
+                    1: buildText('Staff ID', { size: 'sm', color: 'gray500', weight: 'bold' }),
+                    2: buildText(selectedMember.value.id, { size: 'sm', color: 'gray800' }),
+                    3: buildText('Department', { size: 'sm', color: 'gray500', weight: 'bold' }),
+                    4: buildText(selectedMember.value.dept, { size: 'sm', color: 'gray800' }),
+                  }
+                }),
+                6: buildButton('Close Details', {
+                  variant: 'outline',
+                  color: 'neutral',
+                  full: true,
+                  style: { marginTop: '24px' },
+                  onPressed: () => { selectedMember.value = null }
+                }),
+              },
+            }),
+          },
+        }) : null
+
+        return h('div', [mainPage, successDialog, memberPopup])
       }
     }
   }

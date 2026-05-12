@@ -102,7 +102,4 @@ CREATE TABLE IF NOT EXISTS app_users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO app_users (full_name, email, password, role)
-VALUES
-('Ruki Nasa', 'nasaaaxd@gmail.com', 'Ruki@123', 'Administrator')
-ON CONFLICT (email) DO NOTHING;
+

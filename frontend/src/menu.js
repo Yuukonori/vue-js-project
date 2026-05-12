@@ -109,7 +109,7 @@ export const MENU_CONFIG = {
     },
     {
       label:     'Access Control',
-      icon:      'user',
+      icon:      'shield',
       path:      '/access-control',
       isDefault: false,
       line:      false,

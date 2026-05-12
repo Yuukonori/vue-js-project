@@ -36,24 +36,24 @@ export function buildTable(options = {}) {
 const _TableComponent = defineComponent({
   name: 'Table',
   props: {
-    columns:         { default: () => [] },
-    data:            { default: () => [] },
-    pageSize:        { default: 0 },
-    pagerMode:       { default: 'full' },
-    pagination:      { default: null },
-    emptyText:       { default: 'No data' },
-    striped:         { default: false },
+    columns: { default: () => [] },
+    data: { default: () => [] },
+    pageSize: { default: 0 },
+    pagerMode: { default: 'full' },
+    pagination: { default: null },
+    emptyText: { default: 'No data' },
+    striped: { default: false },
     showClearButton: { default: false },
-    onClear:         { default: null },
-    onRowClick:      { default: null },
-    onPressed:       { default: null },
+    onClear: { default: null },
+    onRowClick: { default: null },
+    onPressed: { default: null },
     headerUppercase: { default: false },
-    width:           { default: undefined },
-    height:          { default: undefined },
-    style:           { default: () => ({}) },
+    width: { default: undefined },
+    height: { default: undefined },
+    style: { default: () => ({}) },
   },
   setup(props) {
-    const page    = ref(1)
+    const page = ref(1)
     const hovered = ref(-1)
 
     function resolvePageSize() {
@@ -129,22 +129,22 @@ const _TableComponent = defineComponent({
         hasPaginationConfig
           ? true
           : (props.pagerMode === 'summary'
-              ? props.data.length >= 0
-              : props.data.length > resolvedPageSize)
+            ? props.data.length >= 0
+            : props.data.length > resolvedPageSize)
       )
       const summaryMode = hasPaginationConfig || props.pagerMode === 'summary'
 
       return h('div', {
         style: {
-          width:        props.width,
-          height:       props.height,
-          display:      'flex',
-          flexDirection:'column',
-          background:   '#ffffff',
+          width: props.width,
+          height: props.height,
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#ffffff',
           borderRadius: '16px',
-          border:       '1px solid #e5e7ee',
-          overflow:     'hidden',
-          boxSizing:    'border-box',
+          border: '1px solid #e5e7ee',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
           ...props.style,
         },
       }, [
@@ -171,9 +171,9 @@ const _TableComponent = defineComponent({
         h('div', { style: { flex: 1, overflowX: 'auto', overflowY: props.height ? 'auto' : 'visible' } }, [
           h('table', {
             style: {
-              width:           '100%',
-              borderCollapse:  'collapse',
-              fontSize:        '14px',
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '14px',
             },
           }, [
             // Header
@@ -184,15 +184,15 @@ const _TableComponent = defineComponent({
                 h('th', {
                   key: ci,
                   style: {
-                    padding:       '12px 16px',
-                    textAlign:     col.align ?? 'left',
-                    fontWeight:    '600',
-                    fontSize:      '12px',
-                    color:         '#475467',
+                    padding: '12px 16px',
+                    textAlign: col.align ?? 'left',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    color: '#475467',
                     letterSpacing: '0.3px',
-                    width:         resolveColumnWidth(col, flexTotal),
-                    whiteSpace:    'nowrap',
-                    borderBottom:  '1px solid #e5e7ee',
+                    width: resolveColumnWidth(col, flexTotal),
+                    whiteSpace: 'nowrap',
+                    borderBottom: '1px solid #e5e7ee',
                   },
                 }, props.headerUppercase ? String(colLabel(col)).toUpperCase() : colLabel(col))
               )),
@@ -202,52 +202,52 @@ const _TableComponent = defineComponent({
             h('tbody', {}, [
               rows.value.length === 0
                 ? h('tr', {}, [
-                    h('td', {
-                      colspan: props.columns.length,
-                      style: { padding: '32px 16px', textAlign: 'center', color: '#94a3b8', fontSize: '14px', fontWeight: '500' },
-                    }, props.emptyText),
-                  ])
+                  h('td', {
+                    colspan: props.columns.length,
+                    style: { padding: '32px 16px', textAlign: 'center', color: '#94a3b8', fontSize: '14px', fontWeight: '500' },
+                  }, props.emptyText),
+                ])
                 : rows.value.map((row, ri) => {
-                    const isHovered  = hovered.value === ri
-                    const isStriped  = props.striped && ri % 2 === 1
-                    const clickHandler = props.onRowClick || props.onPressed
-                    const isClickable = !!clickHandler
+                  const isHovered = hovered.value === ri
+                  const isStriped = props.striped && ri % 2 === 1
+                  const clickHandler = props.onRowClick || props.onPressed
+                  const isClickable = !!clickHandler
 
-                    return h('tr', {
-                      key: ri,
+                  return h('tr', {
+                    key: ri,
+                    style: {
+                      background: !row.__isPadding && isHovered ? '#f7f8fc'
+                        : isStriped ? '#fafbfc'
+                          : '#ffffff',
+                      cursor: !row.__isPadding && isClickable ? 'pointer' : 'default',
+                      transition: 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease',
+                      transform: !row.__isPadding && isHovered ? 'translateY(-1px)' : undefined,
+                      filter: !row.__isPadding && isHovered ? 'brightness(0.99)' : undefined,
+                      boxShadow: !row.__isPadding && isHovered ? '0 8px 20px rgba(15, 23, 42, 0.10)' : undefined,
+                    },
+                    onMouseenter: row.__isPadding ? undefined : () => { hovered.value = ri },
+                    onMouseleave: row.__isPadding ? undefined : () => { if (hovered.value === ri) hovered.value = -1 },
+                    onClick: !row.__isPadding && isClickable ? () => clickHandler(row) : undefined,
+                  }, props.columns.map((col, ci) =>
+                    h('td', {
+                      key: ci,
                       style: {
-                        background: !row.__isPadding && isHovered   ? '#f7f8fc'
-                                  : isStriped   ? '#fafbfc'
-                                  : '#ffffff',
-                        cursor:     !row.__isPadding && isClickable ? 'pointer' : 'default',
-                        transition: 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease',
-                        transform:  !row.__isPadding && isHovered ? 'translateY(-1px)' : undefined,
-                        filter:     !row.__isPadding && isHovered ? 'brightness(0.99)' : undefined,
-                        boxShadow:  !row.__isPadding && isHovered ? '0 8px 20px rgba(15, 23, 42, 0.10)' : undefined,
+                        padding: '13px 16px',
+                        textAlign: col.align ?? 'left',
+                        color: '#1e293b',
+                        fontWeight: '500',
+                        borderBottom: '1px solid #f1f5f9',
+                        whiteSpace: col.wrap ? 'normal' : 'nowrap',
+                        overflow: col.allowOverflow ? 'visible' : 'hidden',
+                        textOverflow: 'ellipsis',
+                        width: resolveColumnWidth(col, flexTotal),
+                        maxWidth: col.maxWidth ?? '300px',
+                        position: col.allowOverflow ? 'relative' : undefined,
+                        zIndex: col.allowOverflow ? 2 : undefined,
                       },
-                      onMouseenter: row.__isPadding ? undefined : () => { hovered.value = ri },
-                      onMouseleave: row.__isPadding ? undefined : () => { if (hovered.value === ri) hovered.value = -1 },
-                      onClick:      !row.__isPadding && isClickable ? () => clickHandler(row) : undefined,
-                    }, props.columns.map((col, ci) =>
-                      h('td', {
-                        key: ci,
-                        style: {
-                          padding:      '13px 16px',
-                          textAlign:    col.align ?? 'left',
-                          color:        '#1e293b',
-                          fontWeight:   '500',
-                          borderBottom: '1px solid #f1f5f9',
-                          whiteSpace:   col.wrap ? 'normal' : 'nowrap',
-                          overflow:     col.allowOverflow ? 'visible' : 'hidden',
-                          textOverflow: 'ellipsis',
-                          width:        resolveColumnWidth(col, flexTotal),
-                          maxWidth:     col.maxWidth ?? '300px',
-                          position:     col.allowOverflow ? 'relative' : undefined,
-                          zIndex:       col.allowOverflow ? 2 : undefined,
-                        },
-                      }, renderCell(row, col, ri))
-                    ))
-                  }),
+                    }, renderCell(row, col, ri))
+                  ))
+                }),
             ]),
           ]),
         ]),
@@ -255,47 +255,47 @@ const _TableComponent = defineComponent({
         // ── Pagination ──
         hasPagination ? h('div', {
           style: {
-            display:        'flex',
-            alignItems:     'center',
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: _resolvePagerAlign(props.pagination?.align),
-            gap:            summaryMode ? '16px' : '8px',
-            padding:        props.pagination?.padding ?? '16px 16px',
-            borderTop:      '1px solid #f1f5f9',
-            flexShrink:     0,
+            gap: summaryMode ? '16px' : '8px',
+            padding: props.pagination?.padding ?? '16px 16px',
+            borderTop: '1px solid #f1f5f9',
+            flexShrink: 0,
           },
         }, [
           // Prev
           _pageBtn('<', page.value === 1, () => { if (page.value > 1) page.value-- }),
           ...(summaryMode
             ? [
-                h('span', {
-                  style: {
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    color: '#1e293b',
-                    textAlign: 'center',
-                    userSelect: 'none',
-                    letterSpacing: '-0.2px'
-                  },
-                }, `Page ${page.value} of ${totalPages.value}`),
-              ]
+              h('span', {
+                style: {
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  color: '#1e293b',
+                  textAlign: 'center',
+                  userSelect: 'none',
+                  letterSpacing: '-0.2px'
+                },
+              }, `Page ${page.value} of ${totalPages.value}`),
+            ]
             : props.pagerMode === 'arrows'
-            ? []
-            : Array.from({ length: totalPages.value }, (_, i) => i + 1)
+              ? []
+              : Array.from({ length: totalPages.value }, (_, i) => i + 1)
                 .filter(p => Math.abs(p - page.value) <= 2)
                 .map(p => h('button', {
                   key: p,
                   style: {
-                    width:        '30px',
-                    height:       '30px',
-                    border:       '1.5px solid',
-                    borderColor:  p === page.value ? '#6366f1' : '#e2e8f0',
+                    width: '30px',
+                    height: '30px',
+                    border: '1.5px solid',
+                    borderColor: p === page.value ? '#6366f1' : '#e2e8f0',
                     borderRadius: '8px',
-                    background:   p === page.value ? '#6366f1' : '#ffffff',
-                    color:        p === page.value ? '#ffffff' : '#475467',
-                    fontWeight:   p === page.value ? '700' : '400',
-                    fontSize:     '12px',
-                    cursor:       'pointer',
+                    background: p === page.value ? '#6366f1' : '#ffffff',
+                    color: p === page.value ? '#ffffff' : '#475467',
+                    fontWeight: p === page.value ? '700' : '400',
+                    fontSize: '12px',
+                    cursor: 'pointer',
                   },
                   onClick: () => { page.value = p },
                 }, p))),
@@ -318,21 +318,21 @@ function _resolvePagerAlign(align) {
 function _pageBtn(label, disabled, onClick) {
   return h('button', {
     style: {
-      width:        '34px',
-      height:       '34px',
-      border:       '1.5px solid #e2e8f0',
+      width: '34px',
+      height: '34px',
+      border: '1.5px solid #e2e8f0',
       borderRadius: '10px',
-      background:   '#ffffff',
-      color:        disabled ? '#cbd5e1' : '#94a3b8',
-      fontSize:     '14px',
-      fontWeight:   '400',
-      cursor:       disabled ? 'not-allowed' : 'pointer',
-      padding:      0,
-      display:      'flex',
-      alignItems:   'center',
+      background: '#ffffff',
+      color: disabled ? '#cbd5e1' : '#94a3b8',
+      fontSize: '14px',
+      fontWeight: '400',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      padding: 0,
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
-      transition:   'all 0.2s ease',
-      boxShadow:    disabled ? 'none' : '0 1px 2px rgba(0,0,0,0.05)',
+      transition: 'all 0.2s ease',
+      boxShadow: disabled ? 'none' : '0 1px 2px rgba(0,0,0,0.05)',
     },
     disabled,
     onClick,

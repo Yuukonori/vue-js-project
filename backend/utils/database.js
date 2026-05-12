@@ -8,12 +8,12 @@ const fs = require("fs");
 const path = require("path");
 const bcrypt = require("bcrypt");
 
-// Database Configuration
+// Database Configuration from environment variables
 const dbConfig = {
-  user: process.env.DB_USER || process.env.POSTGRES_USER || "admin",
-  password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || "admin@879433",
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD || "",
   host: process.env.DB_HOST || "localhost",
-  database: process.env.DB_NAME || process.env.POSTGRES_DB || "n8n_db",
+  database: process.env.DB_NAME || "postgres",
   port: Number(process.env.DB_PORT || 5432),
 };
 
@@ -146,103 +146,7 @@ async function bootstrapDatabase() {
     await pool.query(`ALTER TABLE repair_tickets ADD PRIMARY KEY (ticket_id)`);
   }
 
-  // Seed default access policies
-  await pool.query(`
-    INSERT INTO access_policies (department, allowed_pages, allowed_features)
-    VALUES
-      ('finance', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
-      ('hr', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
-      ('procurement', '["/dashboard","/assets","/support","/repair-history"]'::jsonb, '[]'::jsonb),
-      ('it', '["*"]'::jsonb, '["network_map", "all_tickets"]'::jsonb)
-    ON CONFLICT (department) DO NOTHING
-  `);
 
-  // Create default admin users
-  const hashedRukiPassword = await bcrypt.hash("Ruki@123", 10);
-  const hashedRioPassword = await bcrypt.hash("Rio@123", 10);
-
-  await pool.query(
-    `INSERT INTO app_users (
-      full_name, email, password, role, department, position_title, 
-      cost_center, company, assets_count, issues_count, status
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-    ON CONFLICT (email) DO UPDATE SET
-      full_name = EXCLUDED.full_name,
-      password = EXCLUDED.password,
-      role = EXCLUDED.role,
-      department = EXCLUDED.department,
-      position_title = EXCLUDED.position_title,
-      cost_center = EXCLUDED.cost_center,
-      company = EXCLUDED.company,
-      assets_count = EXCLUDED.assets_count,
-      issues_count = EXCLUDED.issues_count,
-      status = EXCLUDED.status`,
-    [
-      "Ruki Nasa",
-      "nasaaaxd@gmail.com",
-      hashedRukiPassword,
-      "Administrator",
-      "IT",
-      "Web Administrator",
-      "CC-IT-001",
-      "BuilderUI",
-      3,
-      0,
-      "Active",
-    ]
-  );
-
-  await pool.query(
-    `INSERT INTO app_users (
-      full_name, email, password, role, department, position_title, 
-      cost_center, company, assets_count, issues_count, status
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-    ON CONFLICT (email) DO UPDATE SET
-      full_name = EXCLUDED.full_name,
-      password = EXCLUDED.password,
-      role = EXCLUDED.role,
-      department = EXCLUDED.department,
-      position_title = EXCLUDED.position_title,
-      cost_center = EXCLUDED.cost_center,
-      company = EXCLUDED.company,
-      status = EXCLUDED.status`,
-    [
-      "Rio Tsukasa",
-      "riotsukasaaa@gmail.com",
-      hashedRioPassword,
-      "Staff",
-      "Finance",
-      "Finance",
-      "FN-OPS-01",
-      "BuilderUI",
-      0,
-      0,
-      "Active",
-    ]
-  );
-
-  // Assign assets to users
-  await pool.query(`
-    WITH ranked_assets AS (
-      SELECT asset_id, ROW_NUMBER() OVER (ORDER BY asset_id) AS rn
-      FROM inventory
-    ),
-    users_map AS (
-      SELECT
-        MAX(CASE WHEN full_name = 'Ruki Nasa' THEN id END) AS ruki_id,
-        MAX(CASE WHEN full_name = 'Rio Tsukasa' THEN id END) AS rio_id
-      FROM app_users
-    )
-    UPDATE inventory i
-    SET assigned_user_id = CASE
-      WHEN ra.rn IN (1,2) THEN um.ruki_id
-      WHEN ra.rn = 3 THEN um.rio_id
-      ELSE i.assigned_user_id
-    END
-    FROM ranked_assets ra, users_map um
-    WHERE i.asset_id = ra.asset_id
-      AND i.assigned_user_id IS NULL
-  `);
 
   await syncUserAssetCounts();
   console.log("✓ Database bootstrap completed");

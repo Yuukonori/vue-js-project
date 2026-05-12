@@ -7,14 +7,16 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { pool } = require("../utils/database");
 const { generateToken, authenticateToken, JWT_EXPIRES_IN } = require("../utils/auth");
+const { loginRateLimiter } = require("../utils/rateLimiter");
 
 const router = express.Router();
 
 /**
  * POST /api/auth/login
  * Authenticate user and return JWT token
+ * Protected by rate limiter: 10 attempts per 1 minute
  */
-router.post("/login", async (req, res) => {
+router.post("/login", loginRateLimiter, async (req, res) => {
   try {
     const email = String(req.body?.email ?? "").trim().toLowerCase();
     const password = String(req.body?.password ?? "");

@@ -79,10 +79,10 @@ function _isCoveredBySpan(index, columns, spans) {
     if (si === index) continue
     const startRow = Math.floor((si - 1) / columns)
     const startCol = (si - 1) % columns
-    const colSpan  = spanCfg?.colSpan ?? 1
-    const rowSpan  = spanCfg?.rowSpan ?? 1
+    const colSpan = spanCfg?.colSpan ?? 1
+    const rowSpan = spanCfg?.rowSpan ?? 1
     if (row >= startRow && row < startRow + rowSpan &&
-        col >= startCol && col < startCol + colSpan) {
+      col >= startCol && col < startCol + colSpan) {
       return true
     }
   }
@@ -94,8 +94,8 @@ function _blendDark(hex, amount) {
   if (clean.length !== 6) return hex
   const n = parseInt(clean, 16)
   const r = Math.max(0, Math.round(((n >> 16) & 0xff) * (1 - amount)))
-  const g = Math.max(0, Math.round(((n >>  8) & 0xff) * (1 - amount)))
-  const b = Math.max(0, Math.round(( n        & 0xff) * (1 - amount)))
+  const g = Math.max(0, Math.round(((n >> 8) & 0xff) * (1 - amount)))
+  const b = Math.max(0, Math.round((n & 0xff) * (1 - amount)))
   return `rgb(${r},${g},${b})`
 }
 
@@ -104,35 +104,35 @@ function _blendDark(hex, amount) {
 const _GridComponent = defineComponent({
   name: 'BuildGrid',
   props: {
-    columns:          { default: 1 },
-    rows:             { default: 1 },
-    child:            { default: () => ({}) },
-    span:             { default: () => ({}) },
-    display:          { default: true },
-    colGap:           { default: 8 },
-    rowGap:           { default: 6 },
-    emptyRowHeight:   { default: 48 },
-    keepStructure:    { default: false },
-    padding:          { default: undefined },
-    cellPadding:      { default: 0 },
-    backgroundColor:  { default: '#ffffff' },
-    borderRadius:     { default: '16px' },
-    border:           { default: undefined },
-    boxShadow:        { default: undefined },
-    align:            { default: () => ({}) },
-    hover:            { default: false },
-    hovered:          { default: false },
-    hoverColor:       { default: undefined },
-    onPressed:        { default: undefined },
+    columns: { default: 1 },
+    rows: { default: 1 },
+    child: { default: () => ({}) },
+    span: { default: () => ({}) },
+    display: { default: true },
+    colGap: { default: 8 },
+    rowGap: { default: 6 },
+    emptyRowHeight: { default: 48 },
+    keepStructure: { default: false },
+    padding: { default: undefined },
+    cellPadding: { default: 0 },
+    backgroundColor: { default: '#ffffff' },
+    borderRadius: { default: '16px' },
+    border: { default: undefined },
+    boxShadow: { default: undefined },
+    align: { default: () => ({}) },
+    hover: { default: false },
+    hovered: { default: false },
+    hoverColor: { default: undefined },
+    onPressed: { default: undefined },
     mobileMaxColumns: { default: undefined },
-    width:            { default: '100%' },
-    height:           { default: undefined },
-    style:            { default: () => ({}) },
+    width: { default: '100%' },
+    height: { default: undefined },
+    style: { default: () => ({}) },
   },
   setup(props) {
-    const isHovered  = ref(false)
-    const isMobile   = ref(typeof window !== 'undefined' && window.innerWidth < 640)
-    let   _resizeRef
+    const isHovered = ref(false)
+    const isMobile = ref(typeof window !== 'undefined' && window.innerWidth < 640)
+    let _resizeRef
 
     onMounted(() => {
       if (props.mobileMaxColumns != null) {
@@ -145,7 +145,7 @@ const _GridComponent = defineComponent({
     })
 
     return () => {
-      const showChrome    = props.display !== false
+      const showChrome = props.display !== false
       const showGridLines = props.display === 'grid'
       const keepStructure = props.keepStructure || props.display === true || showGridLines
 
@@ -159,28 +159,28 @@ const _GridComponent = defineComponent({
         : props.backgroundColor
 
       // Default padding to '12px' only when chrome is visible; explicit prop always wins
-      const resolvedPad     = _resolvePx(props.padding ?? (showChrome ? '12px' : undefined))
+      const resolvedPad = _resolvePx(props.padding ?? (showChrome ? '12px' : undefined))
       const resolvedCellPad = _resolvePx(props.cellPadding)
-      const resolvedRadius  = _resolvePx(props.borderRadius)
+      const resolvedRadius = _resolvePx(props.borderRadius)
 
       const containerStyle = {
-        display:              'grid',
-        gridTemplateColumns:  `repeat(${effectiveCols}, 1fr)`,
-        columnGap:            `${props.colGap}px`,
-        rowGap:               `${props.rowGap}px`,
-        padding:              resolvedPad,
-        width:                props.width,
-        height:               props.height,
-        background:           showChrome ? bg : 'transparent',
-        borderRadius:         showChrome ? resolvedRadius : undefined,
-        border:               showChrome ? (props.border ?? '1px solid #E5E7EE') : undefined,
-        boxShadow:            showChrome ? props.boxShadow : undefined,
-        boxSizing:            'border-box',
-        cursor:               props.onPressed ? 'pointer' : undefined,
-        transition:           enableHover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease' : undefined,
-        transform:            (enableHover && isHovered.value) ? 'translateY(-1px)' : undefined,
-        filter:               (enableHover && isHovered.value) ? 'brightness(0.99)' : undefined,
-        boxShadow:            (enableHover && isHovered.value) ? '0 8px 20px rgba(15, 23, 42, 0.10)' : (showChrome ? props.boxShadow : undefined),
+        display: 'grid',
+        gridTemplateColumns: `repeat(${effectiveCols}, 1fr)`,
+        columnGap: `${props.colGap}px`,
+        rowGap: `${props.rowGap}px`,
+        padding: resolvedPad,
+        width: props.width,
+        height: props.height,
+        background: showChrome ? bg : 'transparent',
+        borderRadius: showChrome ? resolvedRadius : undefined,
+        border: showChrome ? (props.border ?? '1px solid #E5E7EE') : undefined,
+        boxShadow: showChrome ? props.boxShadow : undefined,
+        boxSizing: 'border-box',
+        cursor: props.onPressed ? 'pointer' : undefined,
+        transition: enableHover ? 'transform 140ms ease, filter 140ms ease, box-shadow 140ms ease, background 140ms ease' : undefined,
+        transform: (enableHover && isHovered.value) ? 'translateY(-1px)' : undefined,
+        filter: (enableHover && isHovered.value) ? 'brightness(0.99)' : undefined,
+        boxShadow: (enableHover && isHovered.value) ? '0 8px 20px rgba(15, 23, 42, 0.10)' : (showChrome ? props.boxShadow : undefined),
         ...props.style,
       }
       Object.keys(containerStyle).forEach(k => containerStyle[k] === undefined && delete containerStyle[k])
@@ -197,9 +197,9 @@ const _GridComponent = defineComponent({
           // Skip slots covered by another span (not the origin)
           if (_isCoveredBySpan(index, props.columns, props.span) && !props.span[index]) continue
 
-          const spanCfg  = props.span[index]
-          const colSpan  = Math.max(1, Math.min(spanCfg?.colSpan ?? 1, effectiveCols - (c % effectiveCols)))
-          const rowSpan  = Math.max(1, spanCfg?.rowSpan ?? 1)
+          const spanCfg = props.span[index]
+          const colSpan = Math.max(1, Math.min(spanCfg?.colSpan ?? 1, effectiveCols - (c % effectiveCols)))
+          const rowSpan = Math.max(1, spanCfg?.rowSpan ?? 1)
           const childNode = props.child[index]
 
           // Always render all cells to preserve explicit grid positions.
@@ -208,17 +208,17 @@ const _GridComponent = defineComponent({
 
           const cellAlign = props.align[index]
           const cellStyle = {
-            gridColumn:     colSpan > 1 ? `span ${colSpan}` : undefined,
-            gridRow:        rowSpan > 1 ? `span ${rowSpan}` : undefined,
-            padding:        resolvedCellPad,
-            minHeight:      (!childNode && keepStructure && props.emptyRowHeight > 0)
-                              ? `${props.emptyRowHeight}px` : undefined,
-            display:        cellAlign ? 'grid' : undefined,
-            placeItems:     cellAlign,
-            position:       showGridLines ? 'relative' : undefined,
-            boxSizing:      'border-box',
-            outline:        showGridLines ? '1px solid rgba(0,0,0,0.12)' : undefined,
-            outlineOffset:  showGridLines ? '-0.5px' : undefined,
+            gridColumn: colSpan > 1 ? `span ${colSpan}` : undefined,
+            gridRow: rowSpan > 1 ? `span ${rowSpan}` : undefined,
+            padding: resolvedCellPad,
+            minHeight: (!childNode && keepStructure && props.emptyRowHeight > 0)
+              ? `${props.emptyRowHeight}px` : undefined,
+            display: cellAlign ? 'grid' : undefined,
+            placeItems: cellAlign,
+            position: showGridLines ? 'relative' : undefined,
+            boxSizing: 'border-box',
+            outline: showGridLines ? '1px solid rgba(0,0,0,0.12)' : undefined,
+            outlineOffset: showGridLines ? '-0.5px' : undefined,
           }
           Object.keys(cellStyle).forEach(k => cellStyle[k] === undefined && delete cellStyle[k])
 
@@ -232,15 +232,15 @@ const _GridComponent = defineComponent({
             cellChildren.push(h('span', {
               key: `lbl-${index}`,
               style: {
-                position:     'absolute',
-                top:          '2px',
-                left:         '4px',
-                fontSize:     '10px',
-                fontWeight:   '500',
-                color:        'rgba(0,0,0,0.35)',
+                position: 'absolute',
+                top: '2px',
+                left: '4px',
+                fontSize: '10px',
+                fontWeight: '500',
+                color: 'rgba(0,0,0,0.35)',
                 pointerEvents: 'none',
-                lineHeight:   '1',
-                userSelect:   'none',
+                lineHeight: '1',
+                userSelect: 'none',
               },
             }, labelText))
           }
@@ -250,9 +250,9 @@ const _GridComponent = defineComponent({
       }
 
       return h('div', {
-        style:        containerStyle,
-        onClick:      props.onPressed,
-        onMouseenter: enableHover ? () => { isHovered.value = true  } : undefined,
+        style: containerStyle,
+        onClick: props.onPressed,
+        onMouseenter: enableHover ? () => { isHovered.value = true } : undefined,
         onMouseleave: enableHover ? () => { isHovered.value = false } : undefined,
       }, cells)
     }
@@ -264,30 +264,30 @@ const _GridComponent = defineComponent({
 const _ContentGridComponent = defineComponent({
   name: 'BuildContentGrid',
   props: {
-    columns:         { default: 1 },
-    rows:            { default: 1 },
-    child:           { default: () => ({}) },
-    span:            { default: () => ({}) },
-    display:         { default: true },
-    colGap:          { default: 12 },
-    rowGap:          { default: 12 },
-    padding:         { default: '16px' },
-    cellPadding:     { default: '8px' },
+    columns: { default: 1 },
+    rows: { default: 1 },
+    child: { default: () => ({}) },
+    span: { default: () => ({}) },
+    display: { default: true },
+    colGap: { default: 12 },
+    rowGap: { default: 12 },
+    padding: { default: '16px' },
+    cellPadding: { default: '8px' },
     backgroundColor: { default: 'transparent' },
-    borderRadius:    { default: '0px' },
-    border:          { default: undefined },
-    boxShadow:       { default: undefined },
-    align:           { default: () => ({}) },
-    fillViewport:    { default: false },
-    mobileConfig:    { default: undefined },
-    tabletConfig:    { default: undefined },
-    style:           { default: () => ({}) },
+    borderRadius: { default: '0px' },
+    border: { default: undefined },
+    boxShadow: { default: undefined },
+    align: { default: () => ({}) },
+    fillViewport: { default: false },
+    mobileConfig: { default: undefined },
+    tabletConfig: { default: undefined },
+    style: { default: () => ({}) },
   },
   setup(props) {
     // Use container width (not window width) so sidebar doesn't skew breakpoints
     const containerWidth = ref(9999)
-    const containerEl    = ref(null)
-    let   _ro
+    const containerEl = ref(null)
+    let _ro
 
     onMounted(() => {
       if (!containerEl.value) return
@@ -308,32 +308,32 @@ const _ContentGridComponent = defineComponent({
       const cfg = (isMobile && props.mobileConfig)
         ? props.mobileConfig
         : (isTablet && props.tabletConfig)
-        ? props.tabletConfig
-        : null
+          ? props.tabletConfig
+          : null
 
       const grid = buildGrid({
-        columns:         cfg?.columns        ?? props.columns,
-        rows:            cfg?.rows           ?? props.rows,
-        child:           cfg?.child          ?? props.child,
-        span:            cfg?.span           ?? props.span,
-        display:         props.display,
-        colGap:          props.colGap,
-        rowGap:          props.rowGap,
-        padding:         props.padding,
-        cellPadding:     props.cellPadding,
+        columns: cfg?.columns ?? props.columns,
+        rows: cfg?.rows ?? props.rows,
+        child: cfg?.child ?? props.child,
+        span: cfg?.span ?? props.span,
+        display: props.display,
+        colGap: props.colGap,
+        rowGap: props.rowGap,
+        padding: props.padding,
+        cellPadding: props.cellPadding,
         backgroundColor: props.backgroundColor,
-        borderRadius:    props.borderRadius,
-        border:          props.border,
-        boxShadow:       props.boxShadow,
-        align:           props.align,
-        width:           '100%',
-        style:           props.style,
+        borderRadius: props.borderRadius,
+        border: props.border,
+        boxShadow: props.boxShadow,
+        align: props.align,
+        width: '100%',
+        style: props.style,
       })
 
       const scrollStyle = {
-        width:     '100%',
+        width: '100%',
         overflowY: props.fillViewport ? 'auto' : 'visible',
-        flex:      props.fillViewport ? '1 1 0' : undefined,
+        flex: props.fillViewport ? '1 1 0' : undefined,
         minHeight: props.fillViewport ? 0 : undefined,
       }
       Object.keys(scrollStyle).forEach(k => scrollStyle[k] === undefined && delete scrollStyle[k])

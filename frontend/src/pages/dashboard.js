@@ -65,9 +65,12 @@ export function DashboardPage(user) {
                     const ticketsRes = await fetch('/api/repair/tickets')
                     let tickets = await ticketsRes.json()
 
-                    // Filter tickets based on feature permission
-                    if (!canSeeAllTickets) {
-                        tickets = tickets.filter(t => t.submitted_by_id === user.id || t.user_id === user.id)
+                    // Admins and IT department see all tickets; others only see their own
+                    const isAdmin = user.role === 'Administrator' || user.role === 'administration'
+                    const isIT = String(user.department || '').toLowerCase() === 'it' || String(user.role || '').toLowerCase() === 'it'
+                    
+                    if (!isAdmin && !isIT) {
+                        tickets = tickets.filter(t => t.submitted_by_id === user.id)
                     }
                     repairTickets.value = tickets
 
@@ -292,6 +295,13 @@ export function DashboardPage(user) {
                                         child: {
                                             1: buildText('Submitted By', { size: 'sm', weight: 'bold', color: dashboardColors.headingText }),
                                             2: buildText(String(Ruki.selectedTicket?.submitted_by_name || 'Unknown'), { size: 'md', color: dashboardColors.bodyText, style: { padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' } })
+                                        }
+                                    }),
+                                    6: buildGrid({
+                                        columns: 1, rows: 2, rowGap: 8, display: false,
+                                        child: {
+                                            1: buildText('Prepared By (IT)', { size: 'sm', weight: 'bold', color: dashboardColors.headingText }),
+                                            2: buildText(String(Ruki.selectedTicket?.prepared_by || 'Assigning...'), { size: 'md', color: dashboardColors.actionColor, weight: 'semibold', style: { padding: '12px 16px', backgroundColor: '#f0f9ff', borderRadius: '10px', border: '1px solid #bae6fd' } })
                                         }
                                     }),
                                     7: buildGrid({

@@ -50,13 +50,18 @@ export function LoginPage(options = {}) {
             return
           }
 
+          if (res.status === 429) {
+            error.value = '⚠️ Too many login attempts. Please wait 1 minute and try again.'
+            return
+          }
+
           if (!res.ok || !payload?.ok || !payload?.user) {
             error.value = payload?.error || 'Invalid email or password.'
             return
           }
 
           error.value = ''
-          onAuthenticate?.({ email: payload.user.email, password: password.value, user: payload.user })
+          onAuthenticate?.({ email: payload.user.email, password: password.value, user: payload.user, token: payload.token })
         } catch (_) {
           error.value = 'Unable to connect to server. Please try again.'
         }
@@ -97,21 +102,21 @@ export function LoginPage(options = {}) {
               h('label', { class: 'nx-label', for: 'nx-email' }, 'Work Email'),
               h('div', { class: 'nx-input-wrap' }, [
                 h('span', { class: 'nx-icon', 'aria-hidden': 'true' }, '@'),
-                  h('input', {
-                    id: 'nx-email',
-                    class: 'nx-input',
-                    type: 'email',
-                    placeholder: 'name@company.com',
-                    autocomplete: 'email',
-                    value: email.value,
-                    onInput: (e) => { email.value = e.target.value },
-                  }),
+                h('input', {
+                  id: 'nx-email',
+                  class: 'nx-input',
+                  type: 'email',
+                  placeholder: 'name@company.com',
+                  autocomplete: 'email',
+                  value: email.value,
+                  onInput: (e) => { email.value = e.target.value },
+                }),
               ]),
               h('div', { class: 'nx-pass-head', style: { position: 'relative', zIndex: 10 } }, [
                 h('label', { class: 'nx-label', for: 'nx-password' }, 'Password'),
-                h('button', { 
-                  type: 'button', 
-                  class: 'nx-link', 
+                h('button', {
+                  type: 'button',
+                  class: 'nx-link',
                   style: { cursor: 'pointer', position: 'relative', zIndex: 20, padding: '5px' },
                   onClick: (e) => {
                     e.preventDefault();
@@ -122,22 +127,22 @@ export function LoginPage(options = {}) {
               ]),
               h('div', { class: 'nx-input-wrap' }, [
                 h('span', { class: 'nx-icon', 'aria-hidden': 'true' }, '*'),
-                  h('input', {
-                    id: 'nx-password',
-                    class: 'nx-input',
-                    type: showPassword.value ? 'text' : 'password',
-                    placeholder: 'Enter password',
-                    autocomplete: 'current-password',
-                    value: password.value,
-                    onInput: (e) => { password.value = e.target.value },
-                    onKeydown: (e) => { if (e.key === 'Enter') handleAuthenticate() },
-                  }),
-                  h('button', {
-                    class: 'nx-eye',
-                    type: 'button',
-                    'aria-label': showPassword.value ? 'Hide password' : 'Show password',
-                    onClick: () => { showPassword.value = !showPassword.value },
-                  }, showPassword.value ? 'Hide' : 'Show'),
+                h('input', {
+                  id: 'nx-password',
+                  class: 'nx-input',
+                  type: showPassword.value ? 'text' : 'password',
+                  placeholder: 'Enter password',
+                  autocomplete: 'current-password',
+                  value: password.value,
+                  onInput: (e) => { password.value = e.target.value },
+                  onKeydown: (e) => { if (e.key === 'Enter') handleAuthenticate() },
+                }),
+                h('button', {
+                  class: 'nx-eye',
+                  type: 'button',
+                  'aria-label': showPassword.value ? 'Hide password' : 'Show password',
+                  onClick: () => { showPassword.value = !showPassword.value },
+                }, showPassword.value ? 'Hide' : 'Show'),
               ]),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0' } }, [
                 h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#b8c6eb' } }, [

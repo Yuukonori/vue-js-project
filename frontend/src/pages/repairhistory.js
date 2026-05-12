@@ -205,6 +205,13 @@ export function RepairHistoryPage(user) {
                       2: buildText(String(Ruki.selectedTicket?.submitted_by_name || 'Unknown'), { size: 'md', color: '#475569', style: { padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' } })
                     }
                   }),
+                  6: buildGrid({
+                    columns: 1, rows: 2, rowGap: 8, display: false,
+                    child: {
+                      1: buildText('Prepared By (IT)', { size: 'sm', weight: 'bold', color: '#334155' }),
+                      2: buildText(String(Ruki.selectedTicket?.prepared_by || 'Assigning...'), { size: 'md', color: '#2563eb', weight: 'semibold', style: { padding: '12px 16px', backgroundColor: '#f0f9ff', borderRadius: '10px', border: '1px solid #bae6fd' } })
+                    }
+                  }),
                   7: buildGrid({
                     columns: 1, rows: 2, rowGap: 8, display: false,
                     child: {

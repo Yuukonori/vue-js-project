@@ -9,6 +9,7 @@ import { authUtils, authFetch } from './utils/auth.js'
 
 const currentPath = ref('/dashboard')
 const isAuthenticated = ref(false)
+const isAuthChecking = ref(true) // Prevents login flash during JWT verification on refresh
 const showForgot = ref(false)
 const pendingCasesCount = ref(0)
 const currentUser = ref({ ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' })
@@ -50,14 +51,18 @@ async function handleAuthenticateWithPayload(payload) {
 async function checkAuth() {
   const token = authUtils.getToken()
   const savedUser = authUtils.getUser()
-  
+
   if (token && savedUser) {
     try {
-      // Verify token with backend
-      const res = await authFetch('/api/auth/verify', {
-        method: 'POST'
+      // Verify token with backend using raw fetch to avoid authFetch clearing auth
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       })
-      
+
       if (res.ok) {
         const data = await res.json()
         isAuthenticated.value = true
@@ -66,18 +71,33 @@ async function checkAuth() {
           department: data.user.department || 'IT',
         }
         console.log('Auto-login successful')
-      } else {
-        // Token invalid, clear auth
+      } else if (res.status === 401 || res.status === 403) {
+        // Token is genuinely expired or invalid — force re-login
+        console.warn('Token invalid or expired, clearing auth')
         authUtils.clearAuth()
+      } else {
+        // Server error (500, etc.) — keep the token, don't log out
+        console.warn('Verify endpoint returned error, keeping session:', res.status)
+        isAuthenticated.value = true
+        currentUser.value = {
+          ...savedUser,
+          department: savedUser.department || 'IT',
+        }
       }
     } catch (err) {
-      console.error('Auto-login failed:', err)
-      authUtils.clearAuth()
+      // Network error (backend unreachable) — keep session alive using saved user
+      console.warn('Backend unreachable during auth check, using cached session')
+      isAuthenticated.value = true
+      currentUser.value = {
+        ...savedUser,
+        department: savedUser.department || 'IT',
+      }
     }
   }
+  // Always mark check as done so UI can render
+  isAuthChecking.value = false
 }
 
-// Listen for auth expiration
 function handleAuthExpired() {
   isAuthenticated.value = false
   currentUser.value = { ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' }
@@ -242,7 +262,9 @@ watch(currentPath, () => {
 </script>
 
 <template>
-  <component v-if="!isAuthenticated" :is="authView" />
+  <!-- Blank screen while JWT is being verified — prevents login page flash on refresh -->
+  <div v-if="isAuthChecking" style="height:100vh;background:#0f172a;"></div>
+  <component v-else-if="!isAuthenticated" :is="authView" />
   <div v-else style="display: flex; height: 100vh; background: transparent; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
     <FuturisticSidebar 
       :menuItems="sidebarMenuItems"
