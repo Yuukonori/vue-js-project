@@ -100,6 +100,8 @@ async function bootstrapDatabase() {
     "ALTER TABLE app_users ADD COLUMN IF NOT EXISTS issues_count INTEGER DEFAULT 0",
     "ALTER TABLE app_users ADD COLUMN IF NOT EXISTS status VARCHAR(40) DEFAULT 'Active'",
     "ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar TEXT",
+    "ALTER TABLE app_users ADD COLUMN IF NOT EXISTS location VARCHAR(255) DEFAULT 'Phnom Penh, Cambodia'",
+    "ALTER TABLE app_users ADD COLUMN IF NOT EXISTS about TEXT DEFAULT 'System administrator with full access to platform management, user oversight, and system configuration.'",
     "ALTER TABLE inventory ADD COLUMN IF NOT EXISTS assigned_user_id INTEGER",
     "ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS category VARCHAR(50)",
     "ALTER TABLE repair_tickets ADD COLUMN IF NOT EXISTS priority VARCHAR(20)",

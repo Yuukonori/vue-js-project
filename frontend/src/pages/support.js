@@ -108,6 +108,9 @@ export function SupportPage(user) {
           submitMessage.value = `Ticket ${data.ticket_id} submitted successfully.`
           showSuccessPopup.value = true
 
+          // Trigger global refresh for user counts (Profile, Sidebar, etc)
+          window.dispatchEvent(new CustomEvent('user-updated'))
+
           // Play notification sound
           try {
             const audio = new Audio('/src/sfx/notification sound.mp3')

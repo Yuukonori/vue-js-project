@@ -101,7 +101,8 @@
           @keydown.enter="handleUserProfileClick"
         >
           <div class="user-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <img v-if="props.userAvatar" :src="props.userAvatar" alt="User Avatar" class="avatar-img" />
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
@@ -132,6 +133,22 @@
         }"
       ></div>
     </aside>
+
+    <!-- Logout Modal -->
+    <transition name="fade-blur">
+      <div v-if="showLogoutModal" class="custom-modal-overlay">
+        <div class="custom-modal-card">
+          <div class="modal-header">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out of your account?</p>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn-cancel" @click="showLogoutModal = false">Cancel</button>
+            <button class="modal-btn-confirm" @click="confirmLogout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -163,6 +180,10 @@ const props = defineProps({
   userRole: {
     type: String,
     default: 'Admin'
+  },
+  userAvatar: {
+    type: String,
+    default: ''
   }
 })
 
@@ -286,6 +307,7 @@ const hoveredItem = ref(null)
 const mouseX = ref(0)
 const mouseY = ref(0)
 const mouseInSidebar = ref(false)
+const showLogoutModal = ref(false)
 
 // Computed
 const displayMenuItems = computed(() => {
@@ -312,6 +334,11 @@ const handleUserProfileClick = () => {
 }
 
 const handleLogout = () => {
+  showLogoutModal.value = true
+}
+
+const confirmLogout = () => {
+  showLogoutModal.value = false
   props.onLogout?.()
 }
 
@@ -790,6 +817,7 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(167, 139, 250, 0.1));
   border: 1px solid rgba(96, 165, 250, 0.2);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .futuristic-sidebar.collapsed .user-profile {
@@ -819,6 +847,13 @@ onMounted(() => {
   width: 24px;
   height: 24px;
   color: white;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .user-info {
@@ -867,5 +902,91 @@ onMounted(() => {
 .logout-btn svg {
   width: 16px;
   height: 16px;
+}
+
+/* Modal Styles */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.custom-modal-card {
+  width: 400px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.modal-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.modal-header p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-btn-cancel {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-btn-cancel:hover {
+  background: #f8fafc;
+}
+
+.modal-btn-confirm {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-btn-confirm:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.fade-blur-enter-active,
+.fade-blur-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fade-blur-enter-from,
+.fade-blur-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style>

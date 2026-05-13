@@ -152,7 +152,7 @@ function isITDepartment(dept) {
   return value === 'it' || value.includes('it')
 }
 
-const defaultNonITPaths = ['/dashboard', '/assets', '/support', '/repair-history']
+const defaultNonITPaths = ['/dashboard', '/assets', '/support', '/repair-history', '/user-profile']
 
 const allowedPaths = computed(() => {
   const roleKey = String(currentUser.value?.role || '').trim().toLowerCase()
@@ -247,6 +247,12 @@ onMounted(() => {
   fetchPendingCasesCount()
   badgeInterval = setInterval(fetchPendingCasesCount, 15000)
   window.addEventListener('auth-expired', handleAuthExpired)
+  window.addEventListener('user-updated', () => {
+    const savedUser = authUtils.getUser()
+    if (savedUser) {
+      currentUser.value = { ...savedUser, department: savedUser.department || 'IT' }
+    }
+  })
 })
 
 onBeforeUnmount(() => {
@@ -273,6 +279,7 @@ watch(currentPath, () => {
       :onLogout="signOut"
       :userName="currentUser.name || MENU_CONFIG.user.name"
       :userRole="currentUser.role || MENU_CONFIG.user.role"
+      :userAvatar="currentUser.avatar || ''"
     />
     <div style="flex: 1; margin-left: 280px; position: relative; overflow-y: auto; transition: margin-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
       <FuturisticPageWrapper>

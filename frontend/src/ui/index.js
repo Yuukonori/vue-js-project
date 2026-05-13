@@ -54,6 +54,7 @@ export { buildCircularProgress }                      from './builders/CircularP
 // ── Media ────────────────────────────────────────────────────────────────────
 export { buildImage }                                 from './builders/image.js'
 export { buildImageProfile }                          from './builders/imageProfile.js'
+export { buildImageUpload }                           from './builders/ImageUpload.js'
 
 // ── Decorators ───────────────────────────────────────────────────────────────
 export { buildDivider }                               from './builders/divider.js'

@@ -27,12 +27,14 @@ router.post("/login", loginRateLimiter, async (req, res) => {
 
     const result = await pool.query(
       `SELECT
-         id, full_name AS name, email, password, role, department,
-         position_title AS position, cost_center AS "costCenter",
-         company, assets_count AS assets, issues_count AS issues,
-         status, is_active, avatar
-       FROM app_users
-       WHERE LOWER(email) = $1
+         u.id, u.full_name AS name, u.email, u.password, u.role, u.department,
+         u.position_title AS position, u.cost_center AS "costCenter",
+         u.company, u.status, u.is_active, u.avatar, u.location, u.about, COALESCE(u.created_at::text, '2026-05-12') AS created_at,
+         (SELECT COUNT(*)::int FROM inventory WHERE assigned_user_id::text = u.id::text) AS assets,
+         (SELECT COUNT(*)::int FROM repair_tickets WHERE submitted_by_id::text = u.id::text) AS issues,
+         (SELECT COUNT(*)::int FROM repair_tickets WHERE submitted_by_id::text = u.id::text) AS issues_count
+       FROM app_users u
+       WHERE LOWER(u.email) = $1
        LIMIT 1`,
       [email]
     );
@@ -80,12 +82,14 @@ router.post("/verify", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT
-         id, full_name AS name, email, role, department,
-         position_title AS position, cost_center AS "costCenter",
-         company, assets_count AS assets, issues_count AS issues,
-         status, avatar
-       FROM app_users
-       WHERE id = $1 AND is_active = true
+         u.id, u.full_name AS name, u.email, u.role, u.department,
+         u.position_title AS position, u.cost_center AS "costCenter",
+         u.company, u.status, u.avatar, u.location, u.about, COALESCE(u.created_at::text, '2026-05-12') AS created_at,
+         (SELECT COUNT(*)::int FROM inventory WHERE assigned_user_id::text = u.id::text) AS assets,
+         (SELECT COUNT(*)::int FROM repair_tickets WHERE submitted_by_id::text = u.id::text) AS issues,
+         (SELECT COUNT(*)::int FROM repair_tickets WHERE submitted_by_id::text = u.id::text) AS issues_count
+       FROM app_users u
+       WHERE u.id = $1 AND u.is_active = true
        LIMIT 1`,
       [req.user.id]
     );

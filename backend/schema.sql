@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS app_users (
     assets_count INTEGER DEFAULT 0,
     asset_ids JSONB DEFAULT '[]'::jsonb,
     avatar TEXT,
+    location VARCHAR(255),
+    about TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
