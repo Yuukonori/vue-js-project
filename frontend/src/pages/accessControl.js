@@ -131,7 +131,7 @@ export function AccessControlPage() {
           1: buildHeader({
             title: 'Access Control',
             subtitle: 'Choose which pages each department can see using checkboxes.',
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             divider: false,
             padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },

@@ -33,7 +33,7 @@ export function ActivityLogsPage(user) {
             title: 'System Audit',
             subtitle: 'A Detail ledger of all administrative actions and automated system event accross the infrastructure.',
             actionText: 'Export Report', actionIcon: buildIcon('download', { size: 14, color: '#ffffff' }),
-            backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
+            backgroundColor: 'transparent', divider: false, padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
           }),
           13: buildGrid({

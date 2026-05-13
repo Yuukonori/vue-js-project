@@ -81,7 +81,7 @@ export function RepairHistoryPage(user) {
             title: 'Repair & Maintenance History',
             subtitle: 'Deep diagnostics and technical log archival for enterprise assets.',
             titleOptions: { size: '4xl' },
-            backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
+            backgroundColor: 'transparent', divider: false, padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
           }),
           9: buildGrid({

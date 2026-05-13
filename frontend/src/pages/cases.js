@@ -222,7 +222,7 @@ export function CasesPage(user) {
           1: buildHeader({
             title: 'Cases',
             subtitle: 'Track and manage case activities across users, assets, and companies.',
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             divider: false,
             padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },

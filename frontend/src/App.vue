@@ -265,7 +265,7 @@ watch(currentPath, () => {
   <!-- Blank screen while JWT is being verified — prevents login page flash on refresh -->
   <div v-if="isAuthChecking" style="height:100vh;background:#0f172a;"></div>
   <component v-else-if="!isAuthenticated" :is="authView" />
-  <div v-else style="display: flex; height: 100vh; background: transparent; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
+  <div v-else style="display: flex; height: 100vh; background: #f7fcff; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
     <FuturisticSidebar 
       :menuItems="sidebarMenuItems"
       :activeItem="currentPath"
@@ -291,7 +291,7 @@ watch(currentPath, () => {
 body {
   margin: 0;
   padding: 0;
-  background: Transparent;
+  background: #f7fcff;
 }
 .nx-login {
   position: relative;

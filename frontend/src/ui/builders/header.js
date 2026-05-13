@@ -66,7 +66,7 @@ export function buildHeader(options = {}) {
     statusWidth = '195px',
     statusOptions = {},
 
-    backgroundColor = 'white',
+    backgroundColor = 'transparent',
     display = false,
     divider = true,
     dividerColor = 'gray200',

@@ -172,7 +172,7 @@ export function AdminUsersPage(user) {
               1: buildHeader({
                 title: 'Users Management',
                 subtitle: 'Manage organization users, assignments, and account status.',
-                backgroundColor: 'white',
+                backgroundColor: 'transparent',
                 divider: false,
                 padding: '30px 24px 22px',
                 actionText: 'Add User',
@@ -260,7 +260,7 @@ export function AdminUsersPage(user) {
                     31: { colSpan: 6 },
                   },
                   child: {
-                    1: buildHeader({ title: 'Edit User', subtitle: 'Update user information', backgroundColor: 'white', divider: false }),
+                    1: buildHeader({ title: 'Edit User', subtitle: 'Update user information', backgroundColor: 'transparent', divider: false }),
                     7: buildInput({ label: 'FULL NAME', value: fullName, onUpdate: (v) => { fullName.value = v }, full: true }),
                     10: buildInput({ label: 'EMAIL', value: email, onUpdate: (v) => { email.value = v }, full: true }),
                     13: buildDropdown({ label: 'DEPARTMENT', items: [{ text: 'IT Operations', value: 'it-ops' }, { text: 'Finance', value: 'finance' }, { text: 'Human Resource', value: 'hr' }, { text: 'Procurement', value: 'procurement' }], value: department, onUpdate: (v) => { department.value = v }, width: '100%', height: '42px', style: { marginTop: '22px' } }),

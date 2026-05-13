@@ -167,7 +167,7 @@ export function UserFormPage(user) {
               hover: true,
               onPressed: Ruki.onCancel,
             }),
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             divider: false,
             padding: '30px 24px 22px',
             actionText: 'Save User',

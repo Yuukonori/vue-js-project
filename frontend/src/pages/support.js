@@ -225,7 +225,7 @@ export function SupportPage(user) {
             1: buildHeader({
               title: 'Support Contact',
               subtitle: 'Provide detailed information regarding your system issue. Our technical curators will analyze your request and assign it to the appropriate archivist for resolution.',
-              backgroundColor: 'white',
+              backgroundColor: 'transparent',
               divider: false,
               padding: '30px 24px 22px',
               style: {

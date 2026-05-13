@@ -39,7 +39,7 @@ export function MonitoringPage(user) {
             title: 'Central Monitoring Hub',
             titleOptions: { size: '4xl' },
             subtitle: 'A holistic archival view of system health, physical assets, and user engagement.',
-            backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
+            backgroundColor: 'transparent', divider: false, padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
           }),
           13: buildIconText('System Health', { icon: 'computer', iconSize: 30, iconColor: 'primary', textSize: '2xl', textWeight: 'bold', textColor: 'gray800', gap: '8px', style: { marginLeft: '10px' } }),

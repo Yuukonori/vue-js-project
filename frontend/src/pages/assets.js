@@ -183,7 +183,7 @@ export function AssetsPage(user) {
             subtitle: "Manage and track your organization's IT physical infrastructure with precision.",
             actionText: Ruki.canManageAssets ? 'New Assets' : null,
             actionIcon: Ruki.canManageAssets ? buildIcon('plus', { size: 14, color: '#ffffff' }) : null,
-            onAction: Ruki.canManageAssets ? onNewAssets : null, backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
+            onAction: Ruki.canManageAssets ? onNewAssets : null, backgroundColor: 'transparent', divider: false, padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
           }),
           13: buildGrid({

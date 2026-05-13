@@ -101,7 +101,7 @@ export function NewAssetsForm(user) {
             actionIcon: buildIcon('plus', { size: '18', color: 'white' }),
             onAction: Ruki.triggerSubmit,
             actionStyle: { width: '120px', height: '40px', borderRadius: '12px', gap: '8px' },
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             divider: false,
             padding: '30px 24px 22px',
             style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },

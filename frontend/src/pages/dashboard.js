@@ -149,7 +149,7 @@ export function DashboardPage(user) {
                         statusText: 'ALL SYSTEM OPERATIONAL',
                         statusIcon: 'circle',
                         statusColor: dashboardColors.healthyState,
-                        statusBg: 'gray200', statusWidth: '195px', backgroundColor: 'white', divider: false, padding: '30px 24px 22px',
+                        statusBg: 'gray200', statusWidth: '195px', backgroundColor: 'transparent', divider: false, padding: '30px 24px 22px',
                         style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
                     }),
                     9: buildGrid({
