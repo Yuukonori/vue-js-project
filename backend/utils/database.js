@@ -6,7 +6,7 @@
 const { Pool } = require("pg");
 const fs = require("fs");
 const path = require("path");
-const bcrypt = require("bcrypt");
+const dbEngine = (process.env.DB_ENGINE || "postgres").toLowerCase();
 
 // Database Configuration from environment variables
 const dbConfig = {
@@ -17,8 +17,19 @@ const dbConfig = {
   port: Number(process.env.DB_PORT || 5432),
 };
 
-// Create connection pool
-const pool = new Pool(dbConfig);
+let pool;
+if (dbEngine === "postgres") {
+  pool = new Pool(dbConfig);
+} else if (dbEngine === "sqlite") {
+  throw new Error(
+    "DB_ENGINE=sqlite is configured, but this backend still uses PostgreSQL-specific SQL in routes. " +
+      "Use DB_ENGINE=postgres for now, or refactor routes before enabling sqlite runtime."
+  );
+} else {
+  throw new Error(
+    `Unsupported DB_ENGINE "${process.env.DB_ENGINE}". Supported values: postgres, sqlite`
+  );
+}
 
 /**
  * Sync user asset counts from inventory table
@@ -158,4 +169,5 @@ module.exports = {
   pool,
   syncUserAssetCounts,
   bootstrapDatabase,
+  dbEngine,
 };

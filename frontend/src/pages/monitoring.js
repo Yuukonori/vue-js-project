@@ -47,7 +47,7 @@ export function MonitoringPage(user) {
           18: buildButton('View Detailed Logs ->', { size: 'sm', weight: 'semibold', color: 'primary', onPressed: () => { if (globalThis.__appNavigate) globalThis.__appNavigate('/activity-logs') }, style: { marginRight: '10px' } }),
           19: buildGrid({
             columns: 8, rows: 5, display: true, padding: '16px 18px', rowGap: 8, colGap: 8, borderRadius: '14px', backgroundColor: '#ffffff',
-            style: { height: '100%' },
+            style: { height: '100%', minHeight: '430px' },
             span: { 1: { colSpan: 6 }, 7: { colSpan: 2 }, 9: { colSpan: 8, rowSpan: 3 }, 17: { colSpan: 8 } },
             align: { 1: 'start left', 7: 'start right', 9: 'center', 17: 'center' },
             child: {
@@ -62,7 +62,7 @@ export function MonitoringPage(user) {
           }),
           21: buildGrid({
             columns: 8, rows: 5, display: true, padding: '16px 18px', rowGap: 8, colGap: 8, borderRadius: '14px', backgroundColor: '#ffffff',
-            style: { height: '100%' },
+            style: { height: '100%', minHeight: '430px' },
             span: { 1: { colSpan: 6 }, 7: { colSpan: 2 }, 9: { colSpan: 8, rowSpan: 4 } },
             align: { 1: 'start left', 7: 'start right', 9: 'start' },
             child: {

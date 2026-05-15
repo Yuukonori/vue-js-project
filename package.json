@@ -3,5 +3,6 @@
     "dev": "npm run dev --prefix vue-front-end"
   },
   "dependencies": {
+    "firebase-tools": "^15.17.0"
   }
 }

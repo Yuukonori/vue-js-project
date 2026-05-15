@@ -8,7 +8,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { bootstrapDatabase } = require("./utils/database");
+const { bootstrapDatabase, dbEngine } = require("./utils/database");
 
 // Import route modules
 const authRoutes = require("./routes/auth.routes");

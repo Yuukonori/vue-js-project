@@ -45,6 +45,9 @@ async function handleAuthenticateWithPayload(payload) {
       department: payload.user.department || 'IT',
     }
   }
+
+  // Force navigate to dashboard after login
+  currentPath.value = '/dashboard'
 }
 
 // Auto-login if token exists

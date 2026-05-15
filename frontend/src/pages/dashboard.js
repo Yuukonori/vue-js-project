@@ -17,15 +17,56 @@ const dashboardColors = {
     iconMuted: 'gray300',
 }
 
+const globalSystemState = {
+    uptime: ref(0),
+    latency: ref(0),
+    latencyStatus: ref('STABLE'),
+    isPolling: false
+}
+
+function startSystemPolling() {
+    if (globalSystemState.isPolling) return;
+    globalSystemState.isPolling = true;
+
+    // Fetch initial uptime
+    fetch('/api/uptime')
+        .then(res => res.json())
+        .then(data => { globalSystemState.uptime.value = data.uptime })
+        .catch(console.error);
+
+    setInterval(() => {
+        globalSystemState.uptime.value++;
+    }, 1000);
+
+    const checkLatency = async () => {
+        const start = performance.now()
+        try {
+            await fetch('/api/health')
+            const end = performance.now()
+            globalSystemState.latency.value = Math.round(end - start)
+            
+            if (globalSystemState.latency.value < 60) globalSystemState.latencyStatus.value = 'STABLE'
+            else if (globalSystemState.latency.value < 150) globalSystemState.latencyStatus.value = 'WARNING'
+            else globalSystemState.latencyStatus.value = 'UNSTABLE'
+        } catch (err) {
+            globalSystemState.latencyStatus.value = 'OFFLINE'
+        }
+    }
+
+    checkLatency();
+    setInterval(checkLatency, 5000);
+}
+
 export function DashboardPage(user) {
     return {
         name: 'DashboardPage',
         setup() {
+            startSystemPolling()
             const repairTickets = ref([])
             const expiringAssets = ref([])
-            const latency = ref(0)
-            const latencyStatus = ref('STABLE')
-            const uptime = ref(0)
+            const latency = globalSystemState.latency
+            const latencyStatus = globalSystemState.latencyStatus
+            const uptime = globalSystemState.uptime
 
             const formattedUptime = computed(() => {
                 const s = uptime.value
@@ -41,21 +82,6 @@ export function DashboardPage(user) {
                 parts.push(`${sec}s`)
                 return parts.join(' ')
             })
-
-            const checkLatency = async () => {
-                const start = performance.now()
-                try {
-                    await fetch('/api/health')
-                    const end = performance.now()
-                    latency.value = Math.round(end - start)
-
-                    if (latency.value < 60) latencyStatus.value = 'STABLE'
-                    else if (latency.value < 150) latencyStatus.value = 'WARNING'
-                    else latencyStatus.value = 'UNSTABLE'
-                } catch (err) {
-                    latencyStatus.value = 'OFFLINE'
-                }
-            }
 
             const canSeeAllTickets = user.allowedFeatures?.includes('all_tickets')
             const canSeeNetworkMap = user.allowedFeatures?.includes('network_map')
@@ -76,12 +102,6 @@ export function DashboardPage(user) {
 
                     const assetsRes = await fetch('/api/assets/expiring')
                     expiringAssets.value = await assetsRes.json()
-
-                    const uptimeRes = await fetch('/api/uptime')
-                    const uptimeData = await uptimeRes.json()
-                    uptime.value = uptimeData.uptime
-
-                    await checkLatency()
                 } catch (err) {
                     console.error('Failed to fetch dashboard data:', err)
                 }
@@ -102,12 +122,6 @@ export function DashboardPage(user) {
 
             onMounted(() => {
                 fetchData()
-                const latInterval = setInterval(checkLatency, 5000)
-                const upInterval = setInterval(() => { uptime.value++ }, 1000)
-                return () => {
-                    clearInterval(latInterval)
-                    clearInterval(upInterval)
-                }
             })
 
             return {
