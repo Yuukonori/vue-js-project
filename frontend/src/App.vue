@@ -14,10 +14,24 @@ const showForgot = ref(false)
 const pendingCasesCount = ref(0)
 const currentUser = ref({ ...MENU_CONFIG.user, department: MENU_CONFIG.user?.department || 'IT' })
 const accessPolicies = ref({})
+const sidebarCollapsed = ref(false)
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1440)
 let badgeInterval = null
 
 function navigate(path) {
   currentPath.value = path
+}
+
+function handleSidebarCollapseChange(collapsed) {
+  sidebarCollapsed.value = !!collapsed
+}
+
+function handleWindowResize() {
+  viewportWidth.value = window.innerWidth
+}
+
+function triggerMobileSidebar() {
+  window.dispatchEvent(new CustomEvent('toggle-mobile-sidebar'))
 }
 
 function signOut() {
@@ -112,18 +126,12 @@ function isDoneStatus(status) {
 }
 
 async function fetchPendingCasesCount() {
-  const readTickets = async (url) => {
-    const res = await fetch(url)
-    const raw = await res.text()
-    if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-    return raw ? JSON.parse(raw) : []
-  }
-
   try {
-    const res = await fetch('/api/repair/tickets')
+    const res = await fetch('/api/conn_1778809328809/repair_tickets/showCases')
     if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-    const tickets = await res.json()
-    const unresolved = (Array.isArray(tickets) ? tickets : []).filter(t => !isDoneStatus(t?.status))
+    const json = await res.json()
+    const tickets = Array.isArray(json?.data) ? json.data : []
+    const unresolved = tickets.filter(t => !isDoneStatus(t?.status))
     pendingCasesCount.value = unresolved.length
   } catch (err) {
     console.error('Failed to fetch pending cases badge count:', err)
@@ -249,17 +257,20 @@ onMounted(() => {
   loadAccessPolicies()
   fetchPendingCasesCount()
   badgeInterval = setInterval(fetchPendingCasesCount, 15000)
+  window.addEventListener('resize', handleWindowResize, { passive: true })
   window.addEventListener('auth-expired', handleAuthExpired)
   window.addEventListener('user-updated', () => {
     const savedUser = authUtils.getUser()
     if (savedUser) {
       currentUser.value = { ...savedUser, department: savedUser.department || 'IT' }
     }
+    fetchPendingCasesCount()
   })
 })
 
 onBeforeUnmount(() => {
   if (badgeInterval) clearInterval(badgeInterval)
+  window.removeEventListener('resize', handleWindowResize)
   window.removeEventListener('auth-expired', handleAuthExpired)
 })
 
@@ -274,17 +285,39 @@ watch(currentPath, () => {
   <!-- Blank screen while JWT is being verified — prevents login page flash on refresh -->
   <div v-if="isAuthChecking" style="height:100vh;background:#0f172a;"></div>
   <component v-else-if="!isAuthenticated" :is="authView" />
-  <div v-else style="display: flex; height: 100vh; background: #f7fcff; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
+  <div
+    v-else
+    :class="[
+      'app-shell',
+      {
+        'sidebar-collapsed': sidebarCollapsed,
+        'is-mobile': viewportWidth < 768,
+        'is-tablet': viewportWidth >= 768 && viewportWidth <= 1024,
+        'is-desktop': viewportWidth > 1024,
+        'is-desktop-compact': viewportWidth > 1024 && viewportWidth <= 1366,
+        'is-desktop-wide': viewportWidth > 1366 && viewportWidth <= 1600,
+      }
+    ]"
+  >
+    <div v-if="viewportWidth < 768" class="mobile-appbar">
+      <button class="mobile-appbar-btn" type="button" aria-label="Open menu" @click="triggerMobileSidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+    </div>
     <FuturisticSidebar 
       :menuItems="sidebarMenuItems"
       :activeItem="currentPath"
       :onNavigate="navigate"
       :onLogout="signOut"
+      :onCollapseChange="handleSidebarCollapseChange"
+      :useExternalMobileTrigger="viewportWidth < 768"
       :userName="currentUser.name || MENU_CONFIG.user.name"
       :userRole="currentUser.role || MENU_CONFIG.user.role"
       :userAvatar="currentUser.avatar || ''"
     />
-    <div style="flex: 1; margin-left: 280px; position: relative; overflow-y: auto; transition: margin-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+    <div class="app-content">
       <FuturisticPageWrapper>
         <transition 
           name="fade" 
@@ -302,6 +335,111 @@ body {
   margin: 0;
   padding: 0;
   background: #f7fcff;
+  overflow-x: hidden;
+}
+.app-shell {
+  --sidebar-expanded-width: 280px;
+  --sidebar-collapsed-width: 88px;
+  display: flex;
+  height: 100vh;
+  background: #f7fcff;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+}
+.app-content {
+  flex: 1;
+  margin-left: var(--sidebar-expanded-width);
+  position: relative;
+  overflow-y: auto;
+  transition: margin-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.app-shell.sidebar-collapsed .app-content {
+  margin-left: var(--sidebar-collapsed-width);
+}
+.app-shell.is-desktop-wide {
+  --sidebar-expanded-width: 260px;
+  --sidebar-collapsed-width: 84px;
+}
+.app-shell.is-desktop-compact {
+  --sidebar-expanded-width: 240px;
+  --sidebar-collapsed-width: 78px;
+}
+.app-shell.is-desktop-wide .futuristic-page {
+  padding: 30px;
+}
+.app-shell.is-desktop-compact .futuristic-page {
+  padding: 22px;
+}
+@media (max-width: 1024px) {
+  .app-content {
+    margin-left: 0;
+  }
+}
+.app-shell.is-tablet .app-content {
+  margin-left: 78px;
+}
+.app-shell.is-mobile .app-content {
+  margin-left: 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 70px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #eef2f6;
+  overflow-x: hidden;
+}
+.app-shell.is-mobile {
+  height: 100dvh;
+  background: #eef2f6;
+}
+.app-shell.is-mobile .futuristic-page {
+  padding: 10px 12px 18px;
+  max-width: 430px;
+  margin: 0 auto;
+}
+.mobile-appbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 12px 8px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.18);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+  z-index: 1300;
+  backdrop-filter: none;
+}
+.mobile-appbar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  background: rgba(96, 165, 250, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #bfdbfe;
+  position: relative;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.22);
+}
+.mobile-appbar-btn svg,
+.mobile-appbar-mail svg {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 767px) {
+  .network-map-link-mobile.ruki-btn.ruki-btn-variant-link {
+    font-size: 8px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0.1px !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    white-space: nowrap !important;
+  }
 }
 .nx-login {
   position: relative;

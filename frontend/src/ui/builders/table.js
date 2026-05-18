@@ -1,4 +1,4 @@
-import { h, defineComponent, ref, computed, onMounted } from 'vue'
+import { h, defineComponent, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 /**
  * buildTable(options) — Data table with optional pagination and row hover
@@ -55,6 +55,20 @@ const _TableComponent = defineComponent({
   setup(props) {
     const page = ref(1)
     const hovered = ref(-1)
+    const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+    const isMobile = computed(() => viewportWidth.value < 768)
+
+    const handleResize = () => {
+      viewportWidth.value = window.innerWidth
+    }
+
+    onMounted(() => {
+      window.addEventListener('resize', handleResize, { passive: true })
+    })
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', handleResize)
+    })
 
     function resolvePageSize() {
       if (props.pagination) {
@@ -133,6 +147,12 @@ const _TableComponent = defineComponent({
             : props.data.length > resolvedPageSize)
       )
       const summaryMode = hasPaginationConfig || props.pagerMode === 'summary'
+      const tableMinWidth = isMobile.value ? '620px' : '100%'
+      const headPad = isMobile.value ? '10px 10px' : '12px 16px'
+      const bodyPad = isMobile.value ? '10px 10px' : '13px 16px'
+      const headFont = isMobile.value ? '11px' : '12px'
+      const bodyFont = isMobile.value ? '13px' : '14px'
+      const shellRadius = isMobile.value ? '12px' : '16px'
 
       return h('div', {
         style: {
@@ -141,7 +161,7 @@ const _TableComponent = defineComponent({
           display: 'flex',
           flexDirection: 'column',
           background: '#ffffff',
-          borderRadius: '16px',
+          borderRadius: shellRadius,
           border: '1px solid #e5e7ee',
           overflow: 'hidden',
           boxSizing: 'border-box',
@@ -172,8 +192,10 @@ const _TableComponent = defineComponent({
           h('table', {
             style: {
               width: '100%',
+              minWidth: tableMinWidth,
+              tableLayout: 'auto',
               borderCollapse: 'collapse',
-              fontSize: '14px',
+              fontSize: bodyFont,
             },
           }, [
             // Header
@@ -184,14 +206,15 @@ const _TableComponent = defineComponent({
                 h('th', {
                   key: ci,
                   style: {
-                    padding: '12px 16px',
+                    padding: headPad,
                     textAlign: col.align ?? 'left',
                     fontWeight: '600',
-                    fontSize: '12px',
+                    fontSize: headFont,
                     color: '#475467',
                     letterSpacing: '0.3px',
                     width: resolveColumnWidth(col, flexTotal),
                     whiteSpace: 'nowrap',
+                    overflowWrap: 'normal',
                     borderBottom: '1px solid #e5e7ee',
                   },
                 }, props.headerUppercase ? String(colLabel(col)).toUpperCase() : colLabel(col))
@@ -232,12 +255,13 @@ const _TableComponent = defineComponent({
                     h('td', {
                       key: ci,
                       style: {
-                        padding: '13px 16px',
+                        padding: bodyPad,
                         textAlign: col.align ?? 'left',
                         color: '#1e293b',
                         fontWeight: '500',
                         borderBottom: '1px solid #f1f5f9',
                         whiteSpace: col.wrap ? 'normal' : 'nowrap',
+                        overflowWrap: 'normal',
                         overflow: col.allowOverflow ? 'visible' : 'hidden',
                         textOverflow: 'ellipsis',
                         width: resolveColumnWidth(col, flexTotal),
@@ -258,8 +282,9 @@ const _TableComponent = defineComponent({
             display: 'flex',
             alignItems: 'center',
             justifyContent: _resolvePagerAlign(props.pagination?.align),
+            flexWrap: isMobile.value ? 'wrap' : 'nowrap',
             gap: summaryMode ? '16px' : '8px',
-            padding: props.pagination?.padding ?? '16px 16px',
+            padding: props.pagination?.padding ?? (isMobile.value ? '12px 10px' : '16px 16px'),
             borderTop: '1px solid #f1f5f9',
             flexShrink: 0,
           },

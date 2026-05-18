@@ -8,7 +8,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { bootstrapDatabase, dbEngine } = require("./utils/database");
+
 
 // Import route modules
 const authRoutes = require("./routes/auth.routes");
@@ -62,8 +62,7 @@ app.use("/api", miscRoutes);
  */
 async function startServer() {
   try {
-    // Bootstrap database schema and seed data
-    await bootstrapDatabase();
+
 
     // Start Express server
     app.listen(PORT, () => {

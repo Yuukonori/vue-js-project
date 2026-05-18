@@ -63,14 +63,35 @@ export function CasesPage(user) {
       const fetchCases = async () => {
         isLoading.value = true
         try {
-          const data = await apiFetch('/api/repair/tickets')
+          const [ticketsRes, usersRes] = await Promise.all([
+            fetch('/api/conn_1778809328809/repair_tickets/showCases'),
+            fetch('/api/conn_1778809328809/app_users/showUsers').catch(() => null)
+          ])
 
-          let tickets = Array.isArray(data) ? data : []
+          const body = await ticketsRes.json()
+          let tickets = Array.isArray(body) ? body : (body.data || [])
+
+          let usersList = []
+          if (usersRes && usersRes.ok) {
+            const usersBody = await usersRes.json()
+            usersList = Array.isArray(usersBody) ? usersBody : (usersBody.data || [])
+          }
+
+          const userMap = {}
+          usersList.forEach(u => {
+            userMap[u.id] = u.full_name || u.name
+          })
+
+          tickets = tickets.map(t => ({
+            ...t,
+            submitted_by_name: userMap[t.submit_by_id] || userMap[t.submitted_by_id] || t.submitted_by_name || 'Unknown',
+            updated_at: t.update_at || t.updated_at
+          }))
 
           // Filter tickets based on feature permission
           const canSeeAllTickets = user.allowedFeatures?.includes('all_tickets')
           if (!canSeeAllTickets) {
-            tickets = tickets.filter(t => t.submitted_by_id === user.id || t.user_id === user.id)
+            tickets = tickets.filter(t => t.submit_by_id === user.id || t.submitted_by_id === user.id || t.user_id === user.id)
           }
           cases.value = tickets
         } catch (err) {
@@ -128,27 +149,44 @@ export function CasesPage(user) {
         formError.value = ''
         try {
           const payload = {
+            ticket_id: Number(editingId.value),
             category: editCategory.value,
             priority: editPriority.value,
             subject: editSubject.value.trim(),
-            assetTag: editAssetTag.value.trim(),
-            description: editDescription.value.trim(),
+            asset_tag: editAssetTag.value.trim() || null,
+            description: editDescription.value.trim() || null,
             status: editStatus.value,
-            preparedBy: editPreparedBy.value,
-            evidence: selectedUploadFiles.value,
+            prepared_by: editPreparedBy.value || null,
+            evidence: JSON.stringify(selectedUploadFiles.value || []),
           }
+
           console.log('[DEBUG] Saving ticket with evidence:', payload.evidence)
-          const updated = await apiFetch(`/api/repair/tickets/${encodeURIComponent(editingId.value)}`, {
-            method: 'PUT',
+          await apiFetch('/api/conn_1778809328809/repair_tickets/updateCases', {
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           })
-          console.log('[DEBUG] Update response:', updated)
+
+          const updatedRow = {
+            ticket_id: Number(editingId.value),
+            category: editCategory.value,
+            priority: editPriority.value,
+            subject: editSubject.value.trim(),
+            asset_tag: editAssetTag.value.trim() || null,
+            description: editDescription.value.trim() || null,
+            status: editStatus.value,
+            prepared_by: editPreparedBy.value || null,
+            evidence: JSON.stringify(selectedUploadFiles.value || []),
+            submitted_by_name: editSubmittedBy.value,
+            updated_at: new Date().toISOString()
+          }
+
           cases.value = cases.value.map((row) =>
-            String(row.ticket_id) === String(updated.ticket_id) ? { ...row, ...updated } : row
+            String(row.ticket_id) === String(editingId.value) ? { ...row, ...updatedRow } : row
           )
-          selectedCaseFilter.value = isDoneStatus(updated.status) ? 'done' : 'pending'
+          selectedCaseFilter.value = isDoneStatus(editStatus.value) ? 'done' : 'pending'
           showUpdateSuccess.value = true
+          window.dispatchEvent(new CustomEvent('user-updated'))
           setTimeout(() => {
             showUpdateSuccess.value = false
             closeEdit()
@@ -171,6 +209,7 @@ export function CasesPage(user) {
           cases.value = cases.value.filter(
             (row) => String(row.ticket_id) !== String(editingId.value)
           )
+          window.dispatchEvent(new CustomEvent('user-updated'))
           closeEdit()
         } catch (err) {
           formError.value = err?.message || 'Failed to delete ticket.'
@@ -191,6 +230,7 @@ export function CasesPage(user) {
       }
     },
     render(ctx) {
+      const isNarrowMobile = typeof window !== 'undefined' && window.innerWidth < 520
       const isDoneStatus = (status) => {
         const normalized = String(status || '').trim().toLowerCase()
         return normalized === 'resolved' || normalized === 'completed' || normalized === 'done' || normalized === 'closed'
@@ -239,9 +279,9 @@ export function CasesPage(user) {
             child: {
               1: buildTapOption({
                 items: [
-                  { label: 'Case Not Yet Done', value: 'pending' },
-                  { label: 'Case Done', value: 'done' },
-                  { label: 'All Cases', value: 'all' },
+                  { label: isNarrowMobile ? 'Pending' : 'Case Not Yet Done', value: 'pending' },
+                  { label: isNarrowMobile ? 'Done' : 'Case Done', value: 'done' },
+                  { label: isNarrowMobile ? 'All' : 'All Cases', value: 'all' },
                 ],
                 value: ctx.selectedCaseFilter,
                 onUpdate: (val) => { ctx.selectedCaseFilter = val },
@@ -255,23 +295,38 @@ export function CasesPage(user) {
               2: ctx.isLoading
                 ? buildText('Loading cases...', { size: 'sm', color: 'gray500' })
                 : buildTable({
-                  columns: [
-                    { header: 'TICKET ID', accessor: 'ticket_id', render: (val) => buildText(String(val || ''), { size: 'sm', color: 'primary', weight: 'semibold' }) },
-                    { header: 'SUBJECT', accessor: 'subject' },
-                    { header: 'SUBMITTED BY', accessor: 'submitted_by_name', render: (val) => buildText(val || 'Unknown', { size: 'sm', color: 'gray700' }) },
-                    { header: 'PREPARED BY', accessor: 'prepared_by', render: (val) => buildText(val || '-', { size: 'sm', color: 'gray600' }) },
-                    {
-                      header: 'STATUS',
-                      accessor: 'status',
-                      align: 'center',
-                      render: (val) => {
-                        const text = String(val || '').toUpperCase()
-                        const badgeColor = isDoneStatus(val) ? 'success' : 'warning'
-                        return buildBadge(text, { color: badgeColor, variant: 'soft', size: 'sm', radius: 'full' })
-                      },
-                    },
-                    { header: 'UPDATED', accessor: 'updated_at', align: 'center', render: (val) => (val ? new Date(val).toLocaleDateString() : '') },
-                  ],
+                  columns: isNarrowMobile
+                    ? [
+                        { header: 'TICKET ID', accessor: 'ticket_id', render: (val) => buildText(String(val || ''), { size: 'sm', color: 'primary', weight: 'semibold' }) },
+                        { header: 'SUBJECT', accessor: 'subject' },
+                        {
+                          header: 'STATUS',
+                          accessor: 'status',
+                          align: 'center',
+                          render: (val) => {
+                            const text = String(val || '').toUpperCase()
+                            const badgeColor = isDoneStatus(val) ? 'success' : 'warning'
+                            return buildBadge(text, { color: badgeColor, variant: 'soft', size: 'sm', radius: 'full' })
+                          },
+                        },
+                      ]
+                    : [
+                        { header: 'TICKET ID', accessor: 'ticket_id', render: (val) => buildText(String(val || ''), { size: 'sm', color: 'primary', weight: 'semibold' }) },
+                        { header: 'SUBJECT', accessor: 'subject' },
+                        { header: 'SUBMITTED BY', accessor: 'submitted_by_name', render: (val) => buildText(val || 'Unknown', { size: 'sm', color: 'gray700' }) },
+                        { header: 'PREPARED BY', accessor: 'prepared_by', render: (val) => buildText(val || '-', { size: 'sm', color: 'gray600' }) },
+                        {
+                          header: 'STATUS',
+                          accessor: 'status',
+                          align: 'center',
+                          render: (val) => {
+                            const text = String(val || '').toUpperCase()
+                            const badgeColor = isDoneStatus(val) ? 'success' : 'warning'
+                            return buildBadge(text, { color: badgeColor, variant: 'soft', size: 'sm', radius: 'full' })
+                          },
+                        },
+                        { header: 'UPDATED', accessor: 'updated_at', align: 'center', render: (val) => (val && val !== 'null' && val !== 'undefined' && !isNaN(new Date(val).getTime())) ? new Date(val).toLocaleDateString() : '-' },
+                      ],
                   data: filteredCases,
                   onPressed: (row) => ctx.openEdit(row),
                   emptyText: ctx.selectedCaseFilter === 'done' ? 'No finished cases found.' : (ctx.selectedCaseFilter === 'all' ? 'No cases found.' : 'No unfinished cases found.'),
@@ -310,19 +365,25 @@ export function CasesPage(user) {
             radius: 14,
             backgroundColor: '#ffffff',
             border: '1px solid #e2e8f0',
-            style: { width: '520px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' },
+            style: {
+              width: isNarrowMobile ? 'calc(100vw - 24px)' : '520px',
+              maxWidth: '520px',
+              maxHeight: isNarrowMobile ? 'calc(100vh - 24px)' : '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            },
             child: {
               1: buildText(`Edit Ticket: ${ctx.editingId}`, { size: 'lg', weight: 'bold', color: 'gray800' }),
               2: buildGrid({
-                columns: 2,
-                rows: 2,
+                columns: isNarrowMobile ? 1 : 2,
+                rows: isNarrowMobile ? 4 : 2,
                 colGap: 8,
                 rowGap: 6,
                 display: false,
                 child: {
                   1: buildText('TICKET CATEGORY', { size: 'xs', weight: 'bold', color: 'gray700' }),
-                  2: buildText('PRIORITY LEVEL', { size: 'xs', weight: 'bold', color: 'gray700' }),
-                  3: buildDropdown({ items: ctx.categoryItems, value: ctx.editCategory, onUpdate: (v) => { ctx.editCategory = v }, width: '100%', height: '40px' }),
+                  2: buildDropdown({ items: ctx.categoryItems, value: ctx.editCategory, onUpdate: (v) => { ctx.editCategory = v }, width: '100%', height: '40px' }),
+                  3: buildText('PRIORITY LEVEL', { size: 'xs', weight: 'bold', color: 'gray700' }),
                   4: buildDropdown({ items: ctx.priorityItems, value: ctx.editPriority, onUpdate: (v) => { ctx.editPriority = v }, width: '100%', height: '40px' }),
                 },
               }),
@@ -337,15 +398,15 @@ export function CasesPage(user) {
                 }
               }),
               7: buildGrid({
-                columns: 2,
-                rows: 2,
+                columns: isNarrowMobile ? 1 : 2,
+                rows: isNarrowMobile ? 4 : 2,
                 rowGap: 6,
                 colGap: 16,
                 display: false,
                 child: {
                   1: buildText('STATUS', { size: 'xs', weight: 'bold', color: 'gray700' }),
-                  2: buildText('PREPARED BY (IT)', { size: 'xs', weight: 'bold', color: 'gray700' }),
-                  3: buildDropdown({ items: ctx.statusItems, value: ctx.editStatus, onUpdate: (v) => { ctx.editStatus = v }, width: '100%', height: '40px' }),
+                  2: buildDropdown({ items: ctx.statusItems, value: ctx.editStatus, onUpdate: (v) => { ctx.editStatus = v }, width: '100%', height: '40px' }),
+                  3: buildText('PREPARED BY (IT)', { size: 'xs', weight: 'bold', color: 'gray700' }),
                   4: buildDropdown({ items: ctx.preparedByItems, value: ctx.editPreparedBy, onUpdate: (v) => { ctx.editPreparedBy = v }, width: '100%', height: '40px' }),
                 },
               }),
@@ -407,9 +468,10 @@ export function CasesPage(user) {
               }),
               9: ctx.formError ? buildText(ctx.formError, { size: 'sm', color: 'error' }) : null,
               10: buildGrid({
-                columns: 3,
-                rows: 1,
+                columns: isNarrowMobile ? 1 : 3,
+                rows: isNarrowMobile ? 3 : 1,
                 colGap: 8,
+                rowGap: isNarrowMobile ? 8 : 0,
                 display: false,
                 child: {
                   1: buildButton('Delete', { color: 'error', variant: 'outline', onPressed: () => { ctx.showDeleteConfirm = true }, style: { width: '100%', height: '38px', fontWeight: '700' } }),

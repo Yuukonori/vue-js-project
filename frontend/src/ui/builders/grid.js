@@ -284,36 +284,62 @@ const _ContentGridComponent = defineComponent({
     style: { default: () => ({}) },
   },
   setup(props) {
-    // Use container width (not window width) so sidebar doesn't skew breakpoints
+    const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 9999)
     const containerWidth = ref(9999)
     const containerEl = ref(null)
     let _ro
+    let _resizeRef
 
     onMounted(() => {
-      if (!containerEl.value) return
-      _ro = new ResizeObserver(entries => {
-        const w = entries[0]?.contentRect?.width
-        if (w != null) containerWidth.value = w
-      })
-      _ro.observe(containerEl.value)
+      _resizeRef = () => { viewportWidth.value = window.innerWidth }
+      window.addEventListener('resize', _resizeRef)
+
+      if (containerEl.value) {
+        _ro = new ResizeObserver(entries => {
+          const w = entries[0]?.contentRect?.width
+          if (w != null) containerWidth.value = w
+        })
+        _ro.observe(containerEl.value)
+      }
     })
     onBeforeUnmount(() => {
+      if (_resizeRef) window.removeEventListener('resize', _resizeRef)
       _ro?.disconnect()
     })
 
     return () => {
-      const isMobile = containerWidth.value < 640
-      const isTablet = containerWidth.value >= 640 && containerWidth.value < 1024
+      const layoutWidth = Math.min(viewportWidth.value, containerWidth.value)
+      const isMobile = layoutWidth < 640
+      const isTablet = layoutWidth >= 640 && layoutWidth < 1200
 
       const cfg = (isMobile && props.mobileConfig)
         ? props.mobileConfig
-        : (isTablet && props.tabletConfig)
-          ? props.tabletConfig
+        : (isTablet && (props.tabletConfig ?? props.mobileConfig))
+          ? (props.tabletConfig ?? props.mobileConfig)
           : null
 
+      const parseIndexKeys = (obj) => Object.keys(obj || {})
+        .map(k => Number(k))
+        .filter(n => Number.isFinite(n) && n > 0)
+      const baseMaxIndex = Math.max(
+        1,
+        ...parseIndexKeys(props.child),
+        ...parseIndexKeys(props.span),
+      )
+
+      const selectedColumns = Number(cfg?.columns ?? props.columns) || 1
+      const selectedRows = Number(cfg?.rows ?? props.rows) || 1
+      const configHasOwnLayout = !!(cfg?.child || cfg?.span)
+      // Prevent responsive configs from dropping indexed slots when they only
+      // override columns/rows but reuse the original child/span mapping.
+      const minRowsForCurrentLayout = Math.ceil(baseMaxIndex / Math.max(1, selectedColumns))
+      const safeRows = configHasOwnLayout
+        ? selectedRows
+        : Math.max(selectedRows, minRowsForCurrentLayout)
+
       const grid = buildGrid({
-        columns: cfg?.columns ?? props.columns,
-        rows: cfg?.rows ?? props.rows,
+        columns: selectedColumns,
+        rows: safeRows,
         child: cfg?.child ?? props.child,
         span: cfg?.span ?? props.span,
         display: props.display,

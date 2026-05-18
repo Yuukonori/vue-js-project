@@ -74,7 +74,7 @@ export function UserFormPage(user) {
             issues: 0,
           }
 
-          const res = await fetch('http://127.0.0.1:5050/api/users', {
+          const res = await fetch('https://api-management-front-7jes35hloq-as.a.run.app/api/conn_1778809328809/app_users/addUsers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),

@@ -121,10 +121,12 @@ export function AccessControlPage() {
         await Promise.all([loadPolicies(), loadDepartments()])
       })
 
-      return () => buildContentGrid({
+      return () => {
+        const isNarrowMobile = typeof window !== 'undefined' && window.innerWidth < 520
+        return buildContentGrid({
         columns: 1,
         rows: 2,
-        padding: '24px',
+        padding: isNarrowMobile ? '12px' : '24px',
         rowGap: 12,
         display: false,
         child: {
@@ -133,8 +135,9 @@ export function AccessControlPage() {
             subtitle: 'Choose which pages each department can see using checkboxes.',
             backgroundColor: 'transparent',
             divider: false,
-            padding: '30px 24px 22px',
-            style: { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
+            padding: isNarrowMobile ? '12px 8px 14px' : '30px 24px 22px',
+            style: isNarrowMobile ? {} : { margin: '-24px 0 0 -24px', width: 'calc(100% + 48px)' },
+            titleOptions: isNarrowMobile ? { size: '4xl' } : {},
           }),
           2: buildGrid({
             columns: 1,
@@ -157,21 +160,28 @@ export function AccessControlPage() {
                 },
               }),
               2: buildTable({
-                columns: [
-                  { header: 'ROLE / DEPARTMENT', accessor: 'department', render: (val) => buildText(String(val || '').toUpperCase(), { weight: 'semibold', size: 'sm' }) },
-                  { header: 'PAGE ACCESS', accessor: 'allowed_pages', render: (val) => buildText(Array.isArray(val) ? val.join(', ') : '', { size: 'xs', color: 'gray600' }) },
-                  { header: 'FEATURES/OPTIONS', accessor: 'allowed_features', render: (val) => buildText(Array.isArray(val) ? val.join(', ') : '', { size: 'xs', color: 'blue600' }) },
-                ],
+                columns: isNarrowMobile
+                  ? [
+                      { header: 'ROLE / DEPARTMENT', accessor: 'department', render: (val) => buildText(String(val || '').toUpperCase(), { weight: 'semibold', size: 'sm' }) },
+                      { header: 'PAGE ACCESS', accessor: 'allowed_pages', render: (val) => buildText(Array.isArray(val) ? val.join(', ') : '', { size: 'xs', color: 'gray600' }) },
+                    ]
+                  : [
+                      { header: 'ROLE / DEPARTMENT', accessor: 'department', render: (val) => buildText(String(val || '').toUpperCase(), { weight: 'semibold', size: 'sm' }) },
+                      { header: 'PAGE ACCESS', accessor: 'allowed_pages', render: (val) => buildText(Array.isArray(val) ? val.join(', ') : '', { size: 'xs', color: 'gray600' }) },
+                      { header: 'FEATURES/OPTIONS', accessor: 'allowed_features', render: (val) => buildText(Array.isArray(val) ? val.join(', ') : '', { size: 'xs', color: 'blue600' }) },
+                    ],
                 data: rows.value,
                 onRowClick: openDepartment,
               }),
               3: buildGrid({
-                columns: 4,
+                columns: isNarrowMobile ? 1 : 4,
                 rows: 6,
                 display: true,
                 colGap: 8,
                 rowGap: 12,
-                span: { 1: { colSpan: 2 }, 3: { colSpan: 2 }, 5: { colSpan: 4 }, 10: { colSpan: 4 }, 15: { colSpan: 4 }, 20: { colSpan: 4 }, 25: { colSpan: 4 } },
+                span: isNarrowMobile
+                  ? { 1: { colSpan: 1 }, 2: { colSpan: 1 }, 3: { colSpan: 1 }, 4: { colSpan: 1 }, 5: { colSpan: 1 }, 6: { colSpan: 1 }, 7: { colSpan: 1 } }
+                  : { 1: { colSpan: 2 }, 3: { colSpan: 2 }, 5: { colSpan: 4 }, 10: { colSpan: 4 }, 15: { colSpan: 4 }, 20: { colSpan: 4 }, 25: { colSpan: 4 } },
                 child: {
                   1: buildGrid({
                     columns: 1,
@@ -190,19 +200,19 @@ export function AccessControlPage() {
                       }),
                     },
                   }),
-                  3: buildCheckbox({
+                  [isNarrowMobile ? 2 : 3]: buildCheckbox({
                     label: `Allow All Pages (${allPages.length})`,
                     checked: selectedPages.value.length === allPages.length,
                     onClick: toggleAllPages,
                     display: true,
-                    style: { marginTop: '23px' },
+                    style: { marginTop: isNarrowMobile ? '0' : '23px' },
                   }),
-                  5: buildGrid({
+                  [isNarrowMobile ? 3 : 5]: buildGrid({
                     columns: 1, rows: 2, rowGap: 8, display: false,
                     child: {
                       1: buildText('PAGE ACCESS', { size: 'xs', weight: 'bold', color: 'gray700' }),
                       2: buildGrid({
-                        columns: 4,
+                        columns: isNarrowMobile ? 2 : 4,
                         rows: 2,
                         display: false,
                         colGap: 8,
@@ -220,12 +230,12 @@ export function AccessControlPage() {
                       }),
                     }
                   }),
-                  10: buildGrid({
+                  [isNarrowMobile ? 4 : 10]: buildGrid({
                     columns: 1, rows: 2, rowGap: 8, display: false,
                     child: {
                       1: buildText('FEATURE & FUNCTION ACCESS', { size: 'xs', weight: 'bold', color: 'gray700' }),
                       2: buildGrid({
-                        columns: 3, rows: 2, display: false, colGap: 8, rowGap: 8,
+                        columns: isNarrowMobile ? 2 : 3, rows: 2, display: false, colGap: 8, rowGap: 8,
                         child: Object.fromEntries(
                           allFeatures
                             .filter(f => f.category !== 'OPTION')
@@ -239,12 +249,12 @@ export function AccessControlPage() {
                       })
                     }
                   }),
-                  15: buildGrid({
+                  [isNarrowMobile ? 5 : 15]: buildGrid({
                     columns: 1, rows: 2, rowGap: 8, display: false,
                     child: {
                       1: buildText('OPTION ACCESS', { size: 'xs', weight: 'bold', color: 'gray700' }),
                       2: buildGrid({
-                        columns: 3, rows: 1, display: false, colGap: 8,
+                        columns: isNarrowMobile ? 1 : 3, rows: 1, display: false, colGap: 8,
                         child: Object.fromEntries(
                           allFeatures
                             .filter(f => f.category === 'OPTION')
@@ -258,8 +268,8 @@ export function AccessControlPage() {
                       })
                     }
                   }),
-                  20: buildGrid({
-                    columns: 3,
+                  [isNarrowMobile ? 6 : 20]: buildGrid({
+                    columns: isNarrowMobile ? 1 : 3,
                     rows: 1,
                     display: false,
                     colGap: 8,
@@ -269,13 +279,14 @@ export function AccessControlPage() {
                       3: buildButton(isSaving.value ? 'Saving...' : 'Save Policy', { onPressed: savePolicy, style: { width: '100%', height: '40px', fontWeight: '700' } }),
                     },
                   }),
-                  25: error.value ? buildText(error.value, { size: 'sm', color: 'error' }) : buildText('', { size: 'sm' }),
+                  [isNarrowMobile ? 7 : 25]: error.value ? buildText(error.value, { size: 'sm', color: 'error' }) : buildText('', { size: 'sm' }),
                 },
               }),
             },
           }),
         },
       })
+      }
     }
   }
 }

@@ -13,14 +13,34 @@ export function RepairHistoryPage(user) {
 
       const fetchData = async () => {
         try {
-          const res = await fetch('/api/repair/tickets')
-          if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-          let tickets = await res.json()
-          if (!Array.isArray(tickets)) tickets = []
+          const [ticketsRes, usersRes] = await Promise.all([
+            fetch('/api/conn_1778809328809/repair_tickets/showRepairTickets'),
+            fetch('/api/conn_1778809328809/app_users/showUsers').catch(() => null)
+          ])
+
+          const body = await ticketsRes.json()
+          let tickets = Array.isArray(body) ? body : (body.data || [])
+
+          let usersList = []
+          if (usersRes && usersRes.ok) {
+            const usersBody = await usersRes.json()
+            usersList = Array.isArray(usersBody) ? usersBody : (usersBody.data || [])
+          }
+
+          const userMap = {}
+          usersList.forEach(u => {
+            userMap[u.id] = u.full_name || u.name
+          })
+
+          tickets = tickets.map(t => ({
+            ...t,
+            submitted_by_name: userMap[t.submit_by_id] || userMap[t.submitted_by_id] || t.submitted_by_name || 'Unknown',
+            updated_at: t.update_at || t.updated_at
+          }))
 
           // Filter tickets based on feature permission
           const filtered = !canSeeAllTickets 
-            ? tickets.filter(t => t.submitted_by_id === user.id || t.user_id === user.id)
+            ? tickets.filter(t => t.submit_by_id === user.id || t.submitted_by_id === user.id || t.user_id === user.id)
             : tickets
 
           const isDone = (status) => ['RESOLVED', 'COMPLETED'].includes((status || '').toUpperCase())
@@ -29,9 +49,13 @@ export function RepairHistoryPage(user) {
 
           // Fetch frequency data
           try {
-            const freqRes = await fetch('/api/problem-frequency')
-            if (freqRes.ok) problemFrequency.value = await freqRes.json()
-            else problemFrequency.value = []
+            const freqRes = await fetch('/api/conn_1778809328809/problem_frequency/showProblemFrequency')
+            if (freqRes.ok) {
+              const freqJson = await freqRes.json()
+              problemFrequency.value = Array.isArray(freqJson?.data) ? freqJson.data : []
+            } else {
+              problemFrequency.value = []
+            }
           } catch {
             problemFrequency.value = []
           }
@@ -75,6 +99,89 @@ export function RepairHistoryPage(user) {
         columns: 4, rows: 6, colGap: 12, rowGap: 12, padding: '24px', cellPadding: 0, display: false,
         fillViewport: true,
         span: { 1: { colSpan: 4, rowSpan: 2 }, 9: { colSpan: 2, rowSpan: 2 }, 11: { colSpan: 2, rowSpan: 2 }, 17: { colSpan: 3 }, 21: { colSpan: 4 } },
+        mobileConfig: {
+          columns: 1,
+          rows: 5,
+          span: {
+            1: { colSpan: 1, rowSpan: 1 },
+            2: { colSpan: 1, rowSpan: 1 },
+            3: { colSpan: 1, rowSpan: 1 },
+            4: { colSpan: 1, rowSpan: 1 },
+            5: { colSpan: 1, rowSpan: 1 },
+          },
+          child: {
+            1: buildHeader({
+              title: 'Repair & Maintenance History',
+              subtitle: 'Deep diagnostics and technical log archival for enterprise assets.',
+              titleOptions: { size: '3xl' },
+              backgroundColor: 'transparent',
+              divider: false,
+              padding: '12px 8px 14px',
+            }),
+            2: buildGrid({
+              columns: 6, rows: 4, display: true, backgroundColor: '#ffffffff', padding: '16px', borderRadius: '16px', border: '1px solid #eef2f6',
+              span: { 1: { colSpan: 4 }, 5: { colSpan: 2 }, 7: { colSpan: 6, rowSpan: 10 } },
+              align: { 1: 'center left', 5: 'center right' },
+              style: { height: '100%' },
+              child: {
+                1: buildIconText('Ongoing Repairs', { icon: 'clipboard', iconSize: 24, iconColor: '#2563eb', textSize: '20px', textWeight: 'bold', textColor: '#1e293b', gap: '8px' }),
+                5: buildBadge(`${Ruki.ongoingRepairs.length} ACTIVE TICKETS`, { variant: 'soft', color: 'neutral', size: 'md', radius: 'full', style: { padding: '6px 12px', fontWeight: '700' } }),
+                7: Ruki.ongoingRepairs.length > 0 ? buildStackedCardsList({
+                  data: Ruki.ongoingRepairs,
+                  border: false,
+                  hover: false,
+                  clickable: false,
+                  backgroundColor: '#f1f5f9',
+                  columns: [
+                    { key: 'icon', accessor: 'priority', render: (val) => buildIcon('circle', { size: 20, color: (val || '').toLowerCase() === 'high' ? '#dc2626' : '#d97706' }) },
+                    { key: 'title', accessor: 'subject' },
+                    { key: 'description', accessor: 'description' },
+                    {
+                      key: 'footer', render: (_, row) => [
+                        buildBadge(String(row.status || '').toUpperCase(), { color: (row.status || '').toLowerCase().includes('urgent') ? 'error' : 'warning', variant: 'soft', size: 'sm' })
+                      ]
+                    },
+                    { key: 'rightNode', accessor: 'status', render: (val, row) => buildButton('Details', { variant: 'solid', size: 'sm', style: { minWidth: '84px', padding: '0 10px', color: 'white', fontWeight: '700', borderRadius: '8px', backgroundColor: '#4f46e5' }, onPressed: () => Ruki.openTicketDetails(row) }) }
+                  ],
+                  pagination: { maxRows: 3 },
+                }) : buildText('No ongoing repairs at this time.', { size: 'sm', color: 'gray400', style: { textAlign: 'center', width: '100%', height: '100%', backgroundColor: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '220px' } }),
+                11: buildButton('Show More', { color: 'primary', size: 'md', hover: true }),
+              }
+            }),
+            3: buildGrid({
+              columns: 1, rows: 2, display: true, padding: '16px', borderRadius: '16px', border: '1px solid #eef2f6', backgroundColor: 'white', style: { height: '100%' },
+              child: {
+                1: buildText('Problem Frequency', { variant: 'h4', color: '#475569', weight: 'bold' }),
+                2: Ruki.problemFrequency.length > 0 ? buildText('Chart Data Here', { size: 'sm', color: 'gray500' }) : buildText('No Problem Frequency available.', { size: 'sm', color: 'gray400', style: { textAlign: 'center', width: '100%', padding: '36px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' } }),
+              }
+            }),
+            4: buildText('SERVICE HISTORY & FAILURE MONITORING', { variant: 'h4', color: '#475569', weight: 'bold', style: { marginLeft: '5px' } }),
+            5: Ruki.serviceHistory.length > 0 ? buildTable({
+              columns: [
+                { header: 'TICKET ID', accessor: 'ticket_id', render: (val) => buildText(String(val), { size: 'sm', color: '#4f46e5', weight: 'semibold' }) },
+                { header: 'SUBJECT', accessor: 'subject', render: (val) => buildText(val, { size: 'sm', weight: 'bold', color: '#334155' }) },
+                { header: 'SUBMITTED BY', accessor: 'submitted_by_name', render: (val) => buildText(val || 'Unknown', { size: 'sm', color: '#64748b' }) },
+                { header: 'PREPARED BY', accessor: 'prepared_by', render: (val) => buildText(val || '-', { size: 'sm', color: '#64748b' }) },
+                { header: 'STATUS', accessor: 'status', render: (val) => buildBadge(String(val || '').toUpperCase(), { color: 'success', variant: 'soft', size: 'sm' }) },
+                { header: 'UPDATED', accessor: 'updated_at', render: (val) => buildText(val ? new Date(val).toLocaleDateString() : '', { size: 'sm', color: '#334155', weight: 'semibold' }) },
+              ],
+              data: Ruki.serviceHistory,
+              pagination: { maxRows: 3, fillRows: true },
+              onPressed: (row) => Ruki.openTicketDetails(row),
+              style: { backgroundColor: 'white', borderRadius: '14px' },
+            }) : buildGrid({
+              columns: 1,
+              rows: 1,
+              display: true,
+              backgroundColor: 'white',
+              borderRadius: '14px',
+              border: '1px solid #e5e7ee',
+              child: {
+                1: buildText('No service history records available.', { size: 'md', color: 'gray400', style: { padding: '80px 0', textAlign: 'center', width: '100%' } })
+              }
+            }),
+          },
+        },
         align: { 17: 'center Left', 9: 'stretch', 11: 'stretch' },
         child: {
           1: buildHeader({

@@ -42,7 +42,96 @@ const colorMap = {
   neutral:   { base: '#64748b', dark: '#475569', text: '#fff', border: '#64748b' },
 }
 
+let responsiveButtonCssMounted = false
+
+function ensureResponsiveButtonCss() {
+  if (responsiveButtonCssMounted || typeof document === 'undefined') return
+  responsiveButtonCssMounted = true
+
+  const style = document.createElement('style')
+  style.id = 'ruki-responsive-button-css'
+  style.textContent = `
+    .ruki-btn {
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: visible;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 1440px) {
+      .ruki-btn.ruki-btn-size-lg,
+      .ruki-btn.ruki-btn-size-xl {
+        height: 44px !important;
+        padding: 8px 18px !important;
+        font-size: 15px !important;
+      }
+      .ruki-btn.ruki-btn-size-md {
+        height: 38px !important;
+        padding: 7px 14px !important;
+        font-size: 14px !important;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .ruki-btn {
+        max-width: 100%;
+      }
+      .ruki-btn.ruki-btn-size-lg,
+      .ruki-btn.ruki-btn-size-xl {
+        height: 40px !important;
+        padding: 6px 14px !important;
+        font-size: 14px !important;
+      }
+      .ruki-btn.ruki-btn-size-md {
+        height: 36px !important;
+        padding: 6px 10px !important;
+        font-size: 13px !important;
+      }
+      .ruki-btn.ruki-btn-variant-link {
+        white-space: normal;
+        text-align: left;
+        line-height: 1.25;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .ruki-btn {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.2;
+        max-width: 100%;
+      }
+      .ruki-btn.ruki-btn-size-lg,
+      .ruki-btn.ruki-btn-size-xl {
+        height: auto !important;
+        min-height: 42px;
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+      }
+      .ruki-btn.ruki-btn-size-md {
+        height: auto !important;
+        min-height: 40px;
+        padding: 7px 10px !important;
+        font-size: 13px !important;
+      }
+      .ruki-btn.ruki-btn-size-sm,
+      .ruki-btn.ruki-btn-size-xs {
+        height: auto !important;
+        min-height: 36px;
+        padding: 6px 9px !important;
+        font-size: 12px !important;
+      }
+      .ruki-btn.ruki-btn-variant-link {
+        text-align: left;
+      }
+    }
+  `
+  document.head.appendChild(style)
+}
+
 export function buildButton(label, options = {}) {
+  ensureResponsiveButtonCss()
+
   if (typeof label === 'object' && label !== null && !Array.isArray(label)) {
     options = label
     label = options.label ?? ''
@@ -162,7 +251,12 @@ export function buildButton(label, options = {}) {
     'button',
     {
       style: computedStyle,
-      class: className,
+      class: [
+        'ruki-btn',
+        `ruki-btn-size-${size}`,
+        `ruki-btn-variant-${variant}`,
+        className,
+      ],
       disabled: disabled || loading,
       onClick: disabled || loading ? undefined : handlePress,
       onMouseenter: handleMouseenter,

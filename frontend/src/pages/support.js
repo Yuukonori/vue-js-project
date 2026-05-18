@@ -88,12 +88,13 @@ export function SupportPage(user) {
             category: ticketCategory.value,
             priority: priorityLevel.value,
             subject: subjectTitle.value.trim(),
-            assetTag: assetTag.value.trim(),
-            description: issueDescription.value.trim(),
-            submittedBy: user.id, // Add current user ID
+            asset_tag: assetTag.value.trim() || null,
+            description: issueDescription.value.trim() || null,
+            submit_by_id: user.id ? Number(user.id) : null,
+            status: priorityLevel.value === 'high' ? 'URGENT' : 'PENDING'
           }
 
-          const res = await authFetch('/api/repair/tickets', {
+          const res = await authFetch('/api/conn_1778809328809/repair_tickets/addRepairTickets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -105,7 +106,7 @@ export function SupportPage(user) {
           if (!res.ok) throw new Error(data?.error || 'Failed to submit ticket')
 
           submittedTicketId.value = String(data.ticket_id || '')
-          submitMessage.value = `Ticket ${data.ticket_id} submitted successfully.`
+          submitMessage.value = `Ticket submitted successfully.`
           showSuccessPopup.value = true
 
           // Trigger global refresh for user counts (Profile, Sidebar, etc)

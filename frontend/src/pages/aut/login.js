@@ -32,7 +32,7 @@ export function LoginPage(options = {}) {
         }
 
         try {
-          const res = await fetch('/api/auth/login', {
+          const res = await fetch('/api/conn_1778809328809/app_users/loginUsers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -55,13 +55,16 @@ export function LoginPage(options = {}) {
             return
           }
 
-          if (!res.ok || !payload?.ok || !payload?.user) {
-            error.value = payload?.error || 'Invalid email or password.'
+          // The external API returns { data: [...], count: X }
+          if (!res.ok || !payload?.data || payload.data.length === 0) {
+            error.value = 'Invalid email or password.'
             return
           }
 
           error.value = ''
-          onAuthenticate?.({ email: payload.user.email, password: password.value, user: payload.user, token: payload.token })
+          const loggedInUser = payload.data[0]
+          loggedInUser.name = loggedInUser.name || loggedInUser.full_name // Map full_name to name for the dashboard
+          onAuthenticate?.({ email: loggedInUser.email, password: password.value, user: loggedInUser, token: 'external_api_token' })
         } catch (_) {
           error.value = 'Unable to connect to server. Please try again.'
         }

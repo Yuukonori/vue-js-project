@@ -24,11 +24,13 @@ export const AssetForm = defineComponent({
     initialData: { type: Object, default: null },
     onSuccess: { type: Function },
     onCancel: { type: Function },
+    onDelete: { type: Function },
     assignItems: { type: Array, default: () => [] },
     assignedOwner: { default: null },
     onAssignedOwnerUpdate: { type: Function, default: null },
+    canManageAssets: { type: Boolean, default: false },
   },
-  setup(props) {
+  setup(props, { expose }) {
     const type = ref('laptop')
     const assetNo = ref('')
     const serial = ref('')
@@ -51,7 +53,7 @@ export const AssetForm = defineComponent({
     onMounted(() => {
       if (props.initialData) {
         type.value = props.initialData.category?.toLowerCase() || 'laptop'
-        assetNo.value = props.initialData.asset_id?.replace('#', '') || ''
+        assetNo.value = String(props.initialData.asset_id || '').replace('#', '') || ''
         serial.value = props.initialData.serial_number || ''
         useTimeYears.value = props.initialData.service_years?.toString() || ''
         purchaseDate.value = fromIso(props.initialData.purchase_date)
@@ -83,19 +85,32 @@ export const AssetForm = defineComponent({
           return str
         }
 
-        const payload = {
-          asset_id: assetNo.value.startsWith('#') ? assetNo.value : `#${assetNo.value}`,
-          category: type.value.charAt(0).toUpperCase() + type.value.slice(1),
-          serial_number: serial.value || 'N/A',
-          service_years: parseFloat(useTimeYears.value) || 0,
-          purchase_date: toIso(purchaseDate.value),
-          warranty_expiry: toIso(expiredDate.value),
-          status: status.value.toUpperCase(),
-          assigned_user_id: assignedOwner.value == null ? null : Number(assignedOwner.value),
-        }
+        const payload = props.mode === 'edit'
+          ? {
+              asset_id: props.initialData.asset_id,
+              category: type.value.charAt(0).toUpperCase() + type.value.slice(1),
+              serial_number: serial.value || 'N/A',
+              service_years: parseFloat(useTimeYears.value) || 0,
+              purchase_date: toIso(purchaseDate.value),
+              warranty_expiry: toIso(expiredDate.value),
+              status: status.value.toUpperCase(),
+              assigned_user_id: assignedOwner.value == null ? null : Number(assignedOwner.value),
+            }
+          : {
+              asset_id: assetNo.value,
+              category: type.value.charAt(0).toUpperCase() + type.value.slice(1),
+              serial_number: serial.value || 'N/A',
+              service_years: parseFloat(useTimeYears.value) || 0,
+              purchase_date: toIso(purchaseDate.value),
+              warranty_expiry: toIso(expiredDate.value),
+              status: status.value.toUpperCase(),
+              assigned_user_id: assignedOwner.value == null ? null : Number(assignedOwner.value),
+            }
 
-        const url = props.mode === 'edit' ? '/api/assets/update' : '/api/assets/add'
-        const method = props.mode === 'edit' ? 'PUT' : 'POST'
+        const url = props.mode === 'edit'
+          ? '/api/conn_1778809328809/inventory/updateAssets'
+          : '/api/conn_1778809328809/inventory/newAssets'
+        const method = props.mode === 'edit' ? 'PATCH' : 'POST'
 
         const res = await fetch(url, {
           method,
@@ -103,12 +118,12 @@ export const AssetForm = defineComponent({
           body: JSON.stringify(payload)
         })
 
+        const text = await res.text()
+        const data = text ? JSON.parse(text) : {}
         if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Failed to save asset')
+          throw new Error(data.error || `Server error: ${res.status}`)
         }
-
-        props.onSuccess?.(await res.json())
+        props.onSuccess?.(data)
       } catch (err) {
         formError.value = err.message
         console.error('Submission error:', err)
@@ -122,15 +137,17 @@ export const AssetForm = defineComponent({
 
       isDeleting.value = true
       try {
-        const res = await fetch(`/api/assets/delete?id=${encodeURIComponent(props.initialData.asset_id)}`, {
-          method: 'DELETE'
+        const res = await fetch('/api/conn_1778809328809/inventory/deleteAssets', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ asset_id: props.initialData.asset_id })
         })
 
+        const text = await res.text()
+        const data = text ? JSON.parse(text) : {}
         if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Failed to delete asset')
+          throw new Error(data.error || `Server error: ${res.status}`)
         }
-
         props.onSuccess?.({ deleted: true, asset_id: props.initialData.asset_id })
       } catch (err) {
         formError.value = err.message
@@ -140,10 +157,18 @@ export const AssetForm = defineComponent({
       }
     }
 
-    return {
+    const onDeleteClick = () => {
+      if (props.onDelete) {
+        props.onDelete()
+      } else {
+        deleteAsset()
+      }
+    }
+
+    const state = {
       type, assetNo, serial, useTimeYears, purchaseDate, expiredDate, status,
       formError, isSubmitting, isDeleting, assignedOwner,
-      submitForm, deleteAsset,
+      submitForm, deleteAsset, onDeleteClick,
       setType: (v) => { type.value = v },
       setAssetNo: (v) => { assetNo.value = v },
       setSerial: (v) => { serial.value = v },
@@ -158,6 +183,10 @@ export const AssetForm = defineComponent({
       assignItems: computed(() => props.assignItems || []),
       onAssignedOwnerUpdate: props.onAssignedOwnerUpdate,
     }
+
+    expose({ submitForm, deleteAsset })
+
+    return state
   },
   render(Ruki) {
     function field(label, control, required = false) {
@@ -173,7 +202,7 @@ export const AssetForm = defineComponent({
     return buildGrid({
       columns: 3, rows: 4, display: true, padding: '16px', colGap: 16, rowGap: 16,
       borderRadius: '12px', backgroundColor: '#ffffff', style: { height: 'fit-content' },
-      span: { 10: { colSpan: 3 } },
+      span: { 10: { colSpan: 3 }, 11: { colSpan: 3 } },
       child: {
         1: field('Asset No. *', buildInput({ placeholder: 'e.g. LAP-001', size: 'sm', full: true, value: Ruki.assetNo, onUpdate: Ruki.setAssetNo, disabled: Ruki.mode === 'edit', style: { border: 'none', backgroundColor: '#f1f5f9', paddingLeft: '14px' } })),
         2: field('Type *', buildDropdown({ placeholder: 'Select type', items: [{ text: 'Laptop', value: 'laptop' }, { text: 'Desktop', value: 'desktop' }, { text: 'Monitor', value: 'monitor' }, { text: 'Tablet', value: 'tablet' }], value: Ruki.type, onUpdate: Ruki.setType, width: '100%', height: '34px', style: { border: 'none', backgroundColor: '#f1f5f9' } })),
@@ -192,6 +221,17 @@ export const AssetForm = defineComponent({
           style: { border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9' },
         })),
         10: Ruki.formError ? buildText(Ruki.formError, { size: 'xs', color: '#dc2626', weight: 'bold' }) : null,
+        11: Ruki.canManageAssets
+          ? buildGrid({
+              columns: 3, rows: 1, colGap: 10, display: false,
+              style: { marginTop: '10px' },
+              child: {
+                1: buildButton('Delete', { color: 'error', variant: 'outline', size: 'sm', onPressed: Ruki.onDeleteClick, style: { width: '100%', height: '38px', fontWeight: '700' } }),
+                2: buildButton('Cancel', { variant: 'outline', color: 'neutral', size: 'sm', onPressed: Ruki.$props.onCancel, style: { width: '100%', height: '38px', fontWeight: '700' } }),
+                3: buildButton('Update', { color: 'primary', size: 'sm', onPressed: Ruki.submitForm, style: { width: '100%', height: '38px', fontWeight: '700' } }),
+              }
+            })
+          : null,
       },
     })
   }

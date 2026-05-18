@@ -11,14 +11,17 @@ export function MonitoringPage(user) {
 
       const fetchData = async () => {
         try {
-          const activityRes = await fetch('/api/activity/feed')
-          activityFeed.value = await activityRes.json()
+          const activityRes = await fetch('/api/conn_1778809328809/activity_feed/showActivity')
+          const activityJson = await activityRes.json()
+          activityFeed.value = Array.isArray(activityJson?.data) ? activityJson.data : []
 
-          const maintenanceRes = await fetch('/api/maintenance/tasks')
-          maintenanceTasks.value = await maintenanceRes.json()
+          const maintenanceRes = await fetch('/api/conn_1778809328809/maintenance/showMaintenance')
+          const maintenanceJson = await maintenanceRes.json()
+          maintenanceTasks.value = Array.isArray(maintenanceJson?.data) ? maintenanceJson.data : []
 
-          const inventoryRes = await fetch('/api/assets/inventory')
-          inventory.value = await inventoryRes.json()
+          const inventoryRes = await fetch('/api/conn_1778809328809/inventory/showAssets')
+          const inventoryJson = await inventoryRes.json()
+          inventory.value = Array.isArray(inventoryJson?.data) ? inventoryJson.data : []
         } catch (err) {
           console.error('Failed to fetch monitoring data:', err)
         }
@@ -33,7 +36,7 @@ export function MonitoringPage(user) {
         columns: 6, rows: 6, height: '100%', colGap: 12, rowGap: 12, padding: '24px', cellPadding: 0, display: false,
         fillViewport: true,
         span: { 1: { colSpan: 6, rowSpan: 2 }, 13: { colSpan: 2 }, 15: { colSpan: 2 }, 19: { colSpan: 2 }, 21: { colSpan: 4 }, 25: { colSpan: 4 }, 31: { colSpan: 2 }, 33: { colSpan: 4 } },
-        align: { 13: 'center left', 15: 'center left', 18: 'center Right', 30: 'center Right'},
+        align: { 13: 'center left', 15: 'center left', 18: 'center Right', 30: 'center Right' },
         child: {
           1: buildHeader({
             title: 'Central Monitoring Hub',
@@ -108,24 +111,24 @@ export function MonitoringPage(user) {
               }),
               5: buildGrid({
                 columns: 2, rows: 2, display: false, align: { 1: 'center left', 2: 'center right' },
-                child: { 
-                  1: buildText('Server Hardware', { size: 'lg', weight: 'semibold', color: 'gray500' }), 
-                  2: buildText(`${Ruki.inventory.filter(a => a.category === 'Server').length} Nodes`, { size: 'lg', weight: 'bold', color: 'gray700', style: { marginTop: '10px' } }), 
-                  3: buildDivider({ direction: 'h', color: '#10b981', thickness: '4px', margin: '2px 0 0 0' }) 
+                child: {
+                  1: buildText('Server Hardware', { size: 'lg', weight: 'semibold', color: 'gray500' }),
+                  2: buildText(`${Ruki.inventory.filter(a => a.category === 'Server').length} Nodes`, { size: 'lg', weight: 'bold', color: 'gray700', style: { marginTop: '10px' } }),
+                  3: buildDivider({ direction: 'h', color: '#10b981', thickness: '4px', margin: '2px 0 0 0' })
                 },
               }),
               7: buildGrid({
                 columns: 2, rows: 2, display: false, align: { 1: 'center left', 2: 'center right' },
-                child: { 
-                  1: buildText('Client Terminals', { size: 'lg', weight: 'semibold', color: 'gray500' }), 
-                  2: buildText(`${Ruki.inventory.length > 0 ? (((Ruki.inventory.length - Ruki.inventory.filter(a => a.status === 'MAINTENANCE').length) / Ruki.inventory.length) * 100).toFixed(1) : 0}% Active`, { size: 'lg', weight: 'bold', color: 'gray700', style: { marginTop: '10px' } }), 
-                  3: buildDivider({ direction: 'h', color: '#10b981', thickness: '4px', margin: '2px 0 0 0' }) 
+                child: {
+                  1: buildText('Client Terminals', { size: 'lg', weight: 'semibold', color: 'gray500' }),
+                  2: buildText(`${Ruki.inventory.length > 0 ? (((Ruki.inventory.length - Ruki.inventory.filter(a => a.status === 'MAINTENANCE').length) / Ruki.inventory.length) * 100).toFixed(1) : 0}% Active`, { size: 'lg', weight: 'bold', color: 'gray700', style: { marginTop: '10px' } }),
+                  3: buildDivider({ direction: 'h', color: '#10b981', thickness: '4px', margin: '2px 0 0 0' })
                 },
               }),
             },
           }),
           33: buildGrid({
-            columns: 3, rows: 4, display: true, span: { 1: { colSpan: 3 }, 4: { colSpan: 3, rowSpan: 3 } }, align: { 1: 'center left', 4: 'center' },
+            columns: 3, rows: 4, display: true, span: { 1: { colSpan: 3 }, 4: { colSpan: 3, rowSpan: 3 } }, align: { 1: 'center left', 4: 'top' },
             style: { height: '100%' },
             child: {
               1: buildGrid({
@@ -140,10 +143,10 @@ export function MonitoringPage(user) {
                 columns: [
                   { header: 'ASSET ID', accessor: 'asset_id', render: (val) => buildText(String(val), { size: 'md', weight: 'bold', color: '#111827', style: { whiteSpace: 'nowrap' } }) },
                   { header: 'ISSUE', accessor: 'issue', render: (val) => buildText(String(val), { size: 'sm', weight: 'medium', color: '#4b5563', style: { whiteSpace: 'nowrap' } }) },
-                  { 
-                    header: 'PRIORITY', 
-                    accessor: 'priority', 
-                    align: 'center', 
+                  {
+                    header: 'PRIORITY',
+                    accessor: 'priority',
+                    align: 'center',
                     render: (val) => {
                       const color = {
                         'critical': '#ef4444',

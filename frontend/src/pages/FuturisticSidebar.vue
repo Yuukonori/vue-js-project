@@ -1,5 +1,27 @@
 <template>
-  <div class="sidebar-container">
+  <div :class="containerClasses">
+    <button
+      v-if="isMobile && !props.useExternalMobileTrigger"
+      class="mobile-menu-trigger"
+      type="button"
+      aria-label="Toggle menu"
+      @click="toggleSidebar"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+      </svg>
+    </button>
+
+    <transition name="fade-blur">
+      <button
+        v-if="isMobile && mobileOpen"
+        class="sidebar-backdrop"
+        type="button"
+        aria-label="Close menu"
+        @click="closeMobileMenu"
+      />
+    </transition>
+
     <!-- Animated Background Particles -->
     <div class="particles-bg">
       <div v-for="i in 20" :key="i" class="particle" :style="particleStyle(i)"></div>
@@ -36,7 +58,7 @@
         <!-- Toggle Button -->
         <button 
           class="toggle-btn"
-          @click="toggleSidebar"
+          @click="handleSidebarToggleButton"
           :class="{ collapsed: isCollapsed }"
         >
           <svg v-if="!isCollapsed" class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -153,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 
 // Props
 const props = defineProps({
@@ -173,6 +195,10 @@ const props = defineProps({
     type: Function,
     default: null
   },
+  onCollapseChange: {
+    type: Function,
+    default: null
+  },
   userName: {
     type: String,
     default: 'User'
@@ -184,6 +210,10 @@ const props = defineProps({
   userAvatar: {
     type: String,
     default: ''
+  },
+  useExternalMobileTrigger: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -308,6 +338,44 @@ const mouseX = ref(0)
 const mouseY = ref(0)
 const mouseInSidebar = ref(false)
 const showLogoutModal = ref(false)
+const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1440)
+const mobileOpen = ref(false)
+const mobileExpanded = ref(false)
+const tabletExpanded = ref(false)
+
+const isMobile = computed(() => viewportWidth.value < 768)
+const isTablet = computed(() => viewportWidth.value >= 768 && viewportWidth.value <= 1024)
+const isDesktop = computed(() => viewportWidth.value > 1024)
+const containerClasses = computed(() => [
+  'sidebar-container',
+  {
+    'mobile-open': isMobile.value && mobileOpen.value,
+    'mobile-pinned': (isTablet.value || isMobile.value) && (isTablet.value || mobileOpen.value),
+    'mobile-expanded': (isTablet.value && tabletExpanded.value) || (isMobile.value && mobileOpen.value && mobileExpanded.value),
+  },
+])
+
+const applyResponsiveState = () => {
+  if (isDesktop.value) {
+    mobileOpen.value = false
+    tabletExpanded.value = false
+    props.onCollapseChange?.(isCollapsed.value)
+    return
+  }
+
+  if (isTablet.value) {
+    mobileOpen.value = false
+    isCollapsed.value = !tabletExpanded.value
+    props.onCollapseChange?.(true)
+    return
+  }
+
+  mobileOpen.value = false
+  mobileExpanded.value = false
+  tabletExpanded.value = false
+  isCollapsed.value = true
+  props.onCollapseChange?.(true)
+}
 
 // Computed
 const displayMenuItems = computed(() => {
@@ -322,11 +390,68 @@ const displayMenuItems = computed(() => {
 
 // Methods
 const toggleSidebar = () => {
+  if (isMobile.value) {
+    if (!mobileOpen.value) {
+      mobileOpen.value = true
+      mobileExpanded.value = false
+      isCollapsed.value = true
+    } else {
+      mobileExpanded.value = !mobileExpanded.value
+      isCollapsed.value = !mobileExpanded.value
+    }
+    props.onCollapseChange?.(true)
+    return
+  }
+
+  if (isTablet.value) {
+    tabletExpanded.value = !tabletExpanded.value
+    isCollapsed.value = !tabletExpanded.value
+    props.onCollapseChange?.(true)
+    return
+  }
+
   isCollapsed.value = !isCollapsed.value
+  props.onCollapseChange?.(isCollapsed.value)
+}
+
+const handleSidebarToggleButton = () => {
+  if (isMobile.value && mobileOpen.value && !mobileExpanded.value) {
+    mobileExpanded.value = true
+    isCollapsed.value = false
+    props.onCollapseChange?.(true)
+    return
+  }
+  toggleSidebar()
 }
 
 const handleItemClick = (id) => {
   props.onNavigate(id)
+  if (isMobile.value) {
+    mobileOpen.value = false
+    mobileExpanded.value = false
+    isCollapsed.value = true
+  }
+  if (isTablet.value) {
+    tabletExpanded.value = false
+    isCollapsed.value = true
+  }
+}
+
+const closeMobileMenu = () => {
+  mobileOpen.value = false
+  mobileExpanded.value = false
+  isCollapsed.value = true
+}
+
+const handleExternalMobileToggle = () => {
+  if (!isMobile.value) return
+  if (!mobileOpen.value) {
+    mobileOpen.value = true
+    mobileExpanded.value = false
+    isCollapsed.value = true
+  } else {
+    closeMobileMenu()
+  }
 }
 
 const handleUserProfileClick = () => {
@@ -375,8 +500,16 @@ const particleStyle = (index) => {
   }
 }
 
+const handleResize = () => {
+  viewportWidth.value = window.innerWidth
+  applyResponsiveState()
+}
+
 // Track mouse position
 onMounted(() => {
+  applyResponsiveState()
+  window.addEventListener('resize', handleResize, { passive: true })
+  window.addEventListener('toggle-mobile-sidebar', handleExternalMobileToggle)
   const sidebar = document.querySelector('.futuristic-sidebar')
   if (sidebar) {
     sidebar.addEventListener('mousemove', (e) => {
@@ -386,12 +519,49 @@ onMounted(() => {
     })
   }
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('toggle-mobile-sidebar', handleExternalMobileToggle)
+})
 </script>
 
 <style scoped>
 .sidebar-container {
   position: relative;
   height: 100vh;
+}
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.32);
+  z-index: 1390;
+}
+.mobile-menu-trigger {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  background: rgba(15, 23, 42, 0.9);
+  color: #bfdbfe;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.35);
+}
+.mobile-menu-trigger svg {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 767px) {
+  .mobile-menu-trigger {
+    display: flex;
+  }
 }
 
 .particles-bg {
@@ -436,12 +606,235 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(96, 165, 250, 0.1);
-  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 0.38s cubic-bezier(0.22, 1, 0.36, 1), transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
   z-index: 1000;
   overflow: hidden;
+  will-change: transform, width;
   box-shadow: 
     0 0 60px rgba(96, 165, 250, 0.1),
     inset 0 0 60px rgba(96, 165, 250, 0.03);
+}
+
+@media (max-width: 1600px) and (min-width: 1367px) {
+  .particles-bg {
+    width: 260px;
+  }
+  .futuristic-sidebar {
+    width: 260px;
+  }
+  .futuristic-sidebar.collapsed {
+    width: 84px;
+  }
+}
+
+@media (max-width: 1366px) and (min-width: 1025px) {
+  .particles-bg {
+    width: 240px;
+  }
+  .futuristic-sidebar {
+    width: 240px;
+  }
+  .futuristic-sidebar.collapsed {
+    width: 78px;
+  }
+}
+@media (max-width: 1024px) {
+  .sidebar-container {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 0;
+    z-index: 1400;
+    pointer-events: none;
+  }
+  .particles-bg {
+    display: none;
+  }
+  .futuristic-sidebar {
+    transform: translateX(-105%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: auto;
+    will-change: transform, width;
+    z-index: 1405;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+  }
+  .sidebar-container.mobile-open .futuristic-sidebar {
+    transform: translateX(0);
+  }
+  .sidebar-container.mobile-pinned {
+    width: 78px;
+    pointer-events: auto;
+  }
+  .sidebar-container.mobile-pinned .futuristic-sidebar {
+    width: 78px;
+    transform: translateX(0);
+    border-radius: 0 16px 16px 0;
+  }
+  .sidebar-container.mobile-pinned .futuristic-sidebar:not(.collapsed) { width: 78px; }
+  .sidebar-container.mobile-pinned.mobile-expanded {
+    width: 272px;
+    z-index: 1400;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .futuristic-sidebar {
+    width: 260px;
+    transform: translateX(0);
+    border-radius: 0 16px 16px 0;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .futuristic-sidebar.collapsed {
+    width: 88px;
+  }
+  .sidebar-container.mobile-pinned .particles-bg {
+    display: none;
+  }
+  .sidebar-container.mobile-pinned .menu-label,
+  .sidebar-container.mobile-pinned .logo-text,
+  .sidebar-container.mobile-pinned .user-info,
+  .sidebar-container.mobile-pinned .logout-btn {
+    display: none;
+  }
+  .sidebar-container.mobile-pinned .sidebar-header {
+    padding: 14px 10px;
+    justify-content: center;
+    background: linear-gradient(135deg, #3b82f6, #14b8a6);
+  }
+  .sidebar-container.mobile-pinned .toggle-btn {
+    background: #ffffff;
+    color: #3b82f6;
+    border-color: #93c5fd;
+    box-shadow: 0 0 20px rgba(147, 197, 253, 0.55);
+  }
+  .sidebar-container.mobile-pinned .logo-container {
+    display: none;
+  }
+  .sidebar-container.mobile-pinned .sidebar-nav {
+    padding: 14px 8px;
+    gap: 12px;
+  }
+  .sidebar-container.mobile-pinned .menu-item {
+    justify-content: center;
+    padding: 11px 8px;
+    border-radius: 12px;
+  }
+  .sidebar-container.mobile-pinned .menu-item.active {
+    border-color: rgba(147, 197, 253, 0.75);
+    box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.35) inset, 0 8px 22px rgba(59, 130, 246, 0.25);
+  }
+  .sidebar-container.mobile-pinned .active-indicator {
+    display: none;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .sidebar-header {
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .logo-container {
+    display: flex;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .sidebar-nav {
+    padding: 14px 12px;
+    gap: 4px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .menu-item {
+    justify-content: flex-start;
+    padding: 14px 16px;
+    border-radius: 16px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .active-indicator {
+    display: block;
+  }
+  .sidebar-container.mobile-pinned .sidebar-footer {
+    padding: 10px 8px;
+  }
+  .sidebar-container.mobile-pinned .user-profile {
+    justify-content: center;
+    padding: 8px;
+    border-radius: 14px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .sidebar-footer {
+    padding: 14px 12px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .user-profile {
+    justify-content: flex-start;
+    padding: 12px;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .menu-label,
+  .sidebar-container.mobile-pinned.mobile-expanded .logo-text,
+  .sidebar-container.mobile-pinned.mobile-expanded .user-info {
+    display: revert;
+    animation: mobileFadeIn 0.22s ease-out;
+  }
+  .sidebar-container.mobile-pinned.mobile-expanded .logout-btn {
+    display: flex;
+    animation: mobileFadeIn 0.22s ease-out;
+  }
+
+  /* Keep collapsed mobile top block same style family as desktop */
+  .sidebar-container.mobile-open:not(.mobile-expanded) .sidebar-header {
+    background: transparent;
+    border-bottom-color: rgba(96, 165, 250, 0.1);
+  }
+  .sidebar-container.mobile-open:not(.mobile-expanded) .toggle-btn {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.2);
+    box-shadow: none;
+  }
+
+  /* Keep expanded mobile header identical to desktop header styling */
+  .sidebar-container.mobile-open.mobile-expanded .sidebar-header,
+  .sidebar-container.mobile-pinned.mobile-expanded .sidebar-header {
+    background: transparent;
+    border-bottom-color: rgba(96, 165, 250, 0.1);
+  }
+  .sidebar-container.mobile-open.mobile-expanded .logo-text,
+  .sidebar-container.mobile-pinned.mobile-expanded .logo-text {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: inherit;
+  }
+  .sidebar-container.mobile-open.mobile-expanded .logo-icon,
+  .sidebar-container.mobile-pinned.mobile-expanded .logo-icon {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.2));
+    border-color: rgba(96, 165, 250, 0.3);
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+  }
+  .sidebar-container.mobile-open.mobile-expanded .toggle-btn,
+  .sidebar-container.mobile-pinned.mobile-expanded .toggle-btn {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.2);
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .sidebar-container.mobile-open .futuristic-sidebar {
+    transform: translate3d(0, 0, 0);
+  }
+  .sidebar-container.mobile-open:not(.mobile-expanded) .futuristic-sidebar {
+    width: 78px;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.2s ease-out;
+  }
+  .sidebar-container.mobile-open.mobile-expanded .futuristic-sidebar {
+    width: 260px;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), width 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sidebar-backdrop {
+    transition: opacity 0.22s ease;
+    will-change: opacity;
+  }
+}
+
+@keyframes mobileFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .futuristic-sidebar.collapsed {
@@ -926,6 +1319,14 @@ onMounted(() => {
   border-radius: 24px;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+@media (max-width: 640px) {
+  .custom-modal-card {
+    width: calc(100vw - 24px);
+    max-width: 400px;
+    padding: 22px;
+    border-radius: 16px;
+  }
 }
 
 .modal-header h3 {

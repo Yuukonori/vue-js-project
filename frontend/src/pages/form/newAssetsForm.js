@@ -21,13 +21,15 @@ export function NewAssetsForm(user) {
 
       async function fetchUsers() {
         try {
-          let res = await fetch('http://127.0.0.1:5050/api/users')
-          if (!res.ok) {
-            res = await fetch('/api/users')
-          }
+          const res = await fetch('/api/conn_1778809328809/app_users/showUsers')
           if (!res.ok) throw new Error(`Failed to fetch users: ${res.status}`)
-          const list = await res.json()
-          users.value = Array.isArray(list) ? list : []
+          const body = await res.json()
+          const rawData = Array.isArray(body) ? body : (body.data || [])
+          users.value = rawData.map(u => ({
+            id: u.id,
+            name: u.full_name || u.name,
+            email: u.email
+          }))
         } catch (err) {
           console.error('Failed to fetch users for asset form:', err)
           users.value = []

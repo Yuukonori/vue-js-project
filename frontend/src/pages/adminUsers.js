@@ -27,10 +27,26 @@ export function AdminUsersPage(user) {
 
       async function loadUsers() {
         try {
-          const res = await fetch('http://127.0.0.1:5050/api/users')
+          const res = await fetch('/api/conn_1778809328809/app_users/showUsers')
           if (!res.ok) throw new Error(`Failed to fetch users: ${res.status}`)
-          tableRows.value = await res.json()
+          const body = await res.json()
+          const rawData = Array.isArray(body) ? body : (body.data || [])
+          tableRows.value = rawData.map(u => ({
+            ...u,
+            id: u.id,
+            name: u.full_name || u.name,
+            email: u.email,
+            role: u.role,
+            assets: u.assets_count || u.assets || 0,
+            status: (u.is_active === 'true' || u.is_active === true) ? 'Active' : 'Inactive',
+            department: u.department || '-',
+            position: u.position_title || u.position || '-',
+            costCenter: u.cost_center || u.costCenter || '-',
+            company: u.company || '-',
+            issues: u.issues_count || u.issues || 0
+          }))
         } catch (e) {
+          console.error('Failed to load users from cloud API:', e)
           tableRows.value = []
         }
       }
